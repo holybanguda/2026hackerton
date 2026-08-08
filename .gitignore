@@ -1,0 +1,30 @@
+# Environment variables & Secrets
+.env
+*.env
+.env.example
+
+# Scraped HTML & Test Dumps (Security & Privacy Protection)
+test_htmls/
+*.html
+*.htm
+
+# Python Cache & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+
+# dataset
+dataset/
+.dataset/
