@@ -69,7 +69,7 @@ cd back/hackerton
 
 ## 📡 주요 API 엔드포인트 규격 (API Specifications)
 
-### 1. 최초 AI 메뉴 추천 API (Spring Boot 백엔드)
+### 1. 최초 AI 메뉴 추천 API (Spring Boot 백엔드) - 예시
 - **Request:** `POST /api/recommendation`
 ```json
 {
