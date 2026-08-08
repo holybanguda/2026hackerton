@@ -118,6 +118,14 @@ public class RecommendationService {
         return RecommendationDto.Response.builder()
                 .recommendationId(entity.getId())
                 .restaurantUrl(entity.getRestaurantUrl())
+                .peopleCount(entity.getPeopleCount())
+                .budget(entity.getBudget())
+                .meetingType(entity.getMeetingType())
+                .excludedFoods(fromJsonStringList(entity.getExcludedFoods()))
+                .bigEaterCount(entity.getBigEaterCount())
+                .spicyLevel(entity.getSpicyLevel())
+                .dietCount(entity.getDietCount())
+                .todayPreference(entity.getTodayPreference())
                 .recommendedMenus(menus)
                 .totalPrice(entity.getTotalPrice())
                 .reason(entity.getReason())
@@ -141,5 +149,30 @@ public class RecommendationService {
         } catch (Exception e) {
             return Arrays.asList(json.replace("[", "").replace("]", "").replace("\"", "").split(","));
         }
+    }
+
+    //히스토리 전체 목록 조회
+    @Transactional(readOnly=true)
+    public List<RecommendationDto.Response> getAllRecommendations() {
+        List<RecommendationEntity> recommendations = recommendationRepository.findAllByOrderByCreatedAtDesc();
+
+        return recommendations.stream()
+                .map(entity -> RecommendationDto.Response.builder()
+                        .recommendationId(entity.getId())
+                        .restaurantUrl(entity.getRestaurantUrl())
+                        .peopleCount(entity.getPeopleCount())
+                        .budget(entity.getBudget())
+                        .meetingType(entity.getMeetingType())
+                        .excludedFoods(fromJsonStringList(entity.getExcludedFoods()))
+                        .bigEaterCount(entity.getBigEaterCount())
+                        .spicyLevel(entity.getSpicyLevel())
+                        .dietCount(entity.getDietCount())
+                        .todayPreference(entity.getTodayPreference())
+                        .recommendedMenus(fromJsonStringList(entity.getRecommendedMenus()))
+                        .totalPrice(entity.getTotalPrice())
+                        .reason(entity.getReason())
+                        .engineType(entity.getEngineType())
+                        .build())
+                .toList();
     }
 }

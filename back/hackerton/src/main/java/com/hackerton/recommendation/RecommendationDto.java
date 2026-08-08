@@ -58,6 +58,17 @@ public class RecommendationDto {
     @AllArgsConstructor
     @Builder
     public static class Response {
+        //다른 응답dto 부분
+        private Integer peopleCount;
+        private Integer budget;
+        private String meetingType;
+        private List<String> excludedFoods;
+        private Integer bigEaterCount;
+        private Integer spicyLevel;
+        private Integer dietCount;
+        private String todayPreference;
+
+        //ai 추천 결과 부분
         private Long recommendationId;
         private String restaurantUrl;
         private List<String> recommendedMenus;
