@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_restaurant_url", columnList = "restaurantUrl")
         }
 )
+
 public class MenuEntity {
 
     @Id
