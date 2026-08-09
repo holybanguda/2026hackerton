@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script src="./api.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>인원 특징 입력</title>
+    <style>
+      :root {
+        --ink: #0f172a;
+        --text: #314158;
+        --muted: #62748e;
+        --faint: #90a1b9;
+        --line: #e2e8f0;
+        --line-soft: #f1f5f9;
+        --field: #f8fafc;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: start center;
+        background: #eef2f7;
+        color: var(--ink);
+        font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .app {
+        position: relative;
+        width: min(100%, 390px);
+        min-height: 878px;
+        overflow: hidden;
+        background: var(--white);
+      }
+
+      .header {
+        position: absolute;
+        z-index: 4;
+        inset: 0 0 auto;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line-soft);
+        background: var(--white);
+      }
+
+      .back-button {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+      }
+
+      .back-button:hover,
+      .back-button:focus-visible {
+        background: var(--field);
+      }
+
+      .header h1 {
+        margin: 0 0 0 12px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.01em;
+      }
+
+      .skip-button {
+        height: 32px;
+        margin-left: auto;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--faint);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+      }
+
+      main {
+        position: absolute;
+        inset: 56px 0 auto;
+        height: 653px;
+      }
+
+      .step-indicator {
+        position: absolute;
+        top: 16px;
+        left: 24px;
+        right: 24px;
+        height: 4px;
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .step-indicator span {
+        min-width: 0;
+        border-radius: 999px;
+        background: var(--line-soft);
+      }
+
+      .step-indicator span:nth-child(-n + 6) {
+        background: var(--ink);
+      }
+
+      .intro-title {
+        position: absolute;
+        top: 40px;
+        left: 24px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 25px;
+        letter-spacing: 0.01em;
+      }
+
+      .intro-description {
+        position: absolute;
+        top: 98px;
+        left: 24px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .feature-form {
+        position: absolute;
+        top: 142px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 479px;
+      }
+
+      .counter-group {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 104px;
+      }
+
+      .counter-row {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .counter-row:first-child {
+        top: 0;
+      }
+
+      .counter-row:last-child {
+        top: 64px;
+      }
+
+      .counter-copy {
+        align-self: stretch;
+        min-width: 0;
+      }
+
+      .counter-copy strong,
+      .counter-copy small {
+        display: block;
+        letter-spacing: 0.01em;
+      }
+
+      .counter-copy strong {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 24px;
+      }
+
+      .counter-copy small {
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+
+      .counter-control {
+        width: 112px;
+        height: 32px;
+        display: grid;
+        flex: 0 0 auto;
+        grid-template-columns: 32px 48px 32px;
+        align-items: center;
+      }
+
+      .counter-button {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: var(--white);
+        color: var(--faint);
+        cursor: pointer;
+      }
+
+      .counter-button[data-action="increase"] {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+
+      .counter-button:disabled {
+        cursor: default;
+        opacity: 0.55;
+      }
+
+      .counter-button svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      .counter-value {
+        color: var(--ink);
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        text-align: center;
+        letter-spacing: 0.01em;
+      }
+
+      .spicy-preference {
+        position: absolute;
+        top: 144px;
+        left: 0;
+        width: 100%;
+        height: 142px;
+      }
+
+      .section-title,
+      .section-description {
+        display: block;
+        letter-spacing: 0.01em;
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 24px;
+      }
+
+      .section-description {
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+      }
+
+      .spicy-slider {
+        --slider-thumb-size: 20px;
+        --slider-edge: calc(var(--slider-thumb-size) / 2);
+        position: absolute;
+        top: 56px;
+        left: 0;
+        width: 100%;
+        height: 86px;
+      }
+
+      .range-track,
+      .range-progress {
+        position: absolute;
+        height: 4px;
+        border-radius: 999px;
+      }
+
+      .range-track {
+        top: 24px;
+        left: var(--slider-edge);
+        width: calc(100% - var(--slider-thumb-size));
+        background: var(--line-soft);
+      }
+
+      .range-progress {
+        inset: 0 auto 0 0;
+        width: 50%;
+        background: var(--ink);
+      }
+
+      .spicy-range {
+        position: absolute;
+        z-index: 2;
+        top: 14px;
+        left: 0;
+        width: 100%;
+        height: 24px;
+        margin: 0;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .spicy-range::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .spicy-range::-webkit-slider-thumb {
+        width: var(--slider-thumb-size);
+        height: var(--slider-thumb-size);
+        margin-top: -8px;
+        appearance: none;
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+        background: var(--white);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .spicy-range::-moz-range-track {
+        height: 4px;
+        border: 0;
+        background: transparent;
+      }
+
+      .spicy-range::-moz-range-thumb {
+        width: var(--slider-thumb-size);
+        height: var(--slider-thumb-size);
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+        background: var(--white);
+      }
+
+      .range-numbers {
+        position: absolute;
+        top: 44px;
+        left: var(--slider-edge);
+        right: var(--slider-edge);
+        display: flex;
+        justify-content: space-between;
+        color: var(--faint);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 15px;
+        letter-spacing: 0.01em;
+      }
+
+      .range-numbers span {
+        position: relative;
+        display: flex;
+        width: 0;
+        justify-content: center;
+        white-space: nowrap;
+      }
+
+      .range-numbers span::before {
+        position: absolute;
+        top: -20px;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        content: "";
+      }
+
+      .range-numbers span.is-current {
+        color: var(--ink);
+      }
+
+      .range-numbers span.is-current::before {
+        background: var(--ink);
+      }
+
+      .range-labels {
+        position: absolute;
+        top: 63px;
+        left: var(--slider-edge);
+        right: var(--slider-edge);
+        display: flex;
+        justify-content: space-between;
+        color: var(--faint);
+        font-size: 10px;
+        font-weight: 400;
+        line-height: 15px;
+        letter-spacing: 0.01em;
+      }
+
+      .range-labels span {
+        display: flex;
+        width: 0;
+        justify-content: center;
+        white-space: nowrap;
+      }
+
+      .today-preference {
+        position: absolute;
+        top: 326px;
+        left: 0;
+        width: 100%;
+        height: 153px;
+      }
+
+      .preference-input {
+        position: absolute;
+        top: 52px;
+        left: 0;
+        width: 100%;
+        height: 94px;
+        resize: none;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--field);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .preference-input::placeholder {
+        color: rgba(15, 23, 42, 0.5);
+        opacity: 1;
+      }
+
+      .bottom-actions {
+        position: absolute;
+        z-index: 3;
+        top: 689px;
+        left: 0;
+        width: 100%;
+        height: 105px;
+        padding: 20px;
+        border-top: 1px solid var(--line-soft);
+        background: var(--white);
+      }
+
+      .analyze-button {
+        width: 100%;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--ink);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        color: var(--white);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: background 160ms ease, transform 160ms ease;
+      }
+
+      .analyze-button:hover {
+        background: #1e293b;
+        transform: translateY(-1px);
+      }
+
+      .analyze-button svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .bottom-tabs {
+        position: absolute;
+        z-index: 4;
+        inset: auto 0 0;
+        height: 64px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 13px 24px;
+        border-top: 1px solid var(--line-soft);
+        background: var(--white);
+      }
+
+      .tab-button {
+        height: 37px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--faint);
+        cursor: pointer;
+      }
+
+      .tab-button svg {
+        width: 20px;
+        height: 19px;
+        flex: 0 0 19px;
+      }
+
+      .tab-button span {
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 14px;
+      }
+
+      .tab-button.is-active {
+        color: var(--ink);
+      }
+
+      .tab-button.is-active span {
+        font-weight: 700;
+      }
+
+      .toast {
+        position: absolute;
+        z-index: 6;
+        left: 50%;
+        bottom: 76px;
+        max-width: calc(100% - 40px);
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--white);
+        font-size: 13px;
+        line-height: 18px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .back-button:focus-visible,
+      .skip-button:focus-visible,
+      .counter-button:focus-visible,
+      .spicy-range:focus-visible,
+      .preference-input:focus-visible,
+      .analyze-button:focus-visible,
+      .tab-button:focus-visible {
+        outline: 3px solid rgba(15, 23, 42, 0.16);
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 360px) {
+        .counter-copy small {
+          max-width: 170px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .counter-control {
+          width: 104px;
+          grid-template-columns: 32px 40px 32px;
+        }
+      }
+
+      @media (min-height: 878px) {
+        .app {
+          height: 878px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <button class="back-button" type="button" aria-label="이전 화면으로">
+          <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
+            <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <h1>인원 특징 입력</h1>
+        <button class="skip-button" type="button">건너뛰기</button>
+      </header>
+
+      <main>
+        <div class="step-indicator" aria-label="8단계 중 6단계">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+
+        <h2 class="intro-title">더 정확한 추천을 위해<br />일행의 특징을 알려주세요</h2>
+        <p class="intro-description">입력하신 정보를 바탕으로 최적의 메뉴를 구성합니다.</p>
+
+        <form class="feature-form" id="feature-form">
+          <section class="counter-group" aria-label="인원 특징">
+            <div class="counter-row" data-counter="bigEaterCount">
+              <span class="counter-copy">
+                <strong>대식가 인원</strong>
+                <small>평소보다 많이 드시는 분이 계신가요?</small>
+              </span>
+              <span class="counter-control">
+                <button class="counter-button" type="button" data-action="decrease" aria-label="대식가 인원 줄이기" disabled>
+                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <output class="counter-value" aria-live="polite">0</output>
+                <button class="counter-button" type="button" data-action="increase" aria-label="대식가 인원 늘리기">
+                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1 6h10M6 1v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </span>
+            </div>
+
+            <div class="counter-row" data-counter="dietCount">
+              <span class="counter-copy">
+                <strong>다이어트 인원</strong>
+                <small>식단 관리나 소식하시는 분이 계신가요?</small>
+              </span>
+              <span class="counter-control">
+                <button class="counter-button" type="button" data-action="decrease" aria-label="다이어트 인원 줄이기" disabled>
+                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <output class="counter-value" aria-live="polite">0</output>
+                <button class="counter-button" type="button" data-action="increase" aria-label="다이어트 인원 늘리기">
+                  <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1 6h10M6 1v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </span>
+            </div>
+          </section>
+
+          <section class="spicy-preference" aria-labelledby="spicy-title">
+            <span class="section-title" id="spicy-title">매운 음식 선호도</span>
+            <span class="section-description">일행이 선호하는 맵기 단계를 선택해 주세요.</span>
+            <div class="spicy-slider">
+              <div class="range-track" aria-hidden="true">
+                <span class="range-progress" id="range-progress"></span>
+              </div>
+              <input
+                class="spicy-range"
+                id="spicy-range"
+                type="range"
+                min="1"
+                max="5"
+                step="1"
+                value="3"
+                aria-label="매운 음식 선호도"
+                aria-valuetext="3단계"
+              />
+              <div class="range-numbers" aria-hidden="true">
+                <span>1</span><span>2</span><span class="is-current">3</span><span>4</span><span>5</span>
+              </div>
+              <div class="range-labels" aria-hidden="true">
+                <span>안매움</span><span>아주매움</span>
+              </div>
+            </div>
+          </section>
+
+          <label class="today-preference" for="today-preference-input">
+            <span class="section-title">오늘의 선호도</span>
+            <span class="section-description">특별히 드시고 싶은 메뉴나 못 드시는 재료가 있나요?</span>
+            <textarea
+              class="preference-input"
+              id="today-preference-input"
+              name="todayPreference"
+              placeholder="예: 오늘은 해산물이 당겨요, 견과류 알러지가 있어요"
+            ></textarea>
+          </label>
+        </form>
+      </main>
+
+      <div class="bottom-actions">
+        <button class="analyze-button" id="analyze-button" type="button">
+          <span>AI 메뉴 분석 시작하기</span>
+          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="m3 15 8.8-8.8M10.4 4.8l2.8 2.8M5 13l-2-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M14.5 1.7v3M13 3.2h3M5 1.7v2M4 2.7h2M15 12.5v3M13.5 14h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <nav class="bottom-tabs" aria-label="하단 탐색">
+        <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
+          <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
+            <path d="M2 8.2 10 2l8 6.2V17a1 1 0 0 1-1 1h-4.5v-5.6h-5V18H3a1 1 0 0 1-1-1V8.2Z" fill="currentColor" />
+          </svg>
+          <span>홈</span>
+        </button>
+        <button class="tab-button" type="button" data-tab="히스토리">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M10 10a3.7 3.7 0 1 0 0-7.4A3.7 3.7 0 0 0 10 10Zm-6.5 7.5c.6-3 3-4.7 6.5-4.7s5.9 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <span>히스토리</span>
+        </button>
+      </nav>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const counterValues = { bigEaterCount: 0, dietCount: 0 };
+      const spicyRange = document.querySelector("#spicy-range");
+      const rangeProgress = document.querySelector("#range-progress");
+      const todayPreferenceInput = document.querySelector("#today-preference-input");
+      const toast = document.querySelector("#toast");
+      let toastTimer;
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      }
+
+      document.querySelectorAll(".counter-row").forEach((row) => {
+        const key = row.dataset.counter;
+        const output = row.querySelector(".counter-value");
+        const decreaseButton = row.querySelector('[data-action="decrease"]');
+
+        row.querySelectorAll(".counter-button").forEach((button) => {
+          button.addEventListener("click", () => {
+            const delta = button.dataset.action === "increase" ? 1 : -1;
+            counterValues[key] = Math.max(0, Math.min(20, counterValues[key] + delta));
+            output.value = counterValues[key];
+            output.textContent = counterValues[key];
+            decreaseButton.disabled = counterValues[key] === 0;
+          });
+        });
+      });
+
+      function updateSpicySlider() {
+        const value = Number(spicyRange.value);
+        const min = Number(spicyRange.min);
+        const max = Number(spicyRange.max);
+        const progress = ((value - min) / (max - min)) * 100;
+        rangeProgress.style.width = `${progress}%`;
+        spicyRange.setAttribute("aria-invalid", "false");
+        spicyRange.setAttribute("aria-valuetext", `${value}단계`);
+        document.querySelectorAll(".range-numbers span").forEach((number) => {
+          number.classList.toggle("is-current", Number(number.textContent) === value);
+        });
+      }
+
+      spicyRange.addEventListener("input", updateSpicySlider);
+      updateSpicySlider();
+
+      document.querySelector(".back-button").addEventListener("click", () => {
+        window.location.href = "STEP5_app.html";
+      });
+
+      document.querySelector(".skip-button").addEventListener("click", () => {
+        showToast("특징 입력을 건너뜁니다.");
+      });
+
+      document.querySelector("#analyze-button").addEventListener("click", () => {
+        const spicyLevel = Number(spicyRange.value);
+        const minSpicyLevel = Number(spicyRange.min);
+        const maxSpicyLevel = Number(spicyRange.max);
+        if (!Number.isInteger(spicyLevel) || spicyLevel < minSpicyLevel || spicyLevel > maxSpicyLevel) {
+          spicyRange.setAttribute("aria-invalid", "true");
+          showToast("매운 음식 선호도를 선택해 주세요.");
+          spicyRange.focus();
+          return;
+        }
+
+        let excludedFoods = [];
+        try {
+          const storedExcludedFoods = JSON.parse(sessionStorage.getItem("excludedFoods") || "[]");
+          if (Array.isArray(storedExcludedFoods)) excludedFoods = storedExcludedFoods;
+        } catch (error) {
+          console.warn("Invalid excludedFoods session data", error);
+        }
+
+        const storedMenuId = Number(sessionStorage.getItem("menuId"));
+        const recommendationRequest = {
+          clientId: sessionStorage.getItem("clientId") || "",
+          menuId: Number.isInteger(storedMenuId) && storedMenuId > 0 ? storedMenuId : null,
+          peopleCount: Number(sessionStorage.getItem("peopleCount")) || 0,
+          budget: Number(sessionStorage.getItem("budget")) || 0,
+          meetingType: sessionStorage.getItem("meetingType") || "",
+          excludedFoods,
+          bigEaterCount: counterValues.bigEaterCount,
+          spicyLevel,
+          dietCount: counterValues.dietCount,
+          todayPreference: todayPreferenceInput.value.trim(),
+        };
+        sessionStorage.setItem("recommendationRequest", JSON.stringify(recommendationRequest));
+        console.log("POST /api/recommendation request", recommendationRequest);
+        showToast("입력 정보를 바탕으로 메뉴를 분석합니다.");
+        window.location.href = "STEP7_analyze.html";
+      });
+    </script>
+  </body>
+</html>
