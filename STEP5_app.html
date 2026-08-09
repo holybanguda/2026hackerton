@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
   <head>
+    <script src="./api.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>추천 조건 입력</title>
@@ -687,6 +688,7 @@
         sessionStorage.setItem("excludedFoods", JSON.stringify(excludedFoods));
         showToast(`${conditionCount}개의 추천 조건을 저장했어요.`);
         window.location.href = "STEP6_point.html";
+
         
       });
 

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
   <head>
+    <script src="./api.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>분위기 선택</title>
@@ -626,6 +627,9 @@
         }
 
         sessionStorage.setItem("meetingType", meetingType);
+        if (typeof saveStepData === 'function') {
+          saveStepData('meetingType', selectedVibe);
+        }
         showToast(`${meetingType} 분위기를 선택했어요.`);
         
         window.location.href = "STEP5_app.html";
