@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>추천 조건 입력</title>
+    <style>
+      :root {
+        --ink: #0f172a;
+        --text: #314158;
+        --muted: #62748e;
+        --faint: #90a1b9;
+        --line: #e2e8f0;
+        --line-soft: #f1f5f9;
+        --field: #f8fafc;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: start center;
+        background: #eef2f7;
+        color: var(--ink);
+        font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .app {
+        position: relative;
+        width: min(100%, 390px);
+        min-height: 870px;
+        overflow: hidden;
+        background: var(--white);
+      }
+
+      .header {
+        position: absolute;
+        z-index: 4;
+        inset: 0 0 auto;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line-soft);
+        background: var(--white);
+      }
+
+      .back-button {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+      }
+
+      .back-button:hover,
+      .back-button:focus-visible {
+        background: var(--field);
+      }
+
+      .header h1 {
+        margin: 0 0 0 12px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.01em;
+      }
+
+      main {
+        position: absolute;
+        top: 63px;
+        left: 0;
+        width: 100%;
+        height: 681px;
+      }
+
+      .step-indicator {
+        position: absolute;
+        top: 9px;
+        left: 24px;
+        right: 24px;
+        height: 4px;
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .step-indicator span {
+        min-width: 0;
+        border-radius: 999px;
+        background: var(--line-soft);
+      }
+
+      .step-indicator span:nth-child(-n + 5) {
+        background: var(--ink);
+      }
+
+      .intro-title {
+        position: absolute;
+        top: 31px;
+        left: 24px;
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 30px;
+        letter-spacing: 0.01em;
+      }
+
+      .intro-description {
+        position: absolute;
+        top: 69px;
+        left: 24px;
+        right: 24px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 23px;
+        letter-spacing: 0.01em;
+      }
+
+      .food-selection {
+        position: absolute;
+        top: 133px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 272px;
+      }
+
+      .food-card {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 17px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--white);
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease,
+          transform 160ms ease;
+      }
+
+      .food-card:nth-child(1) {
+        top: 0;
+        height: 84px;
+      }
+
+      .food-card:nth-child(2) {
+        top: 96px;
+        height: 82px;
+      }
+
+      .food-card:nth-child(3) {
+        top: 190px;
+        height: 82px;
+      }
+
+      .food-card:hover {
+        border-color: #94a3b8;
+        transform: translateY(-1px);
+      }
+
+      .food-card.is-selected {
+        padding: 0 16px;
+        border: 2px solid var(--ink);
+        background: var(--field);
+      }
+
+      .food-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--field);
+        color: var(--faint);
+      }
+
+      .food-card.is-selected .food-icon {
+        background: var(--white);
+        color: var(--ink);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .food-icon svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .food-copy {
+        min-width: 0;
+        margin-left: 16px;
+      }
+
+      .food-title,
+      .food-description {
+        display: block;
+        letter-spacing: 0.01em;
+      }
+
+      .food-title {
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 24px;
+      }
+
+      .food-card.is-selected .food-title {
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .food-description {
+        margin-top: 6px;
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+
+      .food-card.is-selected .food-description {
+        color: var(--muted);
+      }
+
+      .checkmark {
+        width: 24px;
+        height: 24px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        margin-left: auto;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: var(--white);
+        color: transparent;
+      }
+
+      .food-card.is-selected .checkmark {
+        border-color: var(--ink);
+        background: var(--ink);
+        color: var(--white);
+      }
+
+      .checkmark svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .manual-input {
+        position: absolute;
+        top: 428px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 110px;
+      }
+
+      .manual-input label {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .input-wrap {
+        position: absolute;
+        top: 32px;
+        left: 0;
+        width: 100%;
+        height: 54px;
+      }
+
+      .food-input {
+        width: 100%;
+        height: 54px;
+        padding: 0 48px 0 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--field);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.01em;
+      }
+
+      .food-input::placeholder {
+        color: rgba(0, 0, 0, 0.5);
+        opacity: 1;
+      }
+
+      .input-icon {
+        position: absolute;
+        top: 19px;
+        right: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--chevron, #cbd5e1);
+        pointer-events: none;
+      }
+
+      .input-help {
+        position: absolute;
+        top: 94px;
+        left: 0;
+        margin: 0;
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.01em;
+      }
+
+      .privacy-note {
+        position: absolute;
+        top: 578px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 68px;
+        display: flex;
+        align-items: flex-start;
+        padding: 16px;
+        border-radius: 8px;
+        background: var(--field);
+      }
+
+      .privacy-note svg {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+        margin-top: 2px;
+        color: var(--faint);
+      }
+
+      .privacy-note p {
+        margin: 0 0 0 12px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 18px;
+        letter-spacing: 0.01em;
+      }
+
+      .complete-button {
+        position: absolute;
+        z-index: 3;
+        top: 730px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 56px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--ink);
+        color: var(--white);
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 24px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: background 160ms ease, transform 160ms ease;
+      }
+
+      .complete-button:hover {
+        background: #1e293b;
+        transform: translateY(-1px);
+      }
+
+      .bottom-tabs {
+        position: absolute;
+        z-index: 4;
+        inset: auto 0 0;
+        height: 64px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 13px 24px;
+        border-top: 1px solid var(--line-soft);
+        background: var(--white);
+      }
+
+      .tab-button {
+        height: 37px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--faint);
+        cursor: pointer;
+      }
+
+      .tab-button svg {
+        width: 20px;
+        height: 19px;
+        flex: 0 0 19px;
+      }
+
+      .tab-button span {
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 14px;
+      }
+
+      .tab-button.is-active {
+        color: var(--ink);
+      }
+
+      .tab-button.is-active span {
+        font-weight: 700;
+      }
+
+      .toast {
+        position: absolute;
+        z-index: 6;
+        left: 50%;
+        bottom: 76px;
+        max-width: calc(100% - 40px);
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--white);
+        font-size: 13px;
+        line-height: 18px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .back-button:focus-visible,
+      .food-card:focus-visible,
+      .food-input:focus-visible,
+      .complete-button:focus-visible,
+      .tab-button:focus-visible {
+        outline: 3px solid rgba(15, 23, 42, 0.16);
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 360px) {
+        .intro-description {
+          font-size: 13px;
+        }
+
+        .food-card {
+          padding-inline: 14px;
+        }
+
+        .food-copy {
+          margin-left: 12px;
+        }
+      }
+
+      @media (min-height: 870px) {
+        .app {
+          height: 870px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <button class="back-button" type="button" aria-label="이전 화면으로">
+          <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
+            <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <h1>추천 조건 입력</h1>
+      </header>
+
+      <main>
+        <div class="step-indicator" aria-label="8단계 중 5단계">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+
+        <h2 class="intro-title">못 먹는 음식이 있나요?</h2>
+        <p class="intro-description">
+          알러지가 있거나 선호하지 않는 식재료를 알려주세요.<br />
+          회원님께 안전한 메뉴만 추천해 드릴게요.
+        </p>
+
+        <section class="food-selection" aria-label="제외할 음식 선택">
+          <button class="food-card is-selected" type="button" data-food="해산물" aria-pressed="true">
+            <span class="food-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 12c3.4-4.3 7-6 10.5-5.2 2.4.5 4.1 2.3 5.4 4.2L22 8.4v7.2L18.9 13c-1.3 1.9-3 3.7-5.4 4.2C10 18 6.4 16.3 3 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                <circle cx="14.8" cy="10" r="1" fill="currentColor" />
+              </svg>
+            </span>
+            <span class="food-copy">
+              <span class="food-title">해산물</span>
+              <span class="food-description">생선, 조개류, 갑각류 등</span>
+            </span>
+            <span class="checkmark" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none">
+                <path d="m1.5 6.1 2.8 2.7 6.2-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </button>
+
+          <button class="food-card" type="button" data-food="견과류" aria-pressed="false">
+            <span class="food-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 20V9M12 14c-4.8 0-7.2-2.4-7.2-7.2C9.6 6.8 12 9.2 12 14Zm0-4c0-4.1 2.1-6.2 6.2-6.2C18.2 7.9 16.1 10 12 10Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span class="food-copy">
+              <span class="food-title">견과류</span>
+              <span class="food-description">땅콩, 호두, 아몬드 등</span>
+            </span>
+            <span class="checkmark" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none">
+                <path d="m1.5 6.1 2.8 2.7 6.2-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </button>
+
+          <button class="food-card" type="button" data-food="유제품" aria-pressed="false">
+            <span class="food-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 24" fill="none">
+                <path d="M4 2h12l-1.2 17.2A3 3 0 0 1 11.8 22H8.2a3 3 0 0 1-3-2.8L4 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                <path d="M5 8h10M7 12.5c1.2-.8 2.2-.8 3.2 0 1 .8 2 .8 3.1 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span class="food-copy">
+              <span class="food-title">유제품</span>
+              <span class="food-description">우유, 치즈, 버터 등</span>
+            </span>
+            <span class="checkmark" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none">
+                <path d="m1.5 6.1 2.8 2.7 6.2-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </button>
+        </section>
+
+        <div class="manual-input">
+          <label for="food-input">직접 입력</label>
+          <div class="input-wrap">
+            <input
+              class="food-input"
+              id="food-input"
+              type="text"
+              placeholder="예: 오이, 가지, 고수 등"
+              autocomplete="off"
+            />
+            <svg class="input-icon" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M3.5 12.5 2.8 16l3.5-.7L15 6.6a2 2 0 0 0-2.8-2.8l-8.7 8.7Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="m10.8 5.2 2.8 2.8M2.8 16h12.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            </svg>
+          </div>
+          <p class="input-help">여러 가지인 경우 쉼표(,)로 구분해서 적어주세요.</p>
+        </div>
+
+        <aside class="privacy-note">
+          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="7.3" stroke="currentColor" stroke-width="1.5" />
+            <path d="M9 8v4M9 5.3v.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <p>선택하신 정보는 식당 예약 및 메뉴 추천 시<br />필터링 용도로만 사용됩니다.</p>
+        </aside>
+      </main>
+
+      <button class="complete-button" id="complete-button" type="button">설정 완료하기</button>
+
+      <nav class="bottom-tabs" aria-label="하단 탐색">
+        <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
+          <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
+            <path d="M2 8.2 10 2l8 6.2V17a1 1 0 0 1-1 1h-4.5v-5.6h-5V18H3a1 1 0 0 1-1-1V8.2Z" fill="currentColor" />
+          </svg>
+          <span>홈</span>
+        </button>
+        <button class="tab-button" type="button" data-tab="히스토리">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M10 10a3.7 3.7 0 1 0 0-7.4A3.7 3.7 0 0 0 10 10Zm-6.5 7.5c.6-3 3-4.7 6.5-4.7s5.9 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <span>히스토리</span>
+        </button>
+      </nav>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const foodCards = [...document.querySelectorAll(".food-card")];
+      const foodInput = document.querySelector("#food-input");
+      const toast = document.querySelector("#toast");
+      let toastTimer;
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      }
+
+      foodCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          const selected = !card.classList.contains("is-selected");
+          card.classList.toggle("is-selected", selected);
+          card.setAttribute("aria-pressed", String(selected));
+        });
+      });
+
+      document.querySelector(".back-button").addEventListener("click", () => {
+        if (window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+        showToast("이전 화면이 없습니다.");
+      });
+
+      document.querySelector("#complete-button").addEventListener("click", () => {
+        const selectedFoods = foodCards
+          .filter((card) => card.classList.contains("is-selected"))
+          .map((card) => card.dataset.food);
+        const customFoods = foodInput.value.trim();
+        const conditionCount = selectedFoods.length + (customFoods ? 1 : 0);
+        showToast(conditionCount ? `${conditionCount}개의 추천 조건을 저장했어요.` : "추천 조건 없이 완료했어요.");
+      });
+
+    </script>
+  </body>
+</html>
