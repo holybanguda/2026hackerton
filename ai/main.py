@@ -65,6 +65,7 @@ class RecommendRequest(BaseModel):
 
 class ReRecommendRequest(RecommendRequest):
     elapsedMinutes: Optional[int] = Field(45, example=45)
+    budgetDelta: Optional[int] = Field(0, example=20000)  # 이전 예산 대비 수정된 차액 (+20,000원 또는 -10,000원)
 
 class RecommendResponse(BaseModel):
     recommendedMenus: List[str]
@@ -301,7 +302,7 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
 # -------------------------------------------------------------------
 # 4. LLM Rationale 생성 파이프라인 (4대 레이어 자연어 설득 엔진)
 # -------------------------------------------------------------------
-def generate_rationale(req: RecommendRequest, selected_menus: List[str], total_price: int, elapsed_min: int = 0) -> str:
+def generate_rationale(req: RecommendRequest, selected_menus: List[str], total_price: int, elapsed_min: int = 0, budget_delta: int = 0) -> str:
     menus_str = ", ".join(selected_menus)
     
     time_context = "최초 식사 주문 단계"
@@ -310,20 +311,26 @@ def generate_rationale(req: RecommendRequest, selected_menus: List[str], total_p
     elif elapsed_min >= 60:
         time_context = "식사 마무리 (60분 이상 경과) 입가심/해장 단계"
 
+    budget_change_text = "이전 예산과 동일"
+    if budget_delta > 0:
+        budget_change_text = f"이전 예산 대비 +{budget_delta:,}원 증액됨"
+    elif budget_delta < 0:
+        budget_change_text = f"이전 예산 대비 {budget_delta:,}원 감액됨"
+
     system_prompt = f"""
     당신은 친절하고 위트 있는 AI 미식 컨시어지입니다.
     사용자 조건에 맞추어 선택된 메뉴 조합({menus_str})의 추천 이유를 매력적이고 자연스러운 2-3문장으로 작성하세요.
 
     [상황 문맥]
     - 인원수: {req.peopleCount}명 (대식가: {req.bigEaterCount or 0}명, 다이어터: {req.dietCount or 0}명)
-    - 예산: {req.budget:,}원 (실제 계산금액: {total_price:,}원)
+    - 예산: {req.budget:,}원 (실제 계산금액: {total_price:,}원, 예산변동: {budget_change_text})
     - 모임 성격: {req.meetingType or '일반 모임'}
     - 시간 경과: {time_context}
     - 오늘 선호: {req.todayPreference or '없음'}
 
     [작성 규칙]
     1. 인원수, 예산 준수, 모임 분위기, 주류-안주 페어링 장점을 자연스럽게 강조하세요.
-    2. 시간 경과 상황({time_context})에 맞는 톤앤매너를 반영하세요.
+    2. 시간 경과 상황({time_context})과 예산 변동 사항({budget_change_text})이 있을 경우 그 이유를 추천 문구에 위트 있게 언급하세요.
     """
 
     try:
@@ -479,7 +486,7 @@ def re_recommend_menu(req: ReRecommendRequest, mode: str = Query("track2", descr
             )
 
         menu_names = format_menu_combination(selected_items)
-        reason = generate_rationale(req, menu_names, tot_price, elapsed_min=elapsed_min)
+        reason = generate_rationale(req, menu_names, tot_price, elapsed_min=elapsed_min, budget_delta=(req.budgetDelta or 0))
 
         return RecommendResponse(
             recommendedMenus=menu_names,

@@ -60,10 +60,25 @@ public class RecommendationService {
      * 조건 수정 및 경과 시간 반영 재추천 및 DB 업데이트
      */
     public RecommendationDto.Response updateRecommendation(Long recommendationId, RecommendationDto.ReRecommendRequest request) {
-        log.info("메뉴 재추천 서비스 실행: ID={}, 경과시간={}분", recommendationId, request.getElapsedMinutes());
-
         RecommendationEntity existing = recommendationRepository.findById(recommendationId)
                 .orElse(null);
+
+        if (existing != null) {
+            // 1. 서버 시각 기준 경과시간(분) 자동 계산 (createdAt -> now)
+            if (existing.getCreatedAt() != null && (request.getElapsedMinutes() == null || request.getElapsedMinutes() == 0)) {
+                long elapsedMin = java.time.Duration.between(existing.getCreatedAt(), LocalDateTime.now()).toMinutes();
+                request.setElapsedMinutes((int) elapsedMin);
+            }
+
+            // 2. 예산 차액(budgetDelta) 자동 계산 (신규 예산 - 이전 예산)
+            if (existing.getBudget() != null && request.getBudget() != null) {
+                int delta = request.getBudget() - existing.getBudget();
+                request.setBudgetDelta(delta);
+            }
+        }
+
+        log.info("메뉴 재추천 서비스 실행: ID={}, 경과시간={}분, 예산변동={}원", 
+                recommendationId, request.getElapsedMinutes(), request.getBudgetDelta());
 
         RecommendationDto.Response aiResponse = aiService.getAiReRecommendation(request);
 
