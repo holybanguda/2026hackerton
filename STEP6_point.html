@@ -771,14 +771,20 @@
         });
       });
 
-      spicyRange.addEventListener("input", () => {
-        const progress = ((Number(spicyRange.value) - 1) / 4) * 100;
+      function updateSpicySlider() {
+        const value = Number(spicyRange.value);
+        const min = Number(spicyRange.min);
+        const max = Number(spicyRange.max);
+        const progress = ((value - min) / (max - min)) * 100;
         rangeProgress.style.width = `${progress}%`;
-        spicyRange.setAttribute("aria-valuetext", `${spicyRange.value}단계`);
+        spicyRange.setAttribute("aria-valuetext", `${value}단계`);
         document.querySelectorAll(".range-numbers span").forEach((number) => {
-          number.classList.toggle("is-current", number.textContent === spicyRange.value);
+          number.classList.toggle("is-current", Number(number.textContent) === value);
         });
-      });
+      }
+
+      spicyRange.addEventListener("input", updateSpicySlider);
+      updateSpicySlider();
 
       document.querySelector(".back-button").addEventListener("click", () => {
         if (window.history.length > 1) {
