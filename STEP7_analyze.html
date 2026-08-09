@@ -553,6 +553,44 @@
 
       document.querySelector(".back-button").addEventListener("click", returnToPreviousStep);
       document.querySelector("#cancel-button").addEventListener("click", returnToPreviousStep);
+
+      // API 요청
+      window.addEventListener("DOMContentLoaded", async () => {
+        const recommendationRequest = sessionStorage.getItem("recommendationRequest");
+        
+        console.log("백엔드로 보낼 요청 데이터:", recommendationRequest);
+
+        if (!recommendationRequest) {
+            console.warn("저장된 추천 요청 데이터가 없습니다.");
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/api/recommendation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: recommendationRequest
+            });
+
+            if (!response.ok) {
+                throw new Error(`API 오류: ${response.status}`);
+            }
+
+            const aiResult = await response.json();
+            console.log("백엔드 AI 추천 결과 수신 성공:", aiResult);
+
+            sessionStorage.setItem("aiResult", JSON.stringify(aiResult));
+
+            // STEP 8 화면 완성 시, 주석 해제 및 화면 이동
+            // window.location.href = "STEP8_result.html";
+
+        } catch (error) {
+            console.error("🚨 AI 추천 API 통신 실패:", error);
+        }
+    });
+
     </script>
   </body>
 </html>

@@ -627,9 +627,7 @@
         }
 
         sessionStorage.setItem("meetingType", meetingType);
-        if (typeof saveStepData === 'function') {
-          saveStepData('meetingType', selectedVibe);
-        }
+
         showToast(`${meetingType} 분위기를 선택했어요.`);
         
         window.location.href = "STEP5_app.html";

@@ -603,9 +603,7 @@
         }
 
         sessionStorage.setItem("peopleCount", String(peopleCount));
-        if (typeof saveStepData === 'function') {
-          saveStepData('peopleCount', selectedCount);
-        }
+        
         showToast(`${peopleCount}명으로 설정했어요.`);
         window.location.href = "STEP3_budget.html";
         // POST /api/recommendation 요청 필드: peopleCount
