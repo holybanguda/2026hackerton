@@ -298,7 +298,7 @@
 
       .range-progress {
         inset: 0 auto 0 0;
-        width: 50%;
+        width: 33.3333%;
         background: var(--ink);
       }
 
@@ -350,9 +350,9 @@
 
       .range-ticks {
         position: absolute;
-        top: 57px;
-        left: 25px;
-        right: 25px;
+        top: 0;
+        left: 8px;
+        right: 8px;
         display: flex;
         justify-content: space-between;
         color: var(--faint);
@@ -360,6 +360,13 @@
         font-weight: 500;
         line-height: 16px;
         letter-spacing: 0.01em;
+      }
+
+      .range-ticks span {
+        display: flex;
+        width: 0;
+        justify-content: center;
+        white-space: nowrap;
       }
 
       .direct-input-card {
@@ -701,9 +708,8 @@
           </section>
 
           <section class="slider-group" aria-label="1인당 예산 슬라이더">
-            <div class="range-limits" aria-hidden="true">
-              <span>1만원</span>
-              <span>10만원</span>
+            <div class="range-ticks" aria-hidden="true">
+              <span>1만</span><span>2만</span><span>3만</span><span>4만</span><span>5만</span><span>6만</span><span>7만</span>
             </div>
             <div class="range-track" aria-hidden="true">
               <span class="range-progress" id="range-progress"></span>
@@ -713,14 +719,12 @@
               id="budget-range"
               type="range"
               min="0"
-              max="100"
-              value="50"
+              max="6"
+              step="1"
+              value="2"
               aria-label="1인당 예산"
               aria-valuetext="30,000원"
             />
-            <div class="range-ticks" aria-hidden="true">
-              <span>2만</span><span>3만</span><span>4만</span><span>5만</span><span>7만</span>
-            </div>
           </section>
 
           <label class="direct-input-card" for="budget-input">
@@ -793,22 +797,17 @@
       const budgetInput = document.querySelector("#budget-input");
       const quickButtons = [...document.querySelectorAll(".quick-button")];
       const toast = document.querySelector("#toast");
+      const budgetSteps = [10000, 20000, 30000, 40000, 50000, 60000, 70000];
       let perPersonBudget = 30000;
       let toastTimer;
 
       const formatWon = (value) => `${Math.round(value).toLocaleString("ko-KR")}원`;
 
-      function progressToBudget(progress) {
-        const value = Number(progress);
-        const raw = value <= 50
-          ? 10000 + (value / 50) * 20000
-          : 30000 + ((value - 50) / 50) * 70000;
-        return Math.max(10000, Math.min(100000, Math.round(raw / 10000) * 10000));
-      }
-
-      function budgetToProgress(budget) {
-        if (budget <= 30000) return ((budget - 10000) / 20000) * 50;
-        return 50 + ((budget - 30000) / 70000) * 50;
+      function syncSlider(stepIndex) {
+        const progress = (stepIndex / (budgetSteps.length - 1)) * 100;
+        budgetRange.value = stepIndex;
+        budgetRange.setAttribute("aria-valuetext", formatWon(budgetSteps[stepIndex]));
+        rangeProgress.style.width = `${progress}%`;
       }
 
       function updateBudget(budget, options = {}) {
@@ -816,12 +815,9 @@
         const total = perPersonBudget * memberCount;
         totalBudget.textContent = `총 ${formatWon(total)}`;
         budgetCalculation.textContent = `= 1인 예산 ${formatWon(perPersonBudget)} × ${memberCount}명`;
-        budgetRange.setAttribute("aria-valuetext", formatWon(perPersonBudget));
-
-        if (options.syncSlider !== false && perPersonBudget >= 10000 && perPersonBudget <= 100000) {
-          const progress = Math.max(0, Math.min(100, budgetToProgress(perPersonBudget)));
-          budgetRange.value = progress;
-          rangeProgress.style.width = `${progress}%`;
+        const stepIndex = budgetSteps.indexOf(perPersonBudget);
+        if (options.syncSlider !== false && stepIndex !== -1) {
+          syncSlider(stepIndex);
         }
 
         quickButtons.forEach((button) => {
@@ -839,9 +835,10 @@
       }
 
       budgetRange.addEventListener("input", () => {
-        rangeProgress.style.width = `${budgetRange.value}%`;
+        const stepIndex = Number(budgetRange.value);
+        syncSlider(stepIndex);
         budgetInput.value = "";
-        updateBudget(progressToBudget(budgetRange.value), { syncSlider: false });
+        updateBudget(budgetSteps[stepIndex], { syncSlider: false });
       });
 
       budgetInput.addEventListener("input", () => {
