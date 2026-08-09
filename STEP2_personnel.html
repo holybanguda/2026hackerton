@@ -459,7 +459,7 @@
               <button class="count-button" type="button" data-count="4" aria-pressed="false">4명</button>
             </div>
 
-            <label class="direct-entry" for="member-count">
+            <label class="direct-entry" for="people-count">
               <span class="direct-copy">
                 <strong>직접 입력</strong>
                 <small>5명 이상일 경우</small>
@@ -467,8 +467,8 @@
               <span class="input-wrap">
                 <input
                   class="member-input"
-                  id="member-count"
-                  name="member-count"
+                  id="people-count"
+                  name="peopleCount"
                   type="number"
                   inputmode="numeric"
                   min="5"
@@ -518,22 +518,22 @@
 
     <script>
       const countButtons = [...document.querySelectorAll(".count-button")];
-      const memberInput = document.querySelector("#member-count");
+      const peopleCountInput = document.querySelector("#people-count");
       const summaryCount = document.querySelector("#summary-count");
       const nextButton = document.querySelector("#next-button");
       const backButton = document.querySelector(".back-button");
       const toast = document.querySelector("#toast");
-      let selectedCount = 2;
+      let peopleCount = 2;
       let toastTimer;
 
       function updateSummary(count) {
-        selectedCount = count;
+        peopleCount = count;
         summaryCount.textContent = `${count}명`;
-        memberInput.setAttribute("aria-invalid", "false");
+        peopleCountInput.setAttribute("aria-invalid", "false");
       }
 
       function clearMemberSelection() {
-        selectedCount = null;
+        peopleCount = null;
         summaryCount.textContent = "선택 필요";
       }
 
@@ -543,7 +543,7 @@
           button.classList.toggle("is-selected", isSelected);
           button.setAttribute("aria-pressed", String(isSelected));
         });
-        memberInput.value = "";
+        peopleCountInput.value = "";
         updateSummary(Number(selectedButton.dataset.count));
       }
 
@@ -565,10 +565,10 @@
         button.addEventListener("click", () => selectQuickCount(button));
       });
 
-      memberInput.addEventListener("input", () => {
-        const value = Number(memberInput.value);
+      peopleCountInput.addEventListener("input", () => {
+        const value = Number(peopleCountInput.value);
         clearQuickSelection();
-        const isValid = memberInput.value !== ""
+        const isValid = peopleCountInput.value !== ""
           && Number.isInteger(value)
           && value >= 5
           && value <= 99;
@@ -578,16 +578,16 @@
           return;
         }
 
-        memberInput.setAttribute("aria-invalid", String(memberInput.value !== ""));
+        peopleCountInput.setAttribute("aria-invalid", String(peopleCountInput.value !== ""));
         clearMemberSelection();
       });
 
-      memberInput.addEventListener("blur", () => {
-        if (!memberInput.value) return;
+      peopleCountInput.addEventListener("blur", () => {
+        if (!peopleCountInput.value) return;
 
-        const value = Number(memberInput.value);
+        const value = Number(peopleCountInput.value);
         if (!Number.isInteger(value) || value < 5 || value > 99) {
-          memberInput.setAttribute("aria-invalid", "true");
+          peopleCountInput.setAttribute("aria-invalid", "true");
           return;
         }
 
@@ -595,15 +595,16 @@
       });
 
       nextButton.addEventListener("click", () => {
-        if (!Number.isInteger(selectedCount) || selectedCount < 1 || selectedCount > 99) {
+        if (!Number.isInteger(peopleCount) || peopleCount < 1 || peopleCount > 99) {
           showToast("인원수를 선택하거나 5명 이상 입력해 주세요.");
-          memberInput.focus();
+          peopleCountInput.focus();
           return;
         }
 
-        showToast(`${selectedCount}명으로 설정했어요.`);
+        sessionStorage.setItem("peopleCount", String(peopleCount));
+        showToast(`${peopleCount}명으로 설정했어요.`);
         window.location.href = "STEP3_budget.html";
-        //db에 ${selectedCount} 값 post
+        // POST /api/recommendation 요청 필드: peopleCount
 
       });
 

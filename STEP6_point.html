@@ -631,7 +631,7 @@
 
         <form class="feature-form" id="feature-form">
           <section class="counter-group" aria-label="인원 특징">
-            <div class="counter-row" data-counter="bigEater">
+            <div class="counter-row" data-counter="bigEaterCount">
               <span class="counter-copy">
                 <strong>대식가 인원</strong>
                 <small>평소보다 많이 드시는 분이 계신가요?</small>
@@ -651,7 +651,7 @@
               </span>
             </div>
 
-            <div class="counter-row" data-counter="diet">
+            <div class="counter-row" data-counter="dietCount">
               <span class="counter-copy">
                 <strong>다이어트 인원</strong>
                 <small>식단 관리나 소식하시는 분이 계신가요?</small>
@@ -699,13 +699,13 @@
             </div>
           </section>
 
-          <label class="today-preference" for="preference-input">
+          <label class="today-preference" for="today-preference-input">
             <span class="section-title">오늘의 선호도</span>
             <span class="section-description">특별히 드시고 싶은 메뉴나 못 드시는 재료가 있나요?</span>
             <textarea
               class="preference-input"
-              id="preference-input"
-              name="preference"
+              id="today-preference-input"
+              name="todayPreference"
               placeholder="예: 오늘은 해산물이 당겨요, 견과류 알러지가 있어요"
             ></textarea>
           </label>
@@ -741,10 +741,10 @@
     </div>
 
     <script>
-      const counterValues = { bigEater: 0, diet: 0 };
+      const counterValues = { bigEaterCount: 0, dietCount: 0 };
       const spicyRange = document.querySelector("#spicy-range");
       const rangeProgress = document.querySelector("#range-progress");
-      const preferenceInput = document.querySelector("#preference-input");
+      const todayPreferenceInput = document.querySelector("#today-preference-input");
       const toast = document.querySelector("#toast");
       let toastTimer;
 
@@ -806,13 +806,29 @@
           return;
         }
 
-        const payload = {
-          bigEaterCount: counterValues.bigEater,
-          dietCount: counterValues.diet,
+        let excludedFoods = [];
+        try {
+          const storedExcludedFoods = JSON.parse(sessionStorage.getItem("excludedFoods") || "[]");
+          if (Array.isArray(storedExcludedFoods)) excludedFoods = storedExcludedFoods;
+        } catch (error) {
+          console.warn("Invalid excludedFoods session data", error);
+        }
+
+        const storedMenuId = Number(sessionStorage.getItem("menuId"));
+        const recommendationRequest = {
+          clientId: sessionStorage.getItem("clientId") || "",
+          menuId: Number.isInteger(storedMenuId) && storedMenuId > 0 ? storedMenuId : null,
+          peopleCount: Number(sessionStorage.getItem("peopleCount")) || 0,
+          budget: Number(sessionStorage.getItem("budget")) || 0,
+          meetingType: sessionStorage.getItem("meetingType") || "",
+          excludedFoods,
+          bigEaterCount: counterValues.bigEaterCount,
           spicyLevel,
-          preference: preferenceInput.value.trim(),
+          dietCount: counterValues.dietCount,
+          todayPreference: todayPreferenceInput.value.trim(),
         };
-        console.log("AI menu analysis payload", payload);
+        sessionStorage.setItem("recommendationRequest", JSON.stringify(recommendationRequest));
+        console.log("POST /api/recommendation request", recommendationRequest);
         showToast("입력 정보를 바탕으로 메뉴를 분석합니다.");
         window.location.href = "STEP7_analyze.html";
       });

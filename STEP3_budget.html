@@ -695,7 +695,7 @@
               </svg>
             </span>
             <span class="member-copy">
-              <strong>2명 기준</strong>
+              <strong id="people-count-basis">2명 기준</strong>
               <small>이전 단계에서 선택됨</small>
             </span>
             <button class="change-button" type="button">변경</button>
@@ -747,7 +747,7 @@
 
           <div class="member-summary">
             <span>인원 수</span>
-            <strong>2명</strong>
+            <strong id="people-count-summary">2명</strong>
           </div>
 
           <section class="quick-budget" aria-labelledby="quick-budget-title">
@@ -789,7 +789,9 @@
     </div>
 
     <script>
-      const memberCount = 2;
+      const peopleCount = Number(sessionStorage.getItem("peopleCount")) || 2;
+      const peopleCountBasis = document.querySelector("#people-count-basis");
+      const peopleCountSummary = document.querySelector("#people-count-summary");
       const totalBudget = document.querySelector("#total-budget");
       const budgetCalculation = document.querySelector("#budget-calculation");
       const budgetRange = document.querySelector("#budget-range");
@@ -799,6 +801,7 @@
       const toast = document.querySelector("#toast");
       const budgetSteps = [10000, 20000, 30000, 40000, 50000, 60000, 70000];
       let perPersonBudget = 30000;
+      let budget = perPersonBudget * peopleCount;
       let toastTimer;
 
       const formatWon = (value) => `${Math.round(value).toLocaleString("ko-KR")}원`;
@@ -810,11 +813,11 @@
         rangeProgress.style.width = `${progress}%`;
       }
 
-      function updateBudget(budget, options = {}) {
-        perPersonBudget = Math.max(1000, Math.round(budget / 1000) * 1000);
-        const total = perPersonBudget * memberCount;
-        totalBudget.textContent = `총 ${formatWon(total)}`;
-        budgetCalculation.textContent = `= 1인 예산 ${formatWon(perPersonBudget)} × ${memberCount}명`;
+      function updateBudget(perPersonAmount, options = {}) {
+        perPersonBudget = Math.max(1000, Math.round(perPersonAmount / 1000) * 1000);
+        budget = perPersonBudget * peopleCount;
+        totalBudget.textContent = `총 ${formatWon(budget)}`;
+        budgetCalculation.textContent = `= 1인 예산 ${formatWon(perPersonBudget)} × ${peopleCount}명`;
         const stepIndex = budgetSteps.indexOf(perPersonBudget);
         if (options.syncSlider !== false && stepIndex !== -1) {
           syncSlider(stepIndex);
@@ -860,6 +863,10 @@
         });
       });
 
+      peopleCountBasis.textContent = `${peopleCount}명 기준`;
+      peopleCountSummary.textContent = `${peopleCount}명`;
+      updateBudget(perPersonBudget);
+
       document.querySelector(".change-button").addEventListener("click", () => {
         showToast("인원 수 변경 화면으로 이동합니다.");
       });
@@ -883,9 +890,10 @@
           return;
         }
 
+        sessionStorage.setItem("budget", String(budget));
         showToast(`1인당 ${formatWon(perPersonBudget)}으로 설정했어요.`);
         window.location.href = "STEP4_vibe.html";
-        //${formatWon(perPersonBudget)} 총 금액 값 post 
+        // POST /api/recommendation 요청 필드: budget
         
       });
 

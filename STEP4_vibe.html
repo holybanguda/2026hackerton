@@ -473,7 +473,7 @@
         <p class="intro-description">선택한 분위기에 맞춰 장소를 추천해 드려요.</p>
 
         <form class="mood-form" id="mood-form">
-          <button class="mood-card" type="button" data-mood="친구 모임" aria-pressed="false">
+          <button class="mood-card" type="button" data-meeting-type="친구 모임" aria-pressed="false">
             <span class="mood-icon" aria-hidden="true">
               <svg viewBox="0 0 24 22" fill="none">
                 <circle cx="9" cy="7" r="3.3" stroke="currentColor" stroke-width="1.7" />
@@ -490,7 +490,7 @@
             </svg>
           </button>
 
-          <button class="mood-card" type="button" data-mood="데이트" aria-pressed="false">
+          <button class="mood-card" type="button" data-meeting-type="데이트" aria-pressed="false">
             <span class="mood-icon" aria-hidden="true">
               <svg viewBox="0 0 22 22" fill="none">
                 <path d="M11 18.5C7.5 15.4 3 12.4 3 7.8 3 5.2 4.8 3.5 7.3 3.5c1.6 0 3 1 3.7 2.1.7-1.1 2.1-2.1 3.7-2.1 2.5 0 4.3 1.7 4.3 4.3 0 4.6-4.5 7.6-8 10.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -505,7 +505,7 @@
             </svg>
           </button>
 
-          <button class="mood-card" type="button" data-mood="가족 식사" aria-pressed="false">
+          <button class="mood-card" type="button" data-meeting-type="가족 식사" aria-pressed="false">
             <span class="mood-icon" aria-hidden="true">
               <svg viewBox="0 0 22 22" fill="none">
                 <path d="m2.5 10 8.5-6.5 8.5 6.5v8a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -521,7 +521,7 @@
             </svg>
           </button>
 
-          <button class="mood-card" type="button" data-mood="직접 입력" aria-pressed="false">
+          <button class="mood-card" type="button" data-meeting-type="직접 입력" aria-pressed="false">
             <span class="mood-icon" aria-hidden="true">
               <svg viewBox="0 0 22 22" fill="none">
                 <path d="m4 15.8-.8 3 3-.8L17.7 6.5a2.1 2.1 0 0 0-3-3L4 15.8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -540,9 +540,9 @@
           <section class="recent-moods" aria-labelledby="recent-title">
             <h3 id="recent-title">최근 선택</h3>
             <div class="recent-buttons">
-              <button class="recent-button" type="button" data-mood="소개팅">소개팅</button>
-              <button class="recent-button" type="button" data-mood="회식">회식</button>
-              <button class="recent-button" type="button" data-mood="가족 행사">가족 행사</button>
+              <button class="recent-button" type="button" data-meeting-type="소개팅">소개팅</button>
+              <button class="recent-button" type="button" data-meeting-type="회식">회식</button>
+              <button class="recent-button" type="button" data-meeting-type="가족 행사">가족 행사</button>
             </div>
           </section>
         </form>
@@ -579,11 +579,11 @@
       const moodCards = [...document.querySelectorAll(".mood-card")];
       const recentButtons = [...document.querySelectorAll(".recent-button")];
       const toast = document.querySelector("#toast");
-      let selectedMood = "";
+      let meetingType = "";
       let toastTimer;
 
-      function selectMood(mood, source) {
-        selectedMood = mood;
+      function selectMeetingType(meetingTypeValue, source) {
+        meetingType = meetingTypeValue;
         moodCards.forEach((card) => card.setAttribute("aria-invalid", "false"));
         moodCards.forEach((card) => {
           const selected = card === source;
@@ -605,12 +605,12 @@
       }
 
       moodCards.forEach((card) => {
-        card.addEventListener("click", () => selectMood(card.dataset.mood, card));
+        card.addEventListener("click", () => selectMeetingType(card.dataset.meetingType, card));
       });
 
       recentButtons.forEach((button) => {
         button.setAttribute("aria-pressed", "false");
-        button.addEventListener("click", () => selectMood(button.dataset.mood, button));
+        button.addEventListener("click", () => selectMeetingType(button.dataset.meetingType, button));
       });
 
       document.querySelector(".back-button").addEventListener("click", () => {
@@ -618,18 +618,19 @@
       });
 
       document.querySelector("#next-button").addEventListener("click", () => {
-        if (!selectedMood) {
+        if (!meetingType) {
           showToast("분위기를 선택해 주세요.");
           moodCards.forEach((card) => card.setAttribute("aria-invalid", "true"));
           moodCards[0].focus();
           return;
         }
 
-        showToast(`${selectedMood} 분위기를 선택했어요.`);
+        sessionStorage.setItem("meetingType", meetingType);
+        showToast(`${meetingType} 분위기를 선택했어요.`);
         
         window.location.href = "STEP5_app.html";
 
-        //${selectedMood} 값 post
+        // POST /api/recommendation 요청 필드: meetingType
       });
 
     </script>
