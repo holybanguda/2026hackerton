@@ -51,6 +51,7 @@ public class RecommendationDto {
         private Integer dietCount;
         private String todayPreference;
         private Integer elapsedMinutes;
+        private Integer budgetDelta;
     }
 
     @Data
