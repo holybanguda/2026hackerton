@@ -838,19 +838,24 @@
         const stepIndex = Number(budgetRange.value);
         syncSlider(stepIndex);
         budgetInput.value = "";
+        budgetInput.setAttribute("aria-invalid", "false");
         updateBudget(budgetSteps[stepIndex], { syncSlider: false });
       });
 
       budgetInput.addEventListener("input", () => {
         const digits = budgetInput.value.replace(/\D/g, "").slice(0, 9);
         budgetInput.value = digits ? Number(digits).toLocaleString("ko-KR") : "";
-        if (digits && Number(digits) > 0) updateBudget(Number(digits), { syncSlider: true });
+        const amount = Number(digits);
+        const isValid = digits !== "" && amount >= 1000;
+        budgetInput.setAttribute("aria-invalid", String(digits !== "" && !isValid));
+        if (isValid) updateBudget(amount, { syncSlider: true });
       });
 
       quickButtons.forEach((button) => {
         button.setAttribute("aria-pressed", "false");
         button.addEventListener("click", () => {
           budgetInput.value = "";
+          budgetInput.setAttribute("aria-invalid", "false");
           updateBudget(Number(button.dataset.budget));
         });
       });
@@ -860,14 +865,24 @@
       });
 
       document.querySelector(".back-button").addEventListener("click", () => {
-        if (window.history.length > 1) {
-          window.history.back();
-          return;
-        }
-        showToast("이전 화면이 없습니다.");
+        window.location.href = "STEP2_personnel.html";
       });
 
       document.querySelector("#next-button").addEventListener("click", () => {
+        const directAmount = Number(budgetInput.value.replace(/\D/g, ""));
+        if (budgetInput.value && directAmount < 1000) {
+          budgetInput.setAttribute("aria-invalid", "true");
+          showToast("예산은 1,000원 이상 입력해 주세요.");
+          budgetInput.focus();
+          return;
+        }
+
+        if (!Number.isFinite(perPersonBudget) || perPersonBudget < 1000) {
+          showToast("1인당 예산을 선택해 주세요.");
+          budgetRange.focus();
+          return;
+        }
+
         showToast(`1인당 ${formatWon(perPersonBudget)}으로 설정했어요.`);
         window.location.href = "STEP4_vibe.html";
         //${formatWon(perPersonBudget)} 총 금액 값 post 

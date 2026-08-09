@@ -529,6 +529,12 @@
       function updateSummary(count) {
         selectedCount = count;
         summaryCount.textContent = `${count}명`;
+        memberInput.setAttribute("aria-invalid", "false");
+      }
+
+      function clearMemberSelection() {
+        selectedCount = null;
+        summaryCount.textContent = "선택 필요";
       }
 
       function selectQuickCount(selectedButton) {
@@ -561,22 +567,40 @@
 
       memberInput.addEventListener("input", () => {
         const value = Number(memberInput.value);
-        if (!memberInput.value) return;
-
         clearQuickSelection();
-        if (value >= 5) updateSummary(Math.min(value, 99));
+        const isValid = memberInput.value !== ""
+          && Number.isInteger(value)
+          && value >= 5
+          && value <= 99;
+
+        if (isValid) {
+          updateSummary(value);
+          return;
+        }
+
+        memberInput.setAttribute("aria-invalid", String(memberInput.value !== ""));
+        clearMemberSelection();
       });
 
       memberInput.addEventListener("blur", () => {
         if (!memberInput.value) return;
 
-        const normalized = Math.max(5, Math.min(99, Number(memberInput.value) || 5));
-        memberInput.value = normalized;
-        clearQuickSelection();
-        updateSummary(normalized);
+        const value = Number(memberInput.value);
+        if (!Number.isInteger(value) || value < 5 || value > 99) {
+          memberInput.setAttribute("aria-invalid", "true");
+          return;
+        }
+
+        updateSummary(value);
       });
 
       nextButton.addEventListener("click", () => {
+        if (!Number.isInteger(selectedCount) || selectedCount < 1 || selectedCount > 99) {
+          showToast("인원수를 선택하거나 5명 이상 입력해 주세요.");
+          memberInput.focus();
+          return;
+        }
+
         showToast(`${selectedCount}명으로 설정했어요.`);
         window.location.href = "STEP3_budget.html";
         //db에 ${selectedCount} 값 post
@@ -584,11 +608,7 @@
       });
 
       backButton.addEventListener("click", () => {
-        if (window.history.length > 1) {
-          window.history.back();
-          return;
-        }
-        //전 단계로 이동
+        showToast("현재 첫 단계입니다.");
       });
 
     </script>

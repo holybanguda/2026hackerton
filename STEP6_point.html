@@ -777,6 +777,7 @@
         const max = Number(spicyRange.max);
         const progress = ((value - min) / (max - min)) * 100;
         rangeProgress.style.width = `${progress}%`;
+        spicyRange.setAttribute("aria-invalid", "false");
         spicyRange.setAttribute("aria-valuetext", `${value}단계`);
         document.querySelectorAll(".range-numbers span").forEach((number) => {
           number.classList.toggle("is-current", Number(number.textContent) === value);
@@ -787,11 +788,7 @@
       updateSpicySlider();
 
       document.querySelector(".back-button").addEventListener("click", () => {
-        if (window.history.length > 1) {
-          window.history.back();
-          return;
-        }
-        showToast("이전 화면이 없습니다.");
+        window.location.href = "STEP5_app.html";
       });
 
       document.querySelector(".skip-button").addEventListener("click", () => {
@@ -799,10 +796,20 @@
       });
 
       document.querySelector("#analyze-button").addEventListener("click", () => {
+        const spicyLevel = Number(spicyRange.value);
+        const minSpicyLevel = Number(spicyRange.min);
+        const maxSpicyLevel = Number(spicyRange.max);
+        if (!Number.isInteger(spicyLevel) || spicyLevel < minSpicyLevel || spicyLevel > maxSpicyLevel) {
+          spicyRange.setAttribute("aria-invalid", "true");
+          showToast("매운 음식 선호도를 선택해 주세요.");
+          spicyRange.focus();
+          return;
+        }
+
         const payload = {
           bigEaterCount: counterValues.bigEater,
           dietCount: counterValues.diet,
-          spicyLevel: Number(spicyRange.value),
+          spicyLevel,
           preference: preferenceInput.value.trim(),
         };
         console.log("AI menu analysis payload", payload);

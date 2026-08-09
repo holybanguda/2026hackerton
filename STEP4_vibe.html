@@ -584,6 +584,7 @@
 
       function selectMood(mood, source) {
         selectedMood = mood;
+        moodCards.forEach((card) => card.setAttribute("aria-invalid", "false"));
         moodCards.forEach((card) => {
           const selected = card === source;
           card.classList.toggle("is-selected", selected);
@@ -613,15 +614,18 @@
       });
 
       document.querySelector(".back-button").addEventListener("click", () => {
-        if (window.history.length > 1) {
-          window.history.back();
-          return;
-        }
-        showToast("이전 화면이 없습니다.");
+        window.location.href = "STEP3_budget.html";
       });
 
       document.querySelector("#next-button").addEventListener("click", () => {
-        showToast(selectedMood ? `${selectedMood} 분위기를 선택했어요.` : "분위기를 선택해 주세요.");
+        if (!selectedMood) {
+          showToast("분위기를 선택해 주세요.");
+          moodCards.forEach((card) => card.setAttribute("aria-invalid", "true"));
+          moodCards[0].focus();
+          return;
+        }
+
+        showToast(`${selectedMood} 분위기를 선택했어요.`);
         
         window.location.href = "STEP5_app.html";
 
