@@ -578,6 +578,9 @@
 
       nextButton.addEventListener("click", () => {
         showToast(`${selectedCount}명으로 설정했어요.`);
+        window.location.href = "STEP3_budget.html";
+        //db에 ${selectedCount} 값 post
+
       });
 
       backButton.addEventListener("click", () => {
@@ -585,7 +588,7 @@
           window.history.back();
           return;
         }
-        showToast("이전 화면이 없습니다.");
+        //전 단계로 이동
       });
 
     </script>

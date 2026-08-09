@@ -622,6 +622,10 @@
 
       document.querySelector("#next-button").addEventListener("click", () => {
         showToast(selectedMood ? `${selectedMood} 분위기를 선택했어요.` : "분위기를 선택해 주세요.");
+        
+        window.location.href = "STEP5_app.html";
+
+        //${selectedMood} 값 post
       });
 
     </script>
