@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
   <head>
+    <script src="./api.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>추천 조건 입력</title>
@@ -666,9 +667,18 @@
           .filter((card) => card.classList.contains("is-selected"))
           .map((card) => card.dataset.food);
         const customFoods = foodInput.value.trim();
+
+        const allDislikedFoods = [...selectedFoods];
+        if (customFoods) allDislikedFoods.push(customFoods);
+
+        if (typeof saveStepData === 'function') {
+          saveStepData('dislikedFoods', allDislikedFoods);
+        }
+
         const conditionCount = selectedFoods.length + (customFoods ? 1 : 0);
         showToast(conditionCount ? `${conditionCount}개의 추천 조건을 저장했어요.` : "추천 조건 없이 완료했어요.");
         window.location.href = "STEP6_point.html";
+
         
       });
 

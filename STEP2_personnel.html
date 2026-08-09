@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
   <head>
+    <script src="./api.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>인원수 입력</title>
@@ -290,7 +291,7 @@
         line-height: 20px;
         letter-spacing: 0.01em;
       }
-
+      
       .summary-count {
         margin-right: -2px;
         font-size: 18px;
@@ -323,12 +324,12 @@
         cursor: pointer;
         transition: background 160ms ease, transform 160ms ease;
       }
-
+      
       .next-button:hover {
         background: #1e293b;
         transform: translateY(-1px);
       }
-
+      
       .next-button:active {
         transform: translateY(0);
       }
@@ -344,7 +345,7 @@
         border-top: 1px solid var(--line-soft);
         background: var(--white);
       }
-
+      
       .tab-button {
         height: 37px;
         display: flex;
@@ -364,21 +365,21 @@
         height: 19px;
         flex: 0 0 19px;
       }
-
+      
       .tab-button span {
         font-size: 10px;
         font-weight: 500;
         line-height: 14px;
       }
-
+      
       .tab-button.is-active {
         color: var(--ink);
       }
-
+      
       .tab-button.is-active span {
         font-weight: 700;
       }
-
+      
       .toast {
         position: absolute;
         z-index: 5;
@@ -397,17 +398,17 @@
         transform: translate(-50%, 8px);
         transition: opacity 180ms ease, transform 180ms ease;
       }
-
+      
       .toast.is-visible {
         opacity: 1;
         transform: translate(-50%, 0);
       }
-
+      
       @media (max-width: 365px) {
         .quick-members {
           grid-template-columns: repeat(4, 1fr);
         }
-
+        
         .direct-entry {
           padding-inline: 16px;
         }
@@ -439,18 +440,18 @@
         </button>
         <h1>인원수 입력</h1>
       </header>
-
+      
       <main>
         <section class="content" aria-labelledby="member-title">
           <div class="step-indicator" aria-label="8단계 중 2단계">
             <span></span><span></span><span></span><span></span>
             <span></span><span></span><span></span><span></span>
           </div>
-
+          
           <div class="intro">
             <h2 id="member-title">함께할 인원을<br />알려주세요</h2>
           </div>
-
+          
           <form class="member-form" id="member-form">
             <div class="quick-members" aria-label="인원수 빠른 선택">
               <button class="count-button" type="button" data-count="1" aria-pressed="false">1명</button>
@@ -458,7 +459,7 @@
               <button class="count-button" type="button" data-count="3" aria-pressed="false">3명</button>
               <button class="count-button" type="button" data-count="4" aria-pressed="false">4명</button>
             </div>
-
+            
             <label class="direct-entry" for="member-count">
               <span class="direct-copy">
                 <strong>직접 입력</strong>
@@ -466,15 +467,15 @@
               </span>
               <span class="input-wrap">
                 <input
-                  class="member-input"
-                  id="member-count"
-                  name="member-count"
-                  type="number"
-                  inputmode="numeric"
-                  min="5"
-                  max="99"
-                  placeholder="0"
-                  aria-describedby="direct-input-help"
+                class="member-input"
+                id="member-count"
+                name="member-count"
+                type="number"
+                inputmode="numeric"
+                min="5"
+                max="99"
+                placeholder="0"
+                aria-describedby="direct-input-help"
                 />
                 <span class="input-unit">명</span>
               </span>
@@ -482,20 +483,20 @@
             <span id="direct-input-help" hidden>5명부터 99명까지 입력할 수 있습니다.</span>
           </form>
         </section>
-
+        
         <div class="member-summary" aria-live="polite">
           <span class="summary-label">선택된 총 인원</span>
           <strong class="summary-count" id="summary-count">2명</strong>
         </div>
       </main>
-
+      
       <button class="next-button" id="next-button" type="button">
         <span>다음 단계로</span>
         <svg width="11" height="13" viewBox="0 0 11 13" fill="none" aria-hidden="true">
           <path d="m1.5 1.5 5 5-5 5M6 6.5H10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
-
+      
       <nav class="bottom-tabs" aria-label="하단 탐색">
         <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
           <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
@@ -512,10 +513,10 @@
           <span>히스토리</span>
         </button>
       </nav>
-
+      
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
-
+    
     <script>
       const countButtons = [...document.querySelectorAll(".count-button")];
       const memberInput = document.querySelector("#member-count");
@@ -525,7 +526,7 @@
       const toast = document.querySelector("#toast");
       let selectedCount = 2;
       let toastTimer;
-
+      
       function updateSummary(count) {
         selectedCount = count;
         summaryCount.textContent = `${count}명`;
@@ -540,14 +541,14 @@
         memberInput.value = "";
         updateSummary(Number(selectedButton.dataset.count));
       }
-
+      
       function clearQuickSelection() {
         countButtons.forEach((button) => {
           button.classList.remove("is-selected");
           button.setAttribute("aria-pressed", "false");
         });
       }
-
+      
       function showToast(message) {
         window.clearTimeout(toastTimer);
         toast.textContent = message;
@@ -558,15 +559,15 @@
       countButtons.forEach((button) => {
         button.addEventListener("click", () => selectQuickCount(button));
       });
-
+      
       memberInput.addEventListener("input", () => {
         const value = Number(memberInput.value);
         if (!memberInput.value) return;
-
+        
         clearQuickSelection();
         if (value >= 5) updateSummary(Math.min(value, 99));
       });
-
+      
       memberInput.addEventListener("blur", () => {
         if (!memberInput.value) return;
 
@@ -580,17 +581,18 @@
         showToast(`${selectedCount}명으로 설정했어요.`);
         window.location.href = "STEP3_budget.html";
         //db에 ${selectedCount} 값 post
-
+        saveStepData('peopleCount', selectedCount);
       });
 
       backButton.addEventListener("click", () => {
         if (window.history.length > 1) {
           window.history.back();
           return;
-        }
-        //전 단계로 이동
-      });
-
-    </script>
+          }
+          //전 단계로 이동
+        });
+        
+      </script>
   </body>
-</html>
+  </html>
+  
