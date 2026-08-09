@@ -668,7 +668,7 @@
         const customFoods = foodInput.value.trim();
         const conditionCount = selectedFoods.length + (customFoods ? 1 : 0);
         showToast(conditionCount ? `${conditionCount}개의 추천 조건을 저장했어요.` : "추천 조건 없이 완료했어요.");
-
+        window.location.href = "STEP6_point.html";
         
       });
 
