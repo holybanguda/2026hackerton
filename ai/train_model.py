@@ -43,9 +43,9 @@ if os.path.exists(v4_path):
                 })
 
 # (2) 19,495건 음식 영양성분 룩업 데이터 (food_lookup.json)
-food_lookup_path = os.path.join(base_dir, "food_lookup.json")
+food_lookup_path = os.path.join(workspace_dir, "json", "food_lookup.json")
 if os.path.exists(food_lookup_path):
-    print(f"[Info 2/2] Food Nutrition Lookup DB Loading: {food_lookup_path}")
+    print(f"[Info 2/3] Food Nutrition Lookup DB Loading: {food_lookup_path}")
     with open(food_lookup_path, "r", encoding="utf-8") as f:
         food_lookup = json.load(f)
         for fname, fmeta in food_lookup.items():
@@ -53,6 +53,39 @@ if os.path.exists(food_lookup_path):
                 "menu_name": fname,
                 "category": fmeta.get("category", "MAIN")
             })
+
+# (3) 4,424건 알레르기/원재료 룩업 데이터 (allergen_dict.json)
+allergen_path = os.path.join(workspace_dir, "json", "allergen_dict.json")
+if os.path.exists(allergen_path):
+    print(f"[Info 3/4] Allergen DB Loading: {allergen_path}")
+    with open(allergen_path, "r", encoding="utf-8") as f:
+        allergen_dict = json.load(f)
+        for fname, fmeta in allergen_dict.items():
+            cat = "DRINK" if any(kw in fname for kw in ['차', '주', '수', '즙', '유', '음료', '소주', '맥주', '콜라']) else "MAIN"
+            training_rows.append({
+                "menu_name": fname,
+                "category": cat
+            })
+
+# (4) 5개 실전 테스트 매장 HTML 추출 데이터 (test_restaurants_5.json)
+test5_path = os.path.join(workspace_dir, "json", "test_restaurants_5.json")
+if os.path.exists(test5_path):
+    print(f"[Info 4/4] 5 Real Test Restaurants Dataset Loading: {test5_path}")
+    with open(test5_path, "r", encoding="utf-8") as f:
+        test5_data = json.load(f)
+        for rest in test5_data.get("test_restaurants", []):
+            for menu in rest.get("menu_list", []):
+                mname = menu.get("menuName", "")
+                # 자동 카테고리 태깅
+                cat = "MAIN"
+                if any(kw in mname for kw in ['맥주', '소주', '하이볼', '콜라', '사이다', '음료']):
+                    cat = "DRINK"
+                elif any(kw in mname for kw in ['교자', '튀김', '계란찜', '황도', '먹태', '볶음밥', '꼬치']):
+                    cat = "SIDE"
+                training_rows.append({
+                    "menu_name": mname,
+                    "category": cat
+                })
 
 df_total = pd.DataFrame(training_rows).drop_duplicates(subset=["menu_name"])
 print(f"[Data Loaded] Total Unique Cleaned Samples: {len(df_total):,}")
@@ -69,13 +102,16 @@ print(f"\n[Dataset Split Ratio 7:3]")
 print(f"  * Train Set (70%): {len(X_train):,} items")
 print(f"  * Validation Set (30%): {len(X_val):,} items")
 
-# 4. Kiwi 형태소 + TF-IDF + MultinomialNB 파이프라인 학습 (Train 70%만 학습!)
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
+
+# 4. Kiwi 형태소 + TF-IDF + LogisticRegression 고도화 파이프라인 (Train 70% 학습)
 model_pipeline = Pipeline([
-    ('tfidf', TfidfVectorizer(tokenizer=kiwi_tokenizer, ngram_range=(1, 2))),
-    ('clf', MultinomialNB(alpha=0.1))
+    ('tfidf', TfidfVectorizer(tokenizer=kiwi_tokenizer, ngram_range=(1, 2), sublinear_tf=True, min_df=1)),
+    ('clf', LogisticRegression(C=5.0, max_iter=500, random_state=42))
 ])
 
-print("\n[Training] Training Pipeline on Train Set (70%)...")
+print("\n[Training] Training Advanced LogisticRegression Pipeline on Train Set (70%)...")
 model_pipeline.fit(X_train, y_train)
 
 # 5. 검증 데이터셋(Validation 30%) 성능 평가 (Zero-Data Leakage!)
