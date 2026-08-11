@@ -20,6 +20,14 @@ venv/
 .venv/
 env/
 
+# Node.js & Front-end Exclusions (⭐ 필수! node_modules & dist 차단)
+node_modules/
+**/node_modules/
+front/node_modules/
+dist/
+**/dist/
+front/dist/
+
 # IDE & Editor Settings
 .vscode/
 .idea/
@@ -28,3 +36,5 @@ env/
 # dataset
 dataset/
 .dataset/
+
+figma_files/

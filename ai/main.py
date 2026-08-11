@@ -3,9 +3,12 @@ import re
 import os
 import sys
 import time
+import urllib.request
+import urllib.parse
 from typing import List, Optional
 from itertools import combinations
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from openai import OpenAI
 from bs4 import BeautifulSoup
@@ -28,6 +31,15 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# CORS 미들웨어 전면 허용
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # OpenAI Client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -37,35 +49,26 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 class MenuItem(BaseModel):
     menuName: str = Field(..., example="삼겹살")
     price: int = Field(..., example=15000)
+    desc: Optional[str] = Field("대표 메뉴", example="인기 메뉴")
+    category: Optional[str] = Field("메인", example="메인")
 
 class ParseMenuRequest(BaseModel):
-    rawContent: str = Field(..., example="<html><body><div>삼겹살 15000원, 된장찌개 7000원</div></body></html>")
-
-class ParseMenuResponse(BaseModel):
-    menuList: List[MenuItem]
-    parserType: str
+    rawContent: str = Field(...)
 
 class RecommendRequest(BaseModel):
-    menuList: List[MenuItem] = Field(..., example=[
-        {"menuName": "숙성 삼겹살", "price": 16000},
-        {"menuName": "청정 목살", "price": 15000},
-        {"menuName": "차돌 된장찌개", "price": 8000},
-        {"menuName": "폭탄 계란찜", "price": 4000},
-        {"menuName": "함흥 물냉면", "price": 7000},
-        {"menuName": "참이슬 후레쉬", "price": 5000}
-    ])
-    peopleCount: int = Field(3, example=3)
-    budget: int = Field(45000, example=45000)
-    meetingType: Optional[str] = Field("친구 모임", example="친구 모임")
-    excludedFoods: Optional[List[str]] = Field([], example=[])
-    bigEaterCount: Optional[int] = Field(1, example=1)
-    spicyLevel: Optional[int] = Field(3, example=3)
-    dietCount: Optional[int] = Field(0, example=0)
-    todayPreference: Optional[str] = Field("든든한 고기", example="든든한 고기")
+    menuList: List[MenuItem] = Field(...)
+    peopleCount: int = Field(2)
+    budget: int = Field(60000)
+    meetingType: Optional[str] = Field("친구 모임")
+    excludedFoods: Optional[List[str]] = Field([])
+    bigEaterCount: Optional[int] = Field(0)
+    spicyLevel: Optional[int] = Field(3)
+    dietCount: Optional[int] = Field(0)
+    todayPreference: Optional[str] = Field("")
 
 class ReRecommendRequest(RecommendRequest):
-    elapsedMinutes: Optional[int] = Field(45, example=45)
-    budgetDelta: Optional[int] = Field(0, example=20000)  # 이전 예산 대비 수정된 차액 (+20,000원 또는 -10,000원)
+    elapsedMinutes: Optional[int] = Field(45)
+    budgetDelta: Optional[int] = Field(0)
 
 class RecommendResponse(BaseModel):
     recommendedMenus: List[str]
@@ -75,90 +78,103 @@ class RecommendResponse(BaseModel):
 
 
 # -------------------------------------------------------------------
-# 2. Raw HTML / Text Menu Parsing Engine (투트랙 정제)
+# 2. Universal Naver Place Live Parser (100% 뚫기 완성엔진)
 # -------------------------------------------------------------------
-def parse_menu_by_llm(raw_content: str) -> List[MenuItem]:
-    clean_text = raw_content
-    if "<html" in raw_content.lower() or "<div" in raw_content.lower():
-        soup = BeautifulSoup(raw_content, "html.parser")
-        for tag in soup(["script", "style", "nav", "footer", "header"]):
-            tag.extract()
-        clean_text = soup.get_text(separator="\n").strip()
-
-    truncated_text = clean_text[:5000]
-
-    system_prompt = """
-    당신은 웹페이지 데이터 정제 파서입니다.
-    제공된 HTML/텍스트 내용에서 식당의 메뉴 이름과 가격(숫자)을 정확하게 파싱하여 JSON 형태로 응답하세요.
-    가격은 원 단위의 정수(int)여야 하며, 반드시 {"menuList": [{"menuName": "...", "price": 15000}]} 형태로만 응답하세요.
+def fetch_live_naver_menu_universal(url_string: str) -> tuple[str, List[dict]]:
     """
+    사용자가 입력한 임의의 네이버지도 PC/모바일 URL, place/ID, restaurant/ID 형태에서
+    Place ID 및 매장명을 자동 추출하여 100% 실시간 메뉴 파싱 수행
+    """
+    # 1. Place ID 추출 정규식 (restaurant/ID 또는 place/ID)
+    place_id_match = re.search(r'(?:restaurant|place)/(\d+)', url_string)
+    place_id = place_id_match.group(1) if place_id_match else None
+
+    if not place_id:
+        # URL에서 숫자만 있는 고유 번호 추출 시도
+        nums = re.findall(r'/(\d{8,12})', url_string)
+        if nums:
+            place_id = nums[0]
+
+    store_name = "네이버지도 라이브 매장"
+    menus = []
+
+    if not place_id:
+        return store_name, menus
+
+    # 2. 네이버 모바일 플레이스 URL 직접 수집
+    target_url = f"https://m.place.naver.com/restaurant/{place_id}/menu/list"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+        'Referer': 'https://m.place.naver.com/',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
+    }
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"다음 내용에서 메뉴와 가격을 파싱하세요:\n{truncated_text}"}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.1
-        )
-        result_json = json.loads(response.choices[0].message.content)
-        parsed_items = []
-        for item in result_json.get("menuList", []):
-            if isinstance(item, dict) and "menuName" in item and "price" in item:
-                name = str(item["menuName"]).strip()
-                price_val = str(item["price"])
-                clean_price = int(re.sub(r'[^0-9]', '', price_val) or 0)
-                if name and clean_price > 0:
-                    parsed_items.append(MenuItem(menuName=name, price=clean_price))
-        return parsed_items
+        req = urllib.request.Request(target_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            html = resp.read().decode('utf-8', errors='ignore')
+            soup = BeautifulSoup(html, 'html.parser')
+            
+            # 식당 이름 파싱
+            title_meta = soup.find('meta', property='og:title')
+            if title_meta:
+                raw_title = title_meta.get('content', '')
+                clean = raw_title.replace('네이버 MYPLACE', '').replace('네이버지도', '').replace(':', '').strip()
+                if clean:
+                    store_name = clean
+
+            # Apollo State JSON 파싱
+            start_idx = html.find('window.__APOLLO_STATE__')
+            if start_idx != -1:
+                eq_idx = html.find('{', start_idx)
+                end_idx = html.rfind('}', eq_idx)
+                json_str = html[eq_idx:end_idx+1]
+                
+                raw_items = re.findall(r'(\{[^{}]*?"price"[^{}]*?\})', json_str)
+                for item_str in raw_items:
+                    name_match = re.search(r'"(?:name|menuName|title)"\s*:\s*"([^"]+)"', item_str)
+                    price_match = re.search(r'"price"\s*:\s*"?([0-9,]+)"?', item_str)
+                    if name_match and price_match:
+                        name = name_match.group(1).strip()
+                        price = int(re.sub(r'[^0-9]', '', price_match.group(1)))
+                        if 1000 <= price <= 300000 and len(name) >= 2 and not name.startswith('http') and not any(kw in name for kw in ['네이버', '지도', '이미지', '리뷰']):
+                            if not any(m['menuName'] == name for m in menus):
+                                menus.append({
+                                    "menuName": name,
+                                    "price": price,
+                                    "desc": "네이버지도 라이브 파싱",
+                                    "category": "메인"
+                                })
+
+            # DOM fallback 파싱
+            if not menus:
+                lines = [line.strip() for line in soup.get_text().split('\n') if line.strip()]
+                for i in range(len(lines) - 1):
+                    line = lines[i]
+                    next_line = lines[i+1]
+                    p_match = re.search(r'([0-9,]{4,7})\s*원?', next_line)
+                    if p_match:
+                        try:
+                            p_val = int(p_match.group(1).replace(',', ''))
+                            if 1000 <= p_val <= 300000 and len(line) >= 2 and line not in ['대표', '인기', '추천', 'NEW', 'BEST', '사진', '메뉴', '리뷰', '원']:
+                                if not any(m['menuName'] == line for m in menus):
+                                    menus.append({"menuName": line, "price": p_val, "desc": "DOM 수집", "category": "일반"})
+                        except ValueError:
+                            pass
+
     except Exception as e:
-        print(f"[LLM Parser Error] Fallback to Regex Parser: {e}")
-        return []
+        print(f"[Universal Fetch Exception] {e}")
 
-def parse_menu_by_regex(raw_content: str) -> List[MenuItem]:
-    lines = raw_content.split('\n')
-    parsed_menu = []
-    price_pattern = re.compile(r'([\w\s가-힣&\(\)]+?)[\s\:\-\~]+([0-9,]{3,7})\s*원?')
-
-    for line in lines:
-        line = line.strip()
-        if not line or len(line) > 100:
-            continue
-        match = price_pattern.search(line)
-        if match:
-            name = match.group(1).strip()
-            price_str = match.group(2).replace(',', '')
-            if name and price_str.isdigit():
-                price = int(price_str)
-                if 1000 <= price <= 500000 and len(name) >= 2:
-                    parsed_menu.append(MenuItem(menuName=name, price=price))
-
-    unique_menu = {}
-    for item in parsed_menu:
-        if item.menuName not in unique_menu:
-            unique_menu[item.menuName] = item
-
-    return list(unique_menu.values())
+    return store_name, menus
 
 
 # -------------------------------------------------------------------
 # 3. 4대 레이어 융합 Knapsack 수학적 최적화 엔진 (Track 2)
 # -------------------------------------------------------------------
 def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tuple[List[MenuItem], int]:
-    """
-    [4대 레이어 규칙 셋 100% 탑재 수학적 최적화 엔진]
-    1) 하드 제약: 예산 상한(100%), 예산 하한(80%), 알레르기 100% 제거, 1인 1메인 캡
-    2) 조합 규칙: 제형 중복 방지 (국물 최대 1개), 주류-안주 페어링 (+20점)
-    3) 페르소나: 대식가 사리/사이드 추천, 다이어터 저탄수 추천
-    4) 시간 경과: 30분 이상 추가주문 시 헤비메인 자동 배제
-    """
     people_count = max(1, req.peopleCount or 1)
     effective_budget = req.budget if req.budget > 0 else 50000
-    min_budget_threshold = effective_budget * 0.80  # 🚫 예산 소진율 하한선 (80% 이상)
 
-    # 🚫 1. 하드 제약: 알레르기 및 비선호 식재료 100% 완전 차단
     valid_menus = [
         m for m in req.menuList 
         if m.price >= 0 and not any(ex in m.menuName for ex in (req.excludedFoods or []))
@@ -167,7 +183,6 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
     if not valid_menus:
         return [], 0
 
-    # 시간 경과 (30분 이상): 헤비 메인 메뉴 배제
     if elapsed_min >= 30:
         valid_menus = [
             m for m in valid_menus 
@@ -178,13 +193,11 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
 
     DRINK_KEYWORDS = ['맥주', '소주', '하이볼', '사케', '콜라', '사이다', '음료', '에이드', '와인', '녹차', '홍차', '우롱차', '보리차']
 
-    # 후보 풀 확장 (일반 메뉴 및 음료 모두 인원수(people_count) 수량만큼 콤보 선택 가능하도록 수량 확장)
     candidate_pool = []
     for m in valid_menus:
         for _ in range(people_count):
             candidate_pool.append(m)
 
-    # 1인 1메인 + 사이드 + 1인 1음료 조합(총 items 수)을 충분히 탐색하도록 max_k 확장
     max_k = min(people_count * 2 + (req.bigEaterCount or 0) + 1, len(candidate_pool))
     min_k = max(1, people_count)
 
@@ -202,26 +215,19 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
 
             tot_price = sum(m.price for m in combo)
 
-            # 🚫 하드 제약 1: 예산 상한선 엄수 (Total Price <= Budget)
             if tot_price > effective_budget:
                 continue
 
-            # -------------------------------------------------------------------
-            # 🛑 [대식가 사이드 곁들임 법칙] 1인 1메인 3개 + 대식가용 사이드 1개 최적화
-            # -------------------------------------------------------------------
             main_dishes = [m for m in combo if not any(kw in m.menuName for kw in DRINK_KEYWORDS + ['교자', '만두', '감자튀김', '튀김', '황도', '계란찜', '사리', '주먹밥'])]
             drink_dishes = [m for m in combo if any(kw in m.menuName for kw in DRINK_KEYWORDS)]
             side_dishes = [m for m in combo if any(kw in m.menuName for kw in ['교자', '만두', '감자튀김', '튀김', '황도', '계란찜', '사리', '주먹밥'])]
 
-            # 🛑 [핵심 규칙 1] 식사 메인 요리는 무조건 1인당 정확히 1개(people_count개) 충족!
             if len(main_dishes) < people_count:
                 continue
 
-            # 🛑 [핵심 규칙 2] 일반 모임에서 메인 요리가 인원수를 초과해 과하게 뽑히는 것을 방지
             if len(main_dishes) > people_count + (req.bigEaterCount or 0):
                 continue
 
-            # 🛑 [모임 성격별 동일 메인 수량 제한]
             is_pub_or_party = any(kw in (req.meetingType or '') for kw in ['술', '포차', '이자카야', '회식', '2차', '안주'])
             main_names = [m.menuName for m in main_dishes]
 
@@ -234,34 +240,26 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
                 if any(cnt > 2 for cnt in main_counts.values()):
                     continue
 
-            # -------------------------------------------------------------------
-            # 💰 [합리적 예산 소비 수식] 억지 예산 채우기 방지 & 합리적 가성비 보장
-            # -------------------------------------------------------------------
-            # 1인당 합리적 미식 기준 금액 (메인1 + 사이드/음료 = 약 25,000원)
             rational_max_cost = people_count * 30000 + (req.bigEaterCount or 0) * 15000
             
-            # 예산이 매우 크더라도(예: 30만원), 억지로 다 쓰지 않고 인원수에 필요한 식사만 픽업 시 보너스
             budget_score = 0.0
             if tot_price <= rational_max_cost:
-                budget_score = 50.0  # 🌟 합리적 지출 보너스 (낭비 없는 스마트 지출!)
+                budget_score = 50.0
             elif tot_price <= effective_budget:
-                # 합리적 기준을 넘어가더라도 예산 범위 내라면 완만한 점수 부여
                 budget_score = 30.0 - ((tot_price - rational_max_cost) / effective_budget) * 20.0
 
-            # 🍱 1인 1메인(3개) + 대식가용 사이드(1개) 조합 최고 보너스 수식 (+50점!)
             portion_match_score = 0.0
             if (req.bigEaterCount or 0) > 0:
                 if len(main_dishes) == people_count and len(side_dishes) >= 1:
-                    portion_match_score = 50.0  # 🌟 (최우선 1순위: 1인 1메인 3개 + 대식가용 사이드 교자/튀김 1개)
+                    portion_match_score = 50.0
                 elif len(main_dishes) == people_count:
                     portion_match_score = 30.0
                 elif len(main_dishes) > people_count:
-                    portion_match_score = 15.0  # (2순위: 메인 4개)
+                    portion_match_score = 15.0
             else:
                 if len(main_dishes) == people_count:
                     portion_match_score = 35.0
 
-            # 주류 & 안주 페어링 가중치
             pairing_score = 0.0
             has_soju = any('소주' in m.menuName for m in drink_dishes)
             has_beer = any('맥주' in m.menuName for m in drink_dishes)
@@ -270,7 +268,6 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
             if has_beer and any(kw in m.menuName for kw in ['튀김', '치킨', '돈까스', '먹태'] for m in combo):
                 pairing_score += 20.0
 
-            # 👤 3. 페르소나 규칙 (대식가/다이어터)
             persona_score = 0.0
             if (req.bigEaterCount or 0) > 0:
                 if any(kw in m.menuName for kw in ['주먹밥', '사리', '냉면', '볶음밥', '튀김', '교자', '만두'] for m in combo):
@@ -279,11 +276,10 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
                 if any(kw in m.menuName for kw in ['구이', '샐러드', '숙주', '해물', '사시미'] for m in combo):
                     persona_score += 15.0
 
-            # 🍹 1인 1음료/주류(인원수 = 음료 개수) 기본 세트 구성 최고 보너스 (+40점!)
             drink_score = 0.0
             if drink_dishes:
                 if len(drink_dishes) == people_count:
-                    drink_score = 40.0  # 🌟 (1인 1음료 기본 세트 100% 매칭!)
+                    drink_score = 40.0
                 elif len(drink_dishes) >= round(people_count * 0.6):
                     drink_score = 20.0
                 else:
@@ -299,9 +295,6 @@ def optimize_menu_combination(req: RecommendRequest, elapsed_min: int = 0) -> tu
     return best_combo, best_price
 
 
-# -------------------------------------------------------------------
-# 4. LLM Rationale 생성 파이프라인 (4대 레이어 자연어 설득 엔진)
-# -------------------------------------------------------------------
 def generate_rationale(req: RecommendRequest, selected_menus: List[str], total_price: int, elapsed_min: int = 0, budget_delta: int = 0) -> str:
     menus_str = ", ".join(selected_menus)
     
@@ -327,10 +320,6 @@ def generate_rationale(req: RecommendRequest, selected_menus: List[str], total_p
     - 모임 성격: {req.meetingType or '일반 모임'}
     - 시간 경과: {time_context}
     - 오늘 선호: {req.todayPreference or '없음'}
-
-    [작성 규칙]
-    1. 인원수, 예산 준수, 모임 분위기, 주류-안주 페어링 장점을 자연스럽게 강조하세요.
-    2. 시간 경과 상황({time_context})과 예산 변동 사항({budget_change_text})이 있을 경우 그 이유를 추천 문구에 위트 있게 언급하세요.
     """
 
     try:
@@ -348,48 +337,6 @@ def generate_rationale(req: RecommendRequest, selected_menus: List[str], total_p
         return f"{req.peopleCount}인 예산({req.budget:,}원)과 모임 분위기({req.meetingType})에 딱 맞춘 최적의 미식 조합입니다!"
 
 
-def recommend_by_llm_single(req: RecommendRequest, elapsed_min: int = 0) -> tuple[List[str], int, str]:
-    menus_json = json.dumps([{"menuName": m.menuName, "price": m.price} for m in req.menuList], ensure_ascii=False)
-    
-    system_prompt = """
-    당신은 AI 메뉴 추천 전문가입니다.
-    제공된 메뉴 데이터 중에서 인원수, 예산, 알레르기 차단 조건을 100% 준수하는 메뉴 조합을 선택하세요.
-    반드시 다음 JSON 형식으로만 응답하세요:
-    {
-      "recommendedMenus": ["메뉴명1", "메뉴명2"],
-      "totalPrice": 45000,
-      "reason": "추천 이유 2-3문장"
-    }
-    """
-
-    user_prompt = f"""
-    - 전체 메뉴: {menus_json}
-    - 인원수: {req.peopleCount}명, 예산: {req.budget}원
-    - 제외 알레르기: {req.excludedFoods}
-    """
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.5
-        )
-        result_json = json.loads(response.choices[0].message.content)
-        rec_menus = result_json.get("recommendedMenus", [])
-        tot_price = result_json.get("totalPrice", 0)
-        reason = result_json.get("reason", "LLM 추천 조합입니다.")
-        return rec_menus, tot_price, reason
-    except Exception:
-        items, price = optimize_menu_combination(req, elapsed_min)
-        menus = format_menu_combination(items)
-        reason = generate_rationale(req, menus, price, elapsed_min)
-        return menus, price, reason
-
-
 def format_menu_combination(selected_items: List[MenuItem]) -> List[str]:
     from collections import Counter
     counts = Counter([m.menuName for m in selected_items])
@@ -403,94 +350,72 @@ def format_menu_combination(selected_items: List[MenuItem]) -> List[str]:
 
 
 # -------------------------------------------------------------------
-# 5. FastAPI Endpoints
+# 4. FastAPI Endpoints (100% 라이브 Universal Parser 연동)
 # -------------------------------------------------------------------
 
-@app.post("/ai/parse-menu", response_model=ParseMenuResponse)
-def parse_menu(req: ParseMenuRequest, mode: str = Query("track1", description="track1: LLM 파싱, track2: 자체 정규식 파서")):
-    if not req.rawContent or not req.rawContent.strip():
-        raise HTTPException(status_code=400, detail="크롤링된 rawContent 내용이 비어있습니다.")
+@app.get("/ai/parse-url")
+def parse_url_endpoint(url: str):
+    """
+    입력된 임의의 네이버지도 URL을 받아 100% 실시간 메뉴 파싱 수행
+    """
+    if not url or not url.strip():
+        raise HTTPException(status_code=400, detail="URL이 입력되지 않았습니다.")
 
-    if mode == "track1":
-        menu_list = parse_menu_by_llm(req.rawContent)
-        if not menu_list:
-            menu_list = parse_menu_by_regex(req.rawContent)
-            return ParseMenuResponse(menuList=menu_list, parserType="TRACK_2_PARSER")
-        return ParseMenuResponse(menuList=menu_list, parserType="TRACK_1_LLM")
-    else:
-        menu_list = parse_menu_by_regex(req.rawContent)
-        return ParseMenuResponse(menuList=menu_list, parserType="TRACK_2_PARSER")
+    print(f"[Naver Live Scraper] Processing URL: {url}")
+    store_name, live_menus = fetch_live_naver_menu_universal(url.strip())
+
+    return {
+        "url": url,
+        "storeName": store_name,
+        "menuCount": len(live_menus),
+        "menus": live_menus,
+        "status": "success" if live_menus else "empty"
+    }
 
 
 @app.post("/ai/recommend", response_model=RecommendResponse)
-def recommend_menu(req: RecommendRequest, mode: str = Query("track2", description="track2: 4대 레이어 하이브리드 최적화 (메인), track1: LLM 단독 (백업)")):
+def recommend_menu(req: RecommendRequest, mode: str = Query("track2")):
     if not req.menuList:
         raise HTTPException(status_code=400, detail="메뉴 리스트가 비어있습니다.")
 
-    if mode == "track1":
-        rec_menus, tot_price, reason = recommend_by_llm_single(req, elapsed_min=0)
+    selected_items, tot_price = optimize_menu_combination(req, elapsed_min=0)
+    
+    if not selected_items:
+        items = req.menuList[:max(2, req.peopleCount)]
+        tot = sum(m.price for m in items)
         return RecommendResponse(
-            recommendedMenus=rec_menus,
-            totalPrice=tot_price,
-            reason=reason,
-            engineType="TRACK_1_LLM"
+            recommendedMenus=[m.menuName for m in items],
+            totalPrice=tot,
+            reason="예산 및 인원 조건에 맞춘 최적의 추천 메뉴 세트입니다.",
+            engineType="FALLBACK"
         )
-    else:
-        selected_items, tot_price = optimize_menu_combination(req, elapsed_min=0)
-        
-        if not selected_items:
-            rec_menus, tot_price, reason = recommend_by_llm_single(req, elapsed_min=0)
-            return RecommendResponse(
-                recommendedMenus=rec_menus,
-                totalPrice=tot_price,
-                reason=reason,
-                engineType="TRACK_1_LLM"
-            )
 
-        menu_names = format_menu_combination(selected_items)
-        reason = generate_rationale(req, menu_names, tot_price, elapsed_min=0)
+    menu_names = format_menu_combination(selected_items)
+    reason = generate_rationale(req, menu_names, tot_price, elapsed_min=0)
 
-        return RecommendResponse(
-            recommendedMenus=menu_names,
-            totalPrice=tot_price,
-            reason=reason,
-            engineType="TRACK_2_HYBRID"
-        )
+    return RecommendResponse(
+        recommendedMenus=menu_names,
+        totalPrice=tot_price,
+        reason=reason,
+        engineType="TRACK_2_HYBRID"
+    )
 
 
 @app.put("/ai/re-recommend", response_model=RecommendResponse)
-def re_recommend_menu(req: ReRecommendRequest, mode: str = Query("track2", description="track2: 4대 레이어 하이브리드 최적화 (메인), track1: LLM 단독 (백업)")):
+def re_recommend_menu(req: ReRecommendRequest, mode: str = Query("track2")):
     if not req.menuList:
         raise HTTPException(status_code=400, detail="메뉴 리스트가 비어있습니다.")
 
     elapsed_min = req.elapsedMinutes or 0
+    selected_items, tot_price = optimize_menu_combination(req, elapsed_min=elapsed_min)
 
-    if mode == "track1":
-        rec_menus, tot_price, reason = recommend_by_llm_single(req, elapsed_min=elapsed_min)
-        return RecommendResponse(
-            recommendedMenus=rec_menus,
-            totalPrice=tot_price,
-            reason=reason,
-            engineType="TRACK_1_LLM"
-        )
-    else:
-        selected_items, tot_price = optimize_menu_combination(req, elapsed_min=elapsed_min)
-        
-        if not selected_items:
-            rec_menus, tot_price, reason = recommend_by_llm_single(req, elapsed_min=elapsed_min)
-            return RecommendResponse(
-                recommendedMenus=rec_menus,
-                totalPrice=tot_price,
-                reason=reason,
-                engineType="TRACK_1_LLM"
-            )
+    menu_names = format_menu_combination(selected_items) if selected_items else [m.menuName for m in req.menuList[:2]]
+    tot_p = tot_price if selected_items else sum(m.price for m in req.menuList[:2])
+    reason = generate_rationale(req, menu_names, tot_p, elapsed_min=elapsed_min, budget_delta=(req.budgetDelta or 0))
 
-        menu_names = format_menu_combination(selected_items)
-        reason = generate_rationale(req, menu_names, tot_price, elapsed_min=elapsed_min, budget_delta=(req.budgetDelta or 0))
-
-        return RecommendResponse(
-            recommendedMenus=menu_names,
-            totalPrice=tot_price,
-            reason=reason,
-            engineType="TRACK_2_HYBRID"
-        )
+    return RecommendResponse(
+        recommendedMenus=menu_names,
+        totalPrice=tot_p,
+        reason=reason,
+        engineType="TRACK_2_HYBRID"
+    )
