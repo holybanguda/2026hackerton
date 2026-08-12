@@ -34,7 +34,7 @@
         min-height: 100dvh;
         display: grid;
         place-items: start center;
-        background: #eef1f4;
+        background: var(--white);
         color: var(--ink);
         font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
           "Segoe UI", sans-serif;
@@ -72,8 +72,8 @@
 
       .status-time {
         position: absolute;
-        top: 7px;
-        left: 22px;
+        top: 13px;
+        left: 20px;
         width: 58px;
         margin: 0;
         font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -125,11 +125,12 @@
       }
 
       .back-button {
+        position: relative;
         width: 32px;
         height: 32px;
         display: grid;
         flex: 0 0 auto;
-        place-items: center;
+        place-items: initial;
         padding: 0;
         border: 0;
         border-radius: 50%;
@@ -138,8 +139,11 @@
       }
 
       .back-button img {
-        width: 11px;
-        height: 17.6px;
+        position: absolute;
+        top: 7.6px;
+        left: 14.5px;
+        width: 8.802px;
+        height: 15.405px;
         display: block;
       }
 
@@ -150,6 +154,7 @@
         font-weight: 700;
         line-height: 28px;
         letter-spacing: 0.18px;
+        transform: translateY(-1px);
       }
 
       main {
@@ -183,7 +188,7 @@
 
       .intro-title {
         position: absolute;
-        top: 40px;
+        top: 39px;
         left: 30px;
         margin: 0;
         color: var(--ink);
@@ -195,7 +200,7 @@
 
       .intro-description {
         position: absolute;
-        top: 78px;
+        top: 77px;
         left: 30px;
         width: 342px;
         margin: 0;
@@ -273,6 +278,7 @@
       .food-copy {
         min-width: 0;
         margin-left: 16px;
+        transform: translateY(-2px);
       }
 
       .food-title,
@@ -309,7 +315,7 @@
 
       .checkmark {
         position: absolute;
-        top: 27px;
+        top: 28px;
         right: 17px;
         width: 24px;
         height: 24px;
@@ -350,6 +356,7 @@
         font-weight: 700;
         line-height: 20px;
         letter-spacing: 0.14px;
+        transform: translateY(-1px);
       }
 
       .input-wrap {
@@ -400,11 +407,12 @@
         font-weight: 400;
         line-height: 16px;
         letter-spacing: 0.12px;
+        transform: translateY(-1px);
       }
 
       .privacy-note {
         position: absolute;
-        top: 642px;
+        top: 642.5px;
         left: 30px;
         width: 342px;
         height: 68px;
@@ -429,18 +437,29 @@
         font-weight: 400;
         line-height: 18px;
         letter-spacing: 0.12px;
+        transform: translateY(-1px);
       }
 
       .complete-button {
         position: absolute;
-        width: 1px;
-        height: 1px;
+        top: 750px;
+        left: 30px;
+        width: 342px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         padding: 0;
         border: 0;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        white-space: nowrap;
+        border-radius: 12px;
+        background: var(--accent);
+        color: var(--white);
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 24px;
+        letter-spacing: 0.16px;
+        cursor: pointer;
       }
 
       .complete-button img {
@@ -482,15 +501,24 @@
       }
 
       .tab-button img {
-        width: 20px;
-        height: 19px;
         object-fit: contain;
+      }
+
+      .tab-button[data-tab="홈"] img {
+        width: 19px;
+        height: 17.781px;
+      }
+
+      .tab-button[data-tab="히스토리"] img {
+        width: 18px;
+        height: 18px;
       }
 
       .tab-button span {
         font-size: 10px;
         font-weight: 500;
         line-height: 15px;
+        transform: translateY(-2px);
       }
 
       .tab-button.is-active {
@@ -544,7 +572,8 @@
         .intro-description,
         .food-selection,
         .manual-input,
-        .privacy-note {
+        .privacy-note,
+        .complete-button {
           width: calc(100% - 60px);
         }
 
@@ -761,7 +790,7 @@
       });
 
       document.querySelectorAll(".tab-button").forEach((button) => {
-        button.addEventListener("click", () => showToast(`${button.dataset.tab} 메뉴는 준비 중이에요.`));
+        
       });
 
       restoreExcludedFoods();
