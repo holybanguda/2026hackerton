@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script src="./api.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>예산 입력</title>
+    <style>
+      :root {
+        --ink: #0f172b;
+        --accent: #ff6041;
+        --muted: #7f7a76;
+        --faint: #b2afac;
+        --tab-muted: #afa8a8;
+        --line: #dedede;
+        --field: #f6f4f5;
+        --basis: #fff5ec;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: start center;
+        background: #eef2f7;
+        color: var(--ink);
+        font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .app {
+        position: relative;
+        width: min(100%, 402px);
+        min-height: 874px;
+        overflow: hidden;
+        background: var(--white);
+      }
+
+      .status-bar {
+        position: absolute;
+        z-index: 5;
+        inset: 0 0 auto;
+        height: 46px;
+        background: var(--white);
+        color: #000000;
+      }
+
+      .status-time {
+        position: absolute;
+        top: 7px;
+        left: 22px;
+        width: 58px;
+        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: center;
+        letter-spacing: -0.24px;
+      }
+
+      .status-icon {
+        position: absolute;
+        display: block;
+      }
+
+      .status-cellular {
+        top: 18px;
+        right: 68px;
+        width: 18px;
+        height: 12px;
+      }
+
+      .status-wifi {
+        top: 18px;
+        right: 47px;
+        width: 17px;
+        height: 12px;
+      }
+
+      .status-battery {
+        top: 18px;
+        right: 15px;
+        width: 26px;
+        height: 12px;
+      }
+
+      .header {
+        position: absolute;
+        z-index: 4;
+        inset: 46px 0 auto;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--white);
+      }
+
+      .back-button {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .back-button:hover,
+      .back-button:focus-visible {
+        background: var(--field);
+      }
+
+      .back-button img {
+        width: 9px;
+        height: 16px;
+        transform: translateX(3px);
+      }
+
+      .header h1 {
+        margin: 0 0 0 12px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.01em;
+      }
+
+      main {
+        position: absolute;
+        top: 106px;
+        left: 6px;
+        right: 6px;
+        height: 646px;
+      }
+
+      .step-indicator {
+        position: absolute;
+        top: 16px;
+        left: 24px;
+        right: 24px;
+        height: 4px;
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .step-indicator span {
+        min-width: 0;
+        border-radius: 99px;
+        background: var(--field);
+      }
+
+      .step-indicator span:nth-child(-n + 3) {
+        background: var(--accent);
+      }
+
+      .intro-title {
+        position: absolute;
+        top: 36px;
+        left: 24px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 25px;
+        letter-spacing: 0.01em;
+      }
+
+      .intro-description {
+        position: absolute;
+        top: 95px;
+        left: 24px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .budget-form {
+        position: absolute;
+        top: 134px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 588px;
+      }
+
+      .slider-group {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 73px;
+      }
+
+      .range-limits {
+        position: absolute;
+        top: 0;
+        left: 8px;
+        right: 8px;
+        height: 16px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        letter-spacing: 0.01em;
+      }
+
+      .range-limits span {
+        position: absolute;
+        top: 0;
+        white-space: nowrap;
+      }
+
+      .range-limits span:first-child {
+        left: 10px;
+        transform: translateX(-50%);
+      }
+
+      .range-limits span:last-child {
+        right: 10px;
+        transform: translateX(50%);
+      }
+
+      .range-track,
+      .range-progress {
+        position: absolute;
+        height: 4px;
+        border-radius: 999px;
+      }
+
+      .range-track {
+        top: 37px;
+        left: 8px;
+        width: calc(100% - 16px);
+        background: var(--field);
+      }
+
+      .range-progress {
+        inset: 0 auto 0 0;
+        width: 33.3333%;
+        background: var(--accent);
+      }
+
+      .budget-range {
+        position: absolute;
+        z-index: 2;
+        top: 27px;
+        left: 8px;
+        width: calc(100% - 16px);
+        height: 24px;
+        margin: 0;
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .budget-range::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .budget-range::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+        margin-top: -8px;
+        appearance: none;
+        -webkit-appearance: none;
+        border: 2px solid var(--accent);
+        border-radius: 50%;
+        background: var(--white);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .budget-range::-moz-range-track {
+        height: 4px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .budget-range::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--accent);
+        border-radius: 50%;
+        background: var(--white);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .range-ticks {
+        position: absolute;
+        top: 57px;
+        left: 18px;
+        right: 18px;
+        height: 16px;
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        letter-spacing: 0.01em;
+      }
+
+      .range-ticks span {
+        position: absolute;
+        top: 0;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+
+      .range-ticks span:nth-child(1) { left: 16.6667%; }
+      .range-ticks span:nth-child(2) { left: 33.3333%; }
+      .range-ticks span:nth-child(3) { left: 50%; }
+      .range-ticks span:nth-child(4) { left: 66.6667%; }
+      .range-ticks span:nth-child(5) { left: 83.3333%; }
+
+      .direct-input-card {
+        position: absolute;
+        top: 99px;
+        left: 0;
+        width: 100%;
+        height: 72px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--white);
+      }
+
+      .direct-copy {
+        position: absolute;
+        top: 17px;
+        left: 20px;
+        height: 36px;
+      }
+
+      .direct-copy strong,
+      .direct-copy small {
+        display: block;
+        letter-spacing: 0.01em;
+      }
+
+      .direct-copy strong {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+      }
+
+      .direct-copy small {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+      }
+
+      .money-input-wrap {
+        position: absolute;
+        top: 16px;
+        right: 22px;
+        width: 116px;
+        height: 38px;
+      }
+
+      .money-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 96px;
+        height: 38px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--field);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 16px;
+        text-align: right;
+        letter-spacing: 0.01em;
+      }
+
+      .money-input::placeholder {
+        color: var(--muted);
+        opacity: 1;
+      }
+
+      .money-unit {
+        position: absolute;
+        top: 9px;
+        left: 104px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+      }
+
+      .budget-basis {
+        position: absolute;
+        top: 201px;
+        left: 14px;
+        width: calc(100% - 28px);
+        height: 130px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: var(--basis);
+      }
+
+      .basis-label {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .total-budget {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 32px;
+        letter-spacing: 0.01em;
+      }
+
+      .budget-calculation {
+        margin: 0;
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.01em;
+      }
+
+      .quick-budget {
+        position: absolute;
+        top: 364px;
+        left: 0;
+        width: 100%;
+        height: 70px;
+      }
+
+      .quick-budget h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .quick-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        margin-left: -4px;
+      }
+
+      .quick-button {
+        height: 38px;
+        padding: 0 15px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--white);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: border-color 160ms ease, transform 160ms ease;
+      }
+
+      .quick-button:hover {
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .quick-button.is-selected {
+        border-color: var(--line);
+        background: var(--white);
+        color: var(--ink);
+      }
+
+      .bottom-actions {
+        position: absolute;
+        z-index: 3;
+        top: 708px;
+        left: 30px;
+        right: 30px;
+        height: 52px;
+      }
+
+      .next-button {
+        width: 100%;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--accent);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
+        color: var(--white);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: background 160ms ease, transform 160ms ease;
+      }
+
+      .next-button:hover {
+        background: #f25437;
+        transform: translateY(-1px);
+      }
+
+      .next-button img {
+        width: 11px;
+        height: 10px;
+      }
+
+      .bottom-tabs {
+        position: absolute;
+        z-index: 4;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        height: 63px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 8px;
+        border-radius: 154px;
+        background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
+      }
+
+      .tab-button {
+        height: 47px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 0;
+        border: 0;
+        border-radius: 56px;
+        background: transparent;
+        color: var(--tab-muted);
+        cursor: pointer;
+      }
+
+      .tab-button img {
+        display: block;
+        flex: 0 0 auto;
+      }
+
+      .tab-button[data-tab="홈"] img {
+        width: 19px;
+        height: 18px;
+      }
+
+      .tab-button[data-tab="히스토리"] img {
+        width: 18px;
+        height: 18px;
+      }
+
+      .tab-button span {
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 15px;
+      }
+
+      .tab-button.is-active {
+        background: var(--accent);
+        color: var(--white);
+      }
+
+      .tab-button.is-active span {
+        font-weight: 700;
+      }
+
+      .toast {
+        position: absolute;
+        z-index: 6;
+        left: 50%;
+        bottom: 82px;
+        max-width: calc(100% - 40px);
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--white);
+        font-size: 13px;
+        line-height: 18px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .back-button:focus-visible,
+      .budget-range:focus-visible,
+      .money-input:focus-visible,
+      .quick-button:focus-visible,
+      .next-button:focus-visible,
+      .tab-button:focus-visible {
+        outline: 3px solid rgba(255, 96, 65, 0.24);
+        outline-offset: 2px;
+      }
+
+      @media (min-height: 874px) {
+        .app { height: 874px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="status-bar" aria-hidden="true">
+        <span class="status-time">9:41</span>
+        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
+        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
+        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
+      </div>
+
+      <header class="header">
+        <button class="back-button" type="button" aria-label="이전 화면으로">
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
+        </button>
+        <h1>예산 입력</h1>
+      </header>
+
+      <main>
+        <div class="step-indicator" aria-label="8단계 중 3단계">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+
+        <h2 class="intro-title">1인당 예산을<br />알려주세요</h2>
+        <p class="intro-description">선택한 예산에 맞춰 장소를 추천해 드려요.</p>
+
+        <form class="budget-form" id="budget-form">
+          <span id="people-count-basis" hidden>2명 기준</span>
+          <span id="people-count-summary" hidden>2명</span>
+          <button class="change-button" type="button" hidden>변경</button>
+
+          <section class="slider-group" aria-label="1인당 예산 슬라이더">
+            <div class="range-limits" aria-hidden="true">
+              <span>1만원</span>
+              <span>7만원</span>
+            </div>
+            <div class="range-ticks" aria-hidden="true">
+              <span>2만</span><span>3만</span><span>4만</span><span>5만</span><span>6만</span>
+            </div>
+            <div class="range-track" aria-hidden="true">
+              <span class="range-progress" id="range-progress"></span>
+            </div>
+            <input
+              class="budget-range"
+              id="budget-range"
+              type="range"
+              min="0"
+              max="6"
+              step="1"
+              value="2"
+              aria-label="1인당 예산"
+              aria-valuetext="30,000원"
+            />
+          </section>
+
+          <label class="direct-input-card" for="budget-input">
+            <span class="direct-copy">
+              <strong>직접 입력</strong>
+              <small>슬라이더 범위 밖 금액</small>
+            </span>
+            <span class="money-input-wrap">
+              <input
+                class="money-input"
+                id="budget-input"
+                type="text"
+                inputmode="numeric"
+                placeholder="금액 입력"
+                autocomplete="off"
+              />
+              <span class="money-unit">원</span>
+            </span>
+          </label>
+
+          <section class="budget-basis" aria-live="polite">
+            <p class="basis-label">예산 기준 · 1인당</p>
+            <strong class="total-budget" id="total-budget">총 60,000원</strong>
+            <p class="budget-calculation" id="budget-calculation">= 1인 예산 30,000원 × 2명</p>
+          </section>
+
+          <section class="quick-budget" aria-labelledby="quick-budget-title">
+            <h3 id="quick-budget-title">자주 선택하는 예산</h3>
+            <div class="quick-buttons">
+              <button class="quick-button" type="button" data-budget="20000">2만원</button>
+              <button class="quick-button" type="button" data-budget="30000">3만원</button>
+              <button class="quick-button" type="button" data-budget="50000">5만원</button>
+            </div>
+          </section>
+        </form>
+      </main>
+
+      <div class="bottom-actions">
+        <button class="next-button" id="next-button" type="button">
+          <span>다음 단계로</span>
+          <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
+
+      <nav class="bottom-tabs" aria-label="하단 탐색">
+        <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
+          <span>홈</span>
+        </button>
+        <button class="tab-button" type="button" data-tab="히스토리">
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
+          <span>히스토리</span>
+        </button>
+      </nav>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const peopleCount = Number(sessionStorage.getItem("peopleCount")) || 2;
+      const peopleCountBasis = document.querySelector("#people-count-basis");
+      const peopleCountSummary = document.querySelector("#people-count-summary");
+      const totalBudget = document.querySelector("#total-budget");
+      const budgetCalculation = document.querySelector("#budget-calculation");
+      const budgetRange = document.querySelector("#budget-range");
+      const rangeProgress = document.querySelector("#range-progress");
+      const budgetInput = document.querySelector("#budget-input");
+      const quickButtons = [...document.querySelectorAll(".quick-button")];
+      const toast = document.querySelector("#toast");
+      const budgetSteps = [10000, 20000, 30000, 40000, 50000, 60000, 70000];
+      let perPersonBudget = 30000;
+      let budget = perPersonBudget * peopleCount;
+      let toastTimer;
+
+      const formatWon = (value) => `${Math.round(value).toLocaleString("ko-KR")}원`;
+
+      function syncSlider(stepIndex) {
+        const progress = (stepIndex / (budgetSteps.length - 1)) * 100;
+        budgetRange.value = stepIndex;
+        budgetRange.setAttribute("aria-valuetext", formatWon(budgetSteps[stepIndex]));
+        rangeProgress.style.width = `${progress}%`;
+      }
+
+      function updateBudget(perPersonAmount, options = {}) {
+        perPersonBudget = Math.max(1000, Math.round(perPersonAmount / 1000) * 1000);
+        budget = perPersonBudget * peopleCount;
+        totalBudget.textContent = `총 ${formatWon(budget)}`;
+        budgetCalculation.textContent = `= 1인 예산 ${formatWon(perPersonBudget)} × ${peopleCount}명`;
+        const stepIndex = budgetSteps.indexOf(perPersonBudget);
+        if (options.syncSlider !== false && stepIndex !== -1) {
+          syncSlider(stepIndex);
+        }
+
+        quickButtons.forEach((button) => {
+          const selected = Number(button.dataset.budget) === perPersonBudget;
+          button.classList.toggle("is-selected", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+      }
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      }
+
+      budgetRange.addEventListener("input", () => {
+        const stepIndex = Number(budgetRange.value);
+        syncSlider(stepIndex);
+        budgetInput.value = "";
+        budgetInput.setAttribute("aria-invalid", "false");
+        updateBudget(budgetSteps[stepIndex], { syncSlider: false });
+      });
+
+      budgetInput.addEventListener("input", () => {
+        const digits = budgetInput.value.replace(/\D/g, "").slice(0, 9);
+        budgetInput.value = digits ? Number(digits).toLocaleString("ko-KR") : "";
+        const amount = Number(digits);
+        const isValid = digits !== "" && amount >= 1000;
+        budgetInput.setAttribute("aria-invalid", String(digits !== "" && !isValid));
+        if (isValid) updateBudget(amount, { syncSlider: true });
+      });
+
+      quickButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", "false");
+        button.addEventListener("click", () => {
+          budgetInput.value = "";
+          budgetInput.setAttribute("aria-invalid", "false");
+          updateBudget(Number(button.dataset.budget));
+        });
+      });
+
+      peopleCountBasis.textContent = `${peopleCount}명 기준`;
+      peopleCountSummary.textContent = `${peopleCount}명`;
+      updateBudget(perPersonBudget);
+
+      document.querySelector(".change-button").addEventListener("click", () => {
+        showToast("인원 수 변경 화면으로 이동합니다.");
+      });
+
+      document.querySelector(".back-button").addEventListener("click", () => {
+        window.location.href = "STEP2_personnel.html";
+      });
+
+      document.querySelector("#next-button").addEventListener("click", () => {
+        const directAmount = Number(budgetInput.value.replace(/\D/g, ""));
+        if (budgetInput.value && directAmount < 1000) {
+          budgetInput.setAttribute("aria-invalid", "true");
+          showToast("예산은 1,000원 이상 입력해 주세요.");
+          budgetInput.focus();
+          return;
+        }
+
+        if (!Number.isFinite(perPersonBudget) || perPersonBudget < 1000) {
+          showToast("1인당 예산을 선택해 주세요.");
+          budgetRange.focus();
+          return;
+        }
+
+        sessionStorage.setItem("budget", String(budget));
+        showToast(`1인당 ${formatWon(perPersonBudget)}으로 설정했어요.`);
+        window.location.href = "STEP4_vibe.html";
+        // POST /api/recommendation 요청 필드: budget
+      });
+    </script>
+  </body>
+</html>
