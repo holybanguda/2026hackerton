@@ -3,26 +3,20 @@
   <head>
     <script src="./api.js"></script>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>AI 메뉴 분석</title>
     <style>
       :root {
-        --ink: #0f172a;
-        --text: #314158;
-        --muted: #62748e;
-        --faint: #90a1b9;
-        --line: #e2e8f0;
-        --line-soft: #f1f5f9;
-        --field: #f8fafc;
+        --ink: #0f172b;
+        --accent: #ff6041;
+        --warm-gray: #7f7a76;
+        --middle-gray: #b2afac;
+        --line: #dedede;
+        --field: #f6f4f5;
         --white: #ffffff;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       html,
       body {
@@ -49,21 +43,69 @@
 
       .app {
         position: relative;
-        width: min(100%, 390px);
-        min-height: 878px;
+        width: min(100%, 402px);
+        min-height: 874px;
         overflow: hidden;
         background: var(--white);
+      }
+
+      .status-bar {
+        position: absolute;
+        z-index: 5;
+        inset: 0 0 auto;
+        height: 46px;
+        background: var(--white);
+        color: #000000;
+      }
+
+      .status-time {
+        position: absolute;
+        top: 7px;
+        left: 22px;
+        width: 58px;
+        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: center;
+        letter-spacing: -0.24px;
+      }
+
+      .status-icon {
+        position: absolute;
+        display: block;
+      }
+
+      .status-cellular {
+        top: 18px;
+        right: 68px;
+        width: 18px;
+        height: 12px;
+      }
+
+      .status-wifi {
+        top: 18px;
+        right: 47px;
+        width: 17px;
+        height: 12px;
+      }
+
+      .status-battery {
+        top: 18px;
+        right: 15px;
+        width: 26px;
+        height: 12px;
       }
 
       .header {
         position: absolute;
         z-index: 4;
-        inset: 0 0 auto;
+        inset: 46px 0 auto;
         height: 56px;
         display: flex;
         align-items: center;
-        padding: 0 16px;
-        border-bottom: 1px solid var(--line-soft);
+        padding: 0 20px;
+        border-bottom: 1px solid var(--line);
         background: var(--white);
       }
 
@@ -77,13 +119,16 @@
         border: 0;
         border-radius: 50%;
         background: transparent;
-        color: var(--ink);
         cursor: pointer;
       }
 
       .back-button:hover,
-      .back-button:focus-visible {
-        background: var(--field);
+      .back-button:focus-visible { background: var(--field); }
+
+      .back-button img {
+        display: block;
+        width: 11px;
+        height: 11px;
       }
 
       .header h1 {
@@ -96,394 +141,267 @@
 
       main {
         position: absolute;
-        inset: 56px 0 64px;
-        overflow: hidden;
+        top: 115px;
+        left: 6px;
+        width: 390px;
+        height: 497px;
       }
 
       .analysis-visual {
         position: absolute;
-        top: 38px;
-        left: 50%;
-        width: 136px;
-        height: 136px;
-        transform: translateX(-50%);
-      }
-
-      .orbit,
-      .orbit::before,
-      .orbit::after {
-        position: absolute;
+        top: 30px;
+        left: 99px;
+        width: 192px;
+        height: 192px;
+        border: 4px solid var(--accent);
         border-radius: 50%;
-        content: "";
-      }
-
-      .orbit {
-        inset: 5px;
-        border: 1px solid var(--line);
-        animation: rotate 8s linear infinite;
-      }
-
-      .orbit::before {
-        top: -5px;
-        left: 35px;
-        width: 10px;
-        height: 10px;
-        background: var(--ink);
-        box-shadow: 82px 73px 0 -2px #cbd5e1;
-      }
-
-      .orbit::after {
-        right: 10px;
-        bottom: 17px;
-        width: 6px;
-        height: 6px;
-        background: #94a3b8;
       }
 
       .visual-halo {
         position: absolute;
-        inset: 20px;
+        top: 28px;
+        left: 28px;
+        width: 128px;
+        height: 128px;
         display: grid;
         place-items: center;
         border-radius: 50%;
-        background: linear-gradient(145deg, #f8fafc, #eef2f7);
-        box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.85),
-          0 18px 35px rgba(15, 23, 42, 0.08);
+        background: var(--field);
       }
 
-      .visual-halo svg {
-        width: 48px;
-        height: 48px;
-        color: var(--ink);
+      .visual-halo img {
+        display: block;
+        width: 41px;
+        height: 37px;
       }
 
-      .sparkle {
+      .status-copy {
         position: absolute;
-        color: var(--muted);
-      }
-
-      .sparkle-one {
-        top: 15px;
-        right: 12px;
-        width: 17px;
-        height: 17px;
-      }
-
-      .sparkle-two {
-        bottom: 12px;
-        left: 12px;
-        width: 13px;
-        height: 13px;
+        top: 248px;
+        left: 65px;
+        width: 260px;
+        height: 89px;
+        text-align: center;
       }
 
       .analysis-title {
-        position: absolute;
-        top: 190px;
-        left: 24px;
-        width: calc(100% - 48px);
+        height: 28px;
         margin: 0;
-        text-align: center;
         font-size: 20px;
         font-weight: 700;
         line-height: 28px;
         letter-spacing: 0.01em;
+        white-space: nowrap;
       }
 
       .analysis-description {
-        position: absolute;
-        top: 230px;
-        left: 24px;
-        width: calc(100% - 48px);
-        margin: 0;
-        color: var(--muted);
-        text-align: center;
+        margin: 12px 0 0;
+        color: var(--warm-gray);
         font-size: 14px;
         font-weight: 400;
         line-height: 21px;
         letter-spacing: 0.01em;
       }
 
-      .progress-card {
+      .progress-list {
         position: absolute;
-        top: 304px;
-        left: 24px;
-        width: calc(100% - 48px);
-        height: 220px;
+        top: 377px;
+        left: 55px;
+        width: 280px;
+        height: 128px;
         margin: 0;
-        padding: 20px;
+        padding: 0;
         list-style: none;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: var(--field);
       }
 
       .progress-item {
-        position: relative;
-        min-height: 36px;
+        position: absolute;
+        left: 0;
+        width: 280px;
+        height: 20px;
         display: flex;
         align-items: center;
         gap: 12px;
-        color: var(--faint);
+        color: var(--ink);
         font-size: 14px;
         font-weight: 500;
         line-height: 20px;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
       }
 
-      .progress-item + .progress-item {
-        margin-top: 12px;
-      }
+      .progress-item:nth-child(1) { top: 0; }
+      .progress-item:nth-child(2) { top: 36px; }
+      .progress-item:nth-child(3) { top: 72px; }
+      .progress-item:nth-child(4) { top: 108px; }
 
-      .progress-item:not(:last-child)::after {
-        position: absolute;
-        top: 30px;
-        left: 13px;
-        width: 1px;
-        height: 18px;
-        background: var(--line);
-        content: "";
-      }
+      .progress-item.is-active { font-weight: 700; }
 
-      .progress-item.is-complete,
-      .progress-item.is-active {
-        color: var(--ink);
+      .progress-item.is-pending {
+        color: var(--middle-gray);
+        opacity: 0.4;
       }
 
       .progress-icon {
-        width: 28px;
-        height: 28px;
+        width: 20px;
+        height: 20px;
         display: grid;
-        flex: 0 0 28px;
+        flex: 0 0 20px;
         place-items: center;
-        border: 1px solid var(--line);
+        border: 2px solid var(--line);
         border-radius: 50%;
         background: var(--white);
-        color: var(--faint);
       }
 
       .is-complete .progress-icon {
-        border-color: var(--ink);
-        background: var(--ink);
-        color: var(--white);
+        border: 0;
+        background: var(--accent);
       }
 
-      .is-active .progress-icon {
-        border-color: var(--ink);
-        color: var(--ink);
-      }
-
-      .progress-icon svg {
-        width: 14px;
-        height: 14px;
+      .is-complete .progress-icon img {
+        display: block;
+        width: 9px;
+        height: 11px;
       }
 
       .progress-spinner {
-        width: 14px;
-        height: 14px;
-        border: 2px solid #cbd5e1;
-        border-top-color: var(--ink);
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        animation: rotate 0.85s linear infinite;
+        background: var(--middle-gray);
+      }
+
+      .is-pending .progress-icon { border-color: #e2e8f0; }
+
+      .info-card {
+        position: absolute;
+        top: 685px;
+        left: 30px;
+        width: 342px;
+        height: 74px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--white);
+      }
+
+      .info-icon-box {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--field);
+      }
+
+      .info-icon-box img {
+        display: block;
+        width: 16px;
+        height: 16px;
       }
 
       .wait-copy {
         position: absolute;
-        top: 558px;
-        left: 24px;
-        width: calc(100% - 48px);
-        text-align: center;
+        top: 19px;
+        left: 68px;
+        height: 33px;
       }
 
       .wait-copy strong,
       .wait-copy span {
         display: block;
+        white-space: nowrap;
       }
 
       .wait-copy strong {
-        font-size: 15px;
+        font-size: 12px;
         font-weight: 700;
-        line-height: 22px;
+        line-height: 16px;
+        letter-spacing: 0.01em;
       }
 
       .wait-copy span {
-        margin-top: 4px;
-        color: var(--faint);
-        font-size: 12px;
+        color: var(--middle-gray);
+        font-size: 11px;
         font-weight: 400;
-        line-height: 18px;
+        line-height: 16.5px;
+        letter-spacing: 0.01em;
       }
 
-      .cancel-button {
-        position: absolute;
-        top: 636px;
-        left: 20px;
-        width: calc(100% - 40px);
-        height: 48px;
-        padding: 0;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: var(--white);
-        color: var(--muted);
-        font-size: 14px;
-        font-weight: 600;
-        line-height: 20px;
-        cursor: pointer;
-        transition: background 160ms ease, color 160ms ease;
-      }
+      .cancel-button[hidden] { display: none !important; }
 
-      .cancel-button:hover {
-        background: var(--field);
-        color: var(--ink);
-      }
-
-      .bottom-tabs {
-        position: absolute;
-        z-index: 4;
-        inset: auto 0 0;
-        height: 64px;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        padding: 13px 24px;
-        border-top: 1px solid var(--line-soft);
-        background: var(--white);
-      }
-
-      .tab-button {
-        height: 37px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 4px;
-        padding: 0;
-        border: 0;
-        background: transparent;
-        color: var(--faint);
-        cursor: pointer;
-      }
-
-      .tab-button svg {
-        width: 20px;
-        height: 19px;
-        flex: 0 0 19px;
-      }
-
-      .tab-button span {
-        font-size: 10px;
-        font-weight: 500;
-        line-height: 14px;
-      }
-
-      .tab-button.is-active {
-        color: var(--ink);
-      }
-
-      .tab-button.is-active span {
-        font-weight: 700;
-      }
-
-      .back-button:focus-visible,
-      .cancel-button:focus-visible,
-      .tab-button:focus-visible {
-        outline: 3px solid rgba(15, 23, 42, 0.16);
+      .back-button:focus-visible {
+        outline: 3px solid rgba(255, 96, 65, 0.24);
         outline-offset: 2px;
       }
 
-      @keyframes rotate {
-        to {
-          transform: rotate(360deg);
+      @media (max-width: 401px) {
+        main {
+          left: 0;
+          width: 100%;
+        }
+
+        .analysis-visual,
+        .status-copy,
+        .progress-list {
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        .info-card {
+          left: 30px;
+          width: calc(100% - 60px);
         }
       }
 
-      @media (max-width: 360px) {
-        .progress-card {
-          left: 20px;
-          width: calc(100% - 40px);
-          padding-right: 14px;
-          padding-left: 14px;
-        }
-
-        .progress-item {
-          font-size: 13px;
-        }
-      }
-
-      @media (min-height: 878px) {
-        .app {
-          height: 878px;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-        }
+      @media (min-height: 874px) {
+        .app { height: 874px; }
       }
     </style>
   </head>
   <body>
     <div class="app">
+      <div class="status-bar" aria-hidden="true">
+        <span class="status-time">9:41</span>
+        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
+        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
+        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
+      </div>
+
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
-          <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
-            <path
-              d="M9.5 1.5 2 9l7.5 7.5"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <img src="./assets/icon-xmark.svg" alt="" aria-hidden="true" />
         </button>
         <h1>AI 메뉴 분석</h1>
       </header>
 
       <main aria-labelledby="analysis-title">
         <div class="analysis-visual" aria-hidden="true">
-          <span class="orbit"></span>
           <span class="visual-halo">
-            <svg viewBox="0 0 48 48" fill="none">
-              <path
-                d="M24 5.5c1.3 10.2 8.3 17.3 18.5 18.5C32.3 25.3 25.3 32.3 24 42.5 22.7 32.3 15.7 25.3 5.5 24 15.7 22.7 22.7 15.7 24 5.5Z"
-                fill="currentColor"
-              />
-              <path
-                d="M37.5 5.5c.4 3 2.5 5.1 5.5 5.5-3 .4-5.1 2.5-5.5 5.5-.4-3-2.5-5.1-5.5-5.5 3-.4 5.1-2.5 5.5-5.5Z"
-                fill="#94A3B8"
-              />
-            </svg>
+            <img src="./assets/analysis-wand.svg" alt="" />
           </span>
-          <svg class="sparkle sparkle-one" viewBox="0 0 18 18" fill="none">
-            <path d="M9 1.5c.5 4.2 3.3 7 7.5 7.5-4.2.5-7 3.3-7.5 7.5C8.5 12.3 5.7 9.5 1.5 9 5.7 8.5 8.5 5.7 9 1.5Z" fill="currentColor" />
-          </svg>
-          <svg class="sparkle sparkle-two" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1c.4 3.3 2.7 5.6 6 6-3.3.4-5.6 2.7-6 6-.4-3.3-2.7-5.6-6-6 3.3-.4 5.6-2.7 6-6Z" fill="currentColor" />
-          </svg>
         </div>
 
-        <h2 class="analysis-title" id="analysis-title">최적의 조합을 구성하고 있어요</h2>
-        <p class="analysis-description">
-          입력하신 조건을 분석하여<br />
-          가장 만족스러운 구성을 제안해 드릴게요.
-        </p>
+        <div class="status-copy">
+          <h2 class="analysis-title" id="analysis-title">최적의 조합을 구성하고 있어요</h2>
+          <p class="analysis-description">
+            입력하신 조건을 분석하여<br />
+            가장 만족스러운 구성을 제안해 드릴게요.
+          </p>
+        </div>
 
-        <ol class="progress-card" aria-label="AI 메뉴 분석 진행 상황">
+        <ol class="progress-list" aria-label="AI 메뉴 분석 진행 상황">
           <li class="progress-item is-complete">
             <span class="progress-icon" aria-hidden="true">
-              <svg viewBox="0 0 14 14" fill="none">
-                <path d="m2.2 7.2 3.1 3.1 6.5-6.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <img src="./assets/analysis-check.svg" alt="" />
             </span>
             <span>QR코드 스캔 완료</span>
           </li>
           <li class="progress-item is-complete">
             <span class="progress-icon" aria-hidden="true">
-              <svg viewBox="0 0 14 14" fill="none">
-                <path d="m2.2 7.2 3.1 3.1 6.5-6.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <img src="./assets/analysis-check.svg" alt="" />
             </span>
             <span id="condition-summary">인원 및 예산 조건 확인</span>
           </li>
@@ -493,38 +411,24 @@
             </span>
             <span id="meeting-type-summary">모임 유형 분석 중...</span>
           </li>
-          <li class="progress-item">
-            <span class="progress-icon" aria-hidden="true">
-              <svg viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="2" fill="currentColor" />
-              </svg>
-            </span>
+          <li class="progress-item is-pending">
+            <span class="progress-icon" aria-hidden="true"></span>
             <span>최종 리포트 생성</span>
           </li>
         </ol>
+      </main>
 
+      <aside class="info-card" aria-label="분석 소요 시간 안내">
+        <span class="info-icon-box" aria-hidden="true">
+          <img src="./assets/analysis-info.svg" alt="" />
+        </span>
         <div class="wait-copy" role="status" aria-live="polite">
           <strong>잠시만 기다려 주세요</strong>
           <span>보통 5~10초 이내에 완료됩니다.</span>
         </div>
+      </aside>
 
-        <button class="cancel-button" id="cancel-button" type="button">분석 취소하기</button>
-      </main>
-
-      <nav class="bottom-tabs" aria-label="하단 탐색">
-        <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
-          <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
-            <path d="M2 8.2 10 2l8 6.2V17a1 1 0 0 1-1 1h-4.5v-5.6h-5V18H3a1 1 0 0 1-1-1V8.2Z" fill="currentColor" />
-          </svg>
-          <span>홈</span>
-        </button>
-        <button class="tab-button" type="button" data-tab="히스토리">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M10 10a3.7 3.7 0 1 0 0-7.4A3.7 3.7 0 0 0 10 10Zm-6.5 7.5c.6-3 3-4.7 6.5-4.7s5.9 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
-          <span>히스토리</span>
-        </button>
-      </nav>
+      <button class="cancel-button" id="cancel-button" type="button" hidden>분석 취소하기</button>
     </div>
 
     <script>

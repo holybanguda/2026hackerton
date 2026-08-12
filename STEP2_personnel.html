@@ -429,14 +429,250 @@
         }
       }
     </style>
+    <style id="figma-restored-design">
+      :root {
+        --ink: #0f172b;
+        --accent: #ff6041;
+        --muted: #7f7a76;
+        --faint: #b2afac;
+        --tab-muted: #afa8a8;
+        --line: #dedede;
+        --line-soft: #dedede;
+        --field: #f6f4f5;
+        --white: #ffffff;
+      }
+
+      .app {
+        width: min(100%, 402px);
+        min-height: 874px;
+      }
+
+      .status-bar {
+        position: absolute;
+        z-index: 5;
+        inset: 0 0 auto;
+        height: 46px;
+        background: var(--white);
+        color: #000000;
+      }
+
+      .status-time {
+        position: absolute;
+        top: 7px;
+        left: 22px;
+        width: 58px;
+        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: center;
+        letter-spacing: -0.24px;
+      }
+
+      .status-icon {
+        position: absolute;
+        display: block;
+      }
+
+      .status-cellular { top: 18px; right: 68px; width: 18px; height: 12px; }
+      .status-wifi { top: 18px; right: 47px; width: 17px; height: 12px; }
+      .status-battery { top: 18px; right: 15px; width: 26px; height: 12px; }
+
+      .header {
+        z-index: 4;
+        inset: 46px 0 auto;
+        height: 56px;
+        border-bottom-color: var(--line);
+      }
+
+      .back-button img {
+        width: 9px;
+        height: 16px;
+        transform: translateX(3px);
+      }
+
+      .back-button:focus-visible,
+      .count-button:focus-visible,
+      .next-button:focus-visible,
+      .tab-button:focus-visible,
+      .member-input:focus-visible {
+        outline-color: rgba(255, 96, 65, 0.24);
+      }
+
+      main {
+        top: 102px;
+        left: 6px;
+        right: 6px;
+        height: 371px;
+      }
+
+      .content {
+        height: 299px;
+      }
+
+      .step-indicator {
+        top: 20px;
+        left: 24px;
+        right: 24px;
+        width: auto;
+      }
+
+      .step-indicator span {
+        background: var(--field);
+      }
+
+      .step-indicator span:nth-child(-n + 2) {
+        background: var(--accent);
+      }
+
+      .intro {
+        top: 40px;
+      }
+
+      .member-form {
+        top: 121px;
+        height: 275px;
+      }
+
+      .quick-members {
+        height: 78px;
+        align-items: start;
+        padding-top: 10px;
+      }
+
+      .count-button {
+        color: var(--muted);
+      }
+
+      .count-button:hover {
+        border-color: var(--accent);
+      }
+
+      .count-button.is-selected {
+        border-color: var(--accent);
+        background: var(--accent);
+      }
+
+      .direct-entry {
+        top: 79px;
+        display: block;
+        padding: 0;
+      }
+
+      .direct-copy {
+        position: absolute;
+        top: 21px;
+        left: 20px;
+      }
+
+      .input-wrap {
+        position: absolute;
+        top: 20px;
+        right: 21px;
+        width: 100px;
+        height: 38px;
+        display: block;
+      }
+
+      .member-input {
+        position: absolute;
+        top: 0;
+        left: 17px;
+        width: 66px;
+        border: 0;
+        text-align: left;
+      }
+
+      .input-unit {
+        position: absolute;
+        top: 9px;
+        left: 88px;
+      }
+
+      .member-summary {
+        top: 318px;
+        left: 24px;
+        right: 24px;
+        height: 53px;
+        padding-bottom: 4px;
+        border-top-color: var(--line);
+      }
+
+      .summary-label {
+        color: var(--muted);
+      }
+
+      .next-button {
+        left: 30px;
+        right: 30px;
+        top: 708px;
+        background: var(--accent);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
+      }
+
+      .next-button:hover {
+        background: #f25437;
+      }
+
+      .next-button img {
+        width: 11px;
+        height: 10px;
+      }
+
+      .bottom-tabs {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        height: 63px;
+        padding: 8px;
+        border: 0;
+        border-radius: 154px;
+        background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
+      }
+
+      .tab-button {
+        height: 47px;
+        justify-content: center;
+        gap: 2px;
+        border-radius: 56px;
+        color: var(--tab-muted);
+      }
+
+      .tab-button img {
+        display: block;
+        flex: 0 0 auto;
+      }
+
+      .tab-button[data-tab="홈"] img { width: 19px; height: 18px; }
+      .tab-button[data-tab="히스토리"] img { width: 18px; height: 18px; }
+
+      .tab-button span {
+        line-height: 15px;
+      }
+
+      .tab-button.is-active {
+        background: var(--accent);
+        color: var(--white);
+      }
+
+      @media (max-width: 389px) {
+        .quick-members { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      }
+    </style>
   </head>
   <body>
     <div class="app">
+      <div class="status-bar" aria-hidden="true">
+        <span class="status-time">9:41</span>
+        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
+        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
+        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
+      </div>
+
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
-          <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
-            <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
         </button>
         <h1>인원수 입력</h1>
       </header>
@@ -492,24 +728,18 @@
       
       <button class="next-button" id="next-button" type="button">
         <span>다음 단계로</span>
-        <svg width="11" height="13" viewBox="0 0 11 13" fill="none" aria-hidden="true">
-          <path d="m1.5 1.5 5 5-5 5M6 6.5H10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+        <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
       </button>
       
       <nav class="bottom-tabs" aria-label="하단 탐색">
         <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
-          <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
-            <path d="M2 8.2 10 2l8 6.2V17a1 1 0 0 1-1 1h-4.5v-5.6h-5V18H3a1 1 0 0 1-1-1V8.2Z" fill="currentColor" />
-          </svg>
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
           <span>홈</span>
         </button>
         
         
         <button class="tab-button" type="button" data-tab="히스토리">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M10 10a3.7 3.7 0 1 0 0-7.4A3.7 3.7 0 0 0 10 10Zm-6.5 7.5c.6-3 3-4.7 6.5-4.7s5.9 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
           <span>히스토리</span>
         </button>
       </nav>
@@ -603,18 +833,15 @@
         }
 
         sessionStorage.setItem("peopleCount", String(peopleCount));
-        
         showToast(`${peopleCount}명으로 설정했어요.`);
         window.location.href = "STEP3_budget.html";
-        // POST /api/recommendation 요청 필드: peopleCount
 
+        // POST /api/recommendation 요청 필드: peopleCount
       });
 
       backButton.addEventListener("click", () => {
         showToast("현재 첫 단계입니다.");
       });
-
     </script>
   </body>
-  </html>
-  
+</html>

@@ -7,13 +7,14 @@
     <title>예산 입력</title>
     <style>
       :root {
-        --ink: #0f172a;
-        --text: #314158;
-        --muted: #62748e;
-        --faint: #90a1b9;
-        --line: #e2e8f0;
-        --line-soft: #f1f5f9;
-        --field: #f8fafc;
+        --ink: #0f172b;
+        --accent: #ff6041;
+        --muted: #7f7a76;
+        --faint: #b2afac;
+        --tab-muted: #afa8a8;
+        --line: #dedede;
+        --field: #f6f4f5;
+        --basis: #fff5ec;
         --white: #ffffff;
       }
 
@@ -50,21 +51,69 @@
 
       .app {
         position: relative;
-        width: min(100%, 390px);
-        min-height: 959px;
+        width: min(100%, 402px);
+        min-height: 874px;
         overflow: hidden;
         background: var(--white);
+      }
+
+      .status-bar {
+        position: absolute;
+        z-index: 5;
+        inset: 0 0 auto;
+        height: 46px;
+        background: var(--white);
+        color: #000000;
+      }
+
+      .status-time {
+        position: absolute;
+        top: 7px;
+        left: 22px;
+        width: 58px;
+        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: center;
+        letter-spacing: -0.24px;
+      }
+
+      .status-icon {
+        position: absolute;
+        display: block;
+      }
+
+      .status-cellular {
+        top: 18px;
+        right: 68px;
+        width: 18px;
+        height: 12px;
+      }
+
+      .status-wifi {
+        top: 18px;
+        right: 47px;
+        width: 17px;
+        height: 12px;
+      }
+
+      .status-battery {
+        top: 18px;
+        right: 15px;
+        width: 26px;
+        height: 12px;
       }
 
       .header {
         position: absolute;
         z-index: 4;
-        inset: 0 0 auto;
+        inset: 46px 0 auto;
         height: 56px;
         display: flex;
         align-items: center;
         padding: 0 16px;
-        border-bottom: 1px solid var(--line-soft);
+        border-bottom: 1px solid var(--line);
         background: var(--white);
       }
 
@@ -78,13 +127,18 @@
         border: 0;
         border-radius: 50%;
         background: transparent;
-        color: var(--ink);
         cursor: pointer;
       }
 
       .back-button:hover,
       .back-button:focus-visible {
         background: var(--field);
+      }
+
+      .back-button img {
+        width: 9px;
+        height: 16px;
+        transform: translateX(3px);
       }
 
       .header h1 {
@@ -97,8 +151,10 @@
 
       main {
         position: absolute;
-        inset: 56px 0 auto;
-        height: 746px;
+        top: 106px;
+        left: 6px;
+        right: 6px;
+        height: 646px;
       }
 
       .step-indicator {
@@ -114,17 +170,17 @@
 
       .step-indicator span {
         min-width: 0;
-        border-radius: 999px;
-        background: var(--line-soft);
+        border-radius: 99px;
+        background: var(--field);
       }
 
       .step-indicator span:nth-child(-n + 3) {
-        background: var(--ink);
+        background: var(--accent);
       }
 
       .intro-title {
         position: absolute;
-        top: 37px;
+        top: 36px;
         left: 24px;
         margin: 0;
         font-size: 20px;
@@ -153,117 +209,9 @@
         height: 588px;
       }
 
-      .member-basis {
-        position: absolute;
-        inset: 0 0 auto;
-        height: 70px;
-        display: flex;
-        align-items: center;
-        padding: 0 20px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: var(--white);
-      }
-
-      .member-icon {
-        width: 36px;
-        height: 36px;
-        display: grid;
-        flex: 0 0 auto;
-        place-items: center;
-        border-radius: 50%;
-        background: var(--line-soft);
-        color: var(--muted);
-      }
-
-      .member-icon svg {
-        width: 14px;
-        height: 16px;
-      }
-
-      .member-copy {
-        margin-left: 12px;
-      }
-
-      .member-copy strong,
-      .member-copy small {
-        display: block;
-        letter-spacing: 0.01em;
-      }
-
-      .member-copy strong {
-        font-size: 14px;
-        font-weight: 700;
-        line-height: 20px;
-      }
-
-      .member-copy small {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 16px;
-      }
-
-      .change-button {
-        width: 42px;
-        height: 30px;
-        margin-left: auto;
-        padding: 0;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: var(--white);
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 500;
-        line-height: 16px;
-        letter-spacing: 0.01em;
-        cursor: pointer;
-      }
-
-      .budget-basis {
-        position: absolute;
-        top: 102px;
-        left: 0;
-        width: 100%;
-        height: 106px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 16px;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        background: var(--field);
-      }
-
-      .basis-label {
-        margin: 0;
-        color: var(--muted);
-        font-size: 14px;
-        font-weight: 400;
-        line-height: 20px;
-        letter-spacing: 0.01em;
-      }
-
-      .total-budget {
-        margin: 4px 0 0;
-        font-size: 24px;
-        font-weight: 700;
-        line-height: 32px;
-        letter-spacing: 0.01em;
-      }
-
-      .budget-calculation {
-        margin: 0;
-        color: var(--faint);
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 16px;
-        letter-spacing: 0.01em;
-      }
-
       .slider-group {
         position: absolute;
-        top: 240px;
+        top: 0;
         left: 0;
         width: 100%;
         height: 73px;
@@ -272,15 +220,30 @@
       .range-limits {
         position: absolute;
         top: 0;
-        left: 4px;
-        right: 4px;
-        display: flex;
-        justify-content: space-between;
+        left: 8px;
+        right: 8px;
+        height: 16px;
         color: var(--muted);
         font-size: 12px;
         font-weight: 500;
         line-height: 16px;
         letter-spacing: 0.01em;
+      }
+
+      .range-limits span {
+        position: absolute;
+        top: 0;
+        white-space: nowrap;
+      }
+
+      .range-limits span:first-child {
+        left: 10px;
+        transform: translateX(-50%);
+      }
+
+      .range-limits span:last-child {
+        right: 10px;
+        transform: translateX(50%);
       }
 
       .range-track,
@@ -294,13 +257,13 @@
         top: 37px;
         left: 8px;
         width: calc(100% - 16px);
-        background: var(--line-soft);
+        background: var(--field);
       }
 
       .range-progress {
         inset: 0 auto 0 0;
         width: 33.3333%;
-        background: var(--ink);
+        background: var(--accent);
       }
 
       .budget-range {
@@ -312,6 +275,7 @@
         height: 24px;
         margin: 0;
         appearance: none;
+        -webkit-appearance: none;
         background: transparent;
         cursor: pointer;
       }
@@ -327,10 +291,11 @@
         height: 20px;
         margin-top: -8px;
         appearance: none;
-        border: 2px solid var(--ink);
+        -webkit-appearance: none;
+        border: 2px solid var(--accent);
         border-radius: 50%;
         background: var(--white);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
       }
 
       .budget-range::-moz-range-track {
@@ -343,7 +308,7 @@
       .budget-range::-moz-range-thumb {
         width: 16px;
         height: 16px;
-        border: 2px solid var(--ink);
+        border: 2px solid var(--accent);
         border-radius: 50%;
         background: var(--white);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -351,11 +316,10 @@
 
       .range-ticks {
         position: absolute;
-        top: 0;
-        left: 8px;
-        right: 8px;
-        display: flex;
-        justify-content: space-between;
+        top: 57px;
+        left: 18px;
+        right: 18px;
+        height: 16px;
         color: var(--faint);
         font-size: 12px;
         font-weight: 500;
@@ -364,28 +328,34 @@
       }
 
       .range-ticks span {
-        display: flex;
-        width: 0;
-        justify-content: center;
+        position: absolute;
+        top: 0;
+        transform: translateX(-50%);
         white-space: nowrap;
       }
 
+      .range-ticks span:nth-child(1) { left: 16.6667%; }
+      .range-ticks span:nth-child(2) { left: 33.3333%; }
+      .range-ticks span:nth-child(3) { left: 50%; }
+      .range-ticks span:nth-child(4) { left: 66.6667%; }
+      .range-ticks span:nth-child(5) { left: 83.3333%; }
+
       .direct-input-card {
         position: absolute;
-        top: 345px;
+        top: 99px;
         left: 0;
         width: 100%;
         height: 72px;
-        display: flex;
-        align-items: center;
-        padding: 0 20px;
         border: 1px solid var(--line);
         border-radius: 16px;
         background: var(--white);
       }
 
       .direct-copy {
-        flex: 0 0 auto;
+        position: absolute;
+        top: 17px;
+        left: 20px;
+        height: 36px;
       }
 
       .direct-copy strong,
@@ -408,17 +378,21 @@
       }
 
       .money-input-wrap {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-left: auto;
+        position: absolute;
+        top: 16px;
+        right: 22px;
+        width: 116px;
+        height: 38px;
       }
 
       .money-input {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 96px;
         height: 38px;
         padding: 0 10px;
-        border: 1px solid var(--line);
+        border: 0;
         border-radius: 8px;
         background: var(--field);
         color: var(--ink);
@@ -430,48 +404,63 @@
       }
 
       .money-input::placeholder {
-        color: var(--faint);
+        color: var(--muted);
         opacity: 1;
       }
 
       .money-unit {
+        position: absolute;
+        top: 9px;
+        left: 104px;
         color: var(--muted);
         font-size: 14px;
         font-weight: 500;
         line-height: 20px;
       }
 
-      .member-summary {
+      .budget-basis {
         position: absolute;
-        top: 449px;
-        left: 0;
-        width: 100%;
-        height: 37px;
+        top: 201px;
+        left: 14px;
+        width: calc(100% - 28px);
+        height: 130px;
         display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        border-top: 1px solid var(--line-soft);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: var(--basis);
       }
 
-      .member-summary span,
-      .member-summary strong {
+      .basis-label {
+        margin: 0;
+        color: var(--muted);
         font-size: 14px;
+        font-weight: 400;
         line-height: 20px;
         letter-spacing: 0.01em;
       }
 
-      .member-summary span {
-        color: var(--text);
-        font-weight: 500;
+      .total-budget {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 32px;
+        letter-spacing: 0.01em;
       }
 
-      .member-summary strong {
-        font-weight: 700;
+      .budget-calculation {
+        margin: 0;
+        color: var(--faint);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.01em;
       }
 
       .quick-budget {
         position: absolute;
-        top: 518px;
+        top: 364px;
         left: 0;
         width: 100%;
         height: 70px;
@@ -504,29 +493,27 @@
         line-height: 20px;
         letter-spacing: 0.01em;
         cursor: pointer;
-        transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+        transition: border-color 160ms ease, transform 160ms ease;
       }
 
       .quick-button:hover {
-        border-color: #94a3b8;
+        border-color: var(--accent);
+        transform: translateY(-1px);
       }
 
       .quick-button.is-selected {
-        border-color: var(--ink);
-        background: var(--ink);
-        color: var(--white);
+        border-color: var(--line);
+        background: var(--white);
+        color: var(--ink);
       }
 
       .bottom-actions {
         position: absolute;
         z-index: 3;
-        top: 802px;
-        left: 0;
-        width: 100%;
-        height: 93px;
-        padding: 20px;
-        border-top: 1px solid var(--line-soft);
-        background: var(--white);
+        top: 708px;
+        left: 30px;
+        right: 30px;
+        height: 52px;
       }
 
       .next-button {
@@ -539,9 +526,8 @@
         padding: 0;
         border: 0;
         border-radius: 12px;
-        background: var(--ink);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        background: var(--accent);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
         color: var(--white);
         font-size: 14px;
         font-weight: 700;
@@ -552,51 +538,69 @@
       }
 
       .next-button:hover {
-        background: #1e293b;
+        background: #f25437;
         transform: translateY(-1px);
+      }
+
+      .next-button img {
+        width: 11px;
+        height: 10px;
       }
 
       .bottom-tabs {
         position: absolute;
         z-index: 4;
-        inset: auto 0 0;
-        height: 64px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        height: 63px;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        padding: 13px 24px;
-        border-top: 1px solid var(--line-soft);
+        padding: 8px;
+        border-radius: 154px;
         background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
       }
 
       .tab-button {
-        height: 37px;
+        height: 47px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start;
-        gap: 4px;
+        justify-content: center;
+        gap: 2px;
         padding: 0;
         border: 0;
+        border-radius: 56px;
         background: transparent;
-        color: var(--faint);
+        color: var(--tab-muted);
         cursor: pointer;
       }
 
-      .tab-button svg {
-        width: 20px;
-        height: 19px;
-        flex: 0 0 19px;
+      .tab-button img {
+        display: block;
+        flex: 0 0 auto;
+      }
+
+      .tab-button[data-tab="홈"] img {
+        width: 19px;
+        height: 18px;
+      }
+
+      .tab-button[data-tab="히스토리"] img {
+        width: 18px;
+        height: 18px;
       }
 
       .tab-button span {
         font-size: 10px;
         font-weight: 500;
-        line-height: 14px;
-        letter-spacing: 0.01em;
+        line-height: 15px;
       }
 
       .tab-button.is-active {
-        color: var(--ink);
+        background: var(--accent);
+        color: var(--white);
       }
 
       .tab-button.is-active span {
@@ -607,7 +611,7 @@
         position: absolute;
         z-index: 6;
         left: 50%;
-        bottom: 76px;
+        bottom: 82px;
         max-width: calc(100% - 40px);
         padding: 10px 14px;
         border-radius: 10px;
@@ -628,34 +632,17 @@
       }
 
       .back-button:focus-visible,
-      .change-button:focus-visible,
       .budget-range:focus-visible,
       .money-input:focus-visible,
       .quick-button:focus-visible,
       .next-button:focus-visible,
       .tab-button:focus-visible {
-        outline: 3px solid rgba(15, 23, 42, 0.16);
+        outline: 3px solid rgba(255, 96, 65, 0.24);
         outline-offset: 2px;
       }
 
-      @media (max-width: 360px) {
-        .intro-description {
-          font-size: 13px;
-        }
-
-        .direct-input-card {
-          padding-inline: 16px;
-        }
-
-        .money-input {
-          width: 86px;
-        }
-      }
-
-      @media (min-height: 959px) {
-        .app {
-          height: 959px;
-        }
+      @media (min-height: 874px) {
+        .app { height: 874px; }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -669,11 +656,16 @@
   </head>
   <body>
     <div class="app">
+      <div class="status-bar" aria-hidden="true">
+        <span class="status-time">9:41</span>
+        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
+        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
+        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
+      </div>
+
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
-          <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
-            <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
         </button>
         <h1>예산 입력</h1>
       </header>
@@ -688,29 +680,17 @@
         <p class="intro-description">선택한 예산에 맞춰 장소를 추천해 드려요.</p>
 
         <form class="budget-form" id="budget-form">
-          <section class="member-basis" aria-label="선택 인원">
-            <span class="member-icon" aria-hidden="true">
-              <svg viewBox="0 0 14 16" fill="none">
-                <circle cx="7" cy="4.2" r="3" stroke="currentColor" stroke-width="1.6" />
-                <path d="M1.8 14.2c.5-3 2.4-4.7 5.2-4.7s4.7 1.7 5.2 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-              </svg>
-            </span>
-            <span class="member-copy">
-              <strong id="people-count-basis">2명 기준</strong>
-              <small>이전 단계에서 선택됨</small>
-            </span>
-            <button class="change-button" type="button">변경</button>
-          </section>
-
-          <section class="budget-basis" aria-live="polite">
-            <p class="basis-label">예산 기준 · 1인당</p>
-            <strong class="total-budget" id="total-budget">총 60,000원</strong>
-            <p class="budget-calculation" id="budget-calculation">= 1인 예산 30,000원 × 2명</p>
-          </section>
+          <span id="people-count-basis" hidden>2명 기준</span>
+          <span id="people-count-summary" hidden>2명</span>
+          <button class="change-button" type="button" hidden>변경</button>
 
           <section class="slider-group" aria-label="1인당 예산 슬라이더">
+            <div class="range-limits" aria-hidden="true">
+              <span>1만원</span>
+              <span>7만원</span>
+            </div>
             <div class="range-ticks" aria-hidden="true">
-              <span>1만</span><span>2만</span><span>3만</span><span>4만</span><span>5만</span><span>6만</span><span>7만</span>
+              <span>2만</span><span>3만</span><span>4만</span><span>5만</span><span>6만</span>
             </div>
             <div class="range-track" aria-hidden="true">
               <span class="range-progress" id="range-progress"></span>
@@ -746,10 +726,11 @@
             </span>
           </label>
 
-          <div class="member-summary">
-            <span>인원 수</span>
-            <strong id="people-count-summary">2명</strong>
-          </div>
+          <section class="budget-basis" aria-live="polite">
+            <p class="basis-label">예산 기준 · 1인당</p>
+            <strong class="total-budget" id="total-budget">총 60,000원</strong>
+            <p class="budget-calculation" id="budget-calculation">= 1인 예산 30,000원 × 2명</p>
+          </section>
 
           <section class="quick-budget" aria-labelledby="quick-budget-title">
             <h3 id="quick-budget-title">자주 선택하는 예산</h3>
@@ -765,23 +746,17 @@
       <div class="bottom-actions">
         <button class="next-button" id="next-button" type="button">
           <span>다음 단계로</span>
-          <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
-            <path d="m1.5 2 5 5-5 5M6 7h4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
         </button>
       </div>
 
       <nav class="bottom-tabs" aria-label="하단 탐색">
         <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
-          <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
-            <path d="M2 8.2 10 2l8 6.2V17a1 1 0 0 1-1 1h-4.5v-5.6h-5V18H3a1 1 0 0 1-1-1V8.2Z" fill="currentColor" />
-          </svg>
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
           <span>홈</span>
         </button>
         <button class="tab-button" type="button" data-tab="히스토리">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M10 10a3.7 3.7 0 1 0 0-7.4A3.7 3.7 0 0 0 10 10Zm-6.5 7.5c.6-3 3-4.7 6.5-4.7s5.9 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
           <span>히스토리</span>
         </button>
       </nav>
@@ -892,11 +867,9 @@
         }
 
         sessionStorage.setItem("budget", String(budget));
-        
         showToast(`1인당 ${formatWon(perPersonBudget)}으로 설정했어요.`);
         window.location.href = "STEP4_vibe.html";
         // POST /api/recommendation 요청 필드: budget
-        
       });
     </script>
   </body>

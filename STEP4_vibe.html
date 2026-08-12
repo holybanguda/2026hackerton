@@ -7,26 +7,20 @@
     <title>분위기 선택</title>
     <style>
       :root {
-        --ink: #0f172a;
-        --text: #314158;
-        --muted: #62748e;
-        --faint: #90a1b9;
-        --line: #e2e8f0;
-        --line-soft: #f1f5f9;
-        --field: #f8fafc;
-        --chevron: #cbd5e1;
+        --ink: #0f172b;
+        --accent: #ff6041;
+        --muted: #7f7a76;
+        --faint: #b2afac;
+        --tab-muted: #afa8a8;
+        --line: #dedede;
+        --field: #f6f4f5;
+        --input: #fff5ec;
         --white: #ffffff;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
-      html,
-      body {
-        margin: 0;
-        min-height: 100%;
-      }
+      html, body { margin: 0; min-height: 100%; }
 
       body {
         display: grid;
@@ -40,28 +34,53 @@
         -webkit-font-smoothing: antialiased;
       }
 
-      button {
-        font: inherit;
-        -webkit-tap-highlight-color: transparent;
-      }
+      button, input { font: inherit; }
+      button { -webkit-tap-highlight-color: transparent; }
 
       .app {
         position: relative;
-        width: min(100%, 390px);
-        min-height: 845px;
+        width: min(100%, 402px);
+        min-height: 1006px;
         overflow: hidden;
         background: var(--white);
       }
 
+      .status-bar {
+        position: absolute;
+        z-index: 5;
+        inset: 0 0 auto;
+        height: 46px;
+        background: var(--white);
+        color: #000000;
+      }
+
+      .status-time {
+        position: absolute;
+        top: 7px;
+        left: 22px;
+        width: 58px;
+        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: center;
+        letter-spacing: -0.24px;
+      }
+
+      .status-icon { position: absolute; display: block; }
+      .status-cellular { top: 18px; right: 68px; width: 18px; height: 12px; }
+      .status-wifi { top: 18px; right: 47px; width: 17px; height: 12px; }
+      .status-battery { top: 18px; right: 15px; width: 26px; height: 12px; }
+
       .header {
         position: absolute;
         z-index: 4;
-        inset: 0 0 auto;
+        inset: 46px 0 auto;
         height: 56px;
         display: flex;
         align-items: center;
         padding: 0 16px;
-        border-bottom: 1px solid var(--line-soft);
+        border-bottom: 1px solid var(--line);
         background: var(--white);
       }
 
@@ -75,14 +94,11 @@
         border: 0;
         border-radius: 50%;
         background: transparent;
-        color: var(--ink);
         cursor: pointer;
       }
 
-      .back-button:hover,
-      .back-button:focus-visible {
-        background: var(--field);
-      }
+      .back-button:hover, .back-button:focus-visible { background: var(--field); }
+      .back-button img { width: 9px; height: 16px; transform: translateX(3px); }
 
       .header h1 {
         margin: 0 0 0 12px;
@@ -94,13 +110,15 @@
 
       main {
         position: absolute;
-        inset: 56px 0 auto;
-        height: 632px;
+        top: 102px;
+        left: 6px;
+        right: 6px;
+        height: 648px;
       }
 
       .step-indicator {
         position: absolute;
-        top: 16px;
+        top: 20px;
         left: 24px;
         right: 24px;
         height: 4px;
@@ -111,18 +129,16 @@
 
       .step-indicator span {
         min-width: 0;
-        border-radius: 999px;
-        background: var(--line-soft);
+        border-radius: 99px;
+        background: var(--field);
       }
 
-      .step-indicator span:nth-child(-n + 4) {
-        background: var(--ink);
-      }
+      .step-indicator span:nth-child(-n + 4) { background: var(--accent); }
 
       .intro-title {
         position: absolute;
-        top: 38px;
-        left: 24px;
+        top: 40px;
+        left: 25px;
         margin: 0;
         font-size: 20px;
         font-weight: 700;
@@ -132,22 +148,22 @@
 
       .intro-description {
         position: absolute;
-        top: 96px;
+        top: 99px;
         left: 24px;
         margin: 0;
         color: var(--muted);
         font-size: 14px;
         font-weight: 400;
-        line-height: 20px;
+        line-height: 19px;
         letter-spacing: 0.01em;
       }
 
       .mood-form {
         position: absolute;
-        top: 134px;
+        top: 141px;
         left: 24px;
         width: calc(100% - 48px);
-        height: 474px;
+        height: 507px;
       }
 
       .mood-card {
@@ -164,39 +180,14 @@
         color: var(--ink);
         text-align: left;
         cursor: pointer;
-        transition: border-color 160ms ease, background 160ms ease, transform 160ms ease,
-          box-shadow 160ms ease;
+        transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
       }
 
-      .mood-card:nth-child(1) {
-        top: 0;
-      }
-
-      .mood-card:nth-child(2) {
-        top: 98px;
-      }
-
-      .mood-card:nth-child(3) {
-        top: 196px;
-      }
-
-      .mood-card:nth-child(4) {
-        top: 294px;
-        border-color: var(--chevron);
-        background: var(--field);
-      }
-
-      .mood-card:hover {
-        border-color: #94a3b8;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-      }
-
-      .mood-card.is-selected {
-        border-color: var(--ink);
-        background: var(--field);
-        box-shadow: 0 0 0 1px var(--ink);
-      }
+      .mood-card:nth-of-type(1) { top: 6px; }
+      .mood-card:nth-of-type(2) { top: 100px; }
+      .mood-card:nth-of-type(3) { top: 194px; }
+      .mood-card:hover { transform: translateY(-1px); }
+      .mood-card.is-selected { border-color: var(--accent); background: #fffaf7; }
 
       .mood-icon {
         width: 44px;
@@ -205,37 +196,16 @@
         flex: 0 0 auto;
         place-items: center;
         border-radius: 50%;
-        background: var(--line-soft);
-        color: var(--text);
+        background: var(--field);
       }
 
-      .mood-card:nth-child(4) .mood-icon {
-        background: var(--white);
-        color: var(--muted);
-      }
+      .mood-card[data-meeting-type="친구 모임"] .mood-icon img { width: 23px; height: 19px; }
+      .mood-card[data-meeting-type="데이트"] .mood-icon img { width: 18px; height: 18px; }
+      .mood-card[data-meeting-type="가족 식사"] .mood-icon img { width: 20px; height: 18px; }
 
-      .mood-icon svg {
-        width: 22px;
-        height: 22px;
-      }
-
-      .mood-copy {
-        min-width: 0;
-        margin-left: 16px;
-      }
-
-      .mood-title,
-      .mood-description {
-        display: block;
-        letter-spacing: 0.01em;
-      }
-
-      .mood-title {
-        font-size: 16px;
-        font-weight: 700;
-        line-height: 24px;
-      }
-
+      .mood-copy { min-width: 0; margin-left: 16px; }
+      .mood-title, .mood-description { display: block; letter-spacing: 0.01em; }
+      .mood-title { font-size: 16px; font-weight: 700; line-height: 24px; }
       .mood-description {
         color: var(--muted);
         font-size: 14px;
@@ -244,21 +214,74 @@
         white-space: nowrap;
       }
 
-      .card-chevron {
-        width: 10px;
-        height: 16px;
-        margin-left: auto;
-        color: var(--chevron);
+      .card-chevron { width: 8px; height: 14px; margin-left: auto; }
+
+      .manual-input {
+        position: absolute;
+        top: 294px;
+        left: 0;
+        width: 100%;
+        height: 106px;
       }
 
-      .mood-card:nth-child(4) .card-chevron {
-        color: var(--faint);
+      .manual-input label {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .manual-field {
+        position: absolute;
+        top: 32px;
+        left: 0;
+        width: 100%;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        border-radius: 12px;
+        background: var(--input);
+      }
+
+      .manual-field input {
+        width: 100%;
+        height: 100%;
+        padding: 0 48px 0 16px;
+        border: 0;
+        outline: 0;
+        border-radius: inherit;
+        background: transparent;
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .manual-field input::placeholder { color: var(--faint); }
+      .manual-field img {
+        position: absolute;
+        right: 16px;
+        width: 16px;
+        height: 16px;
+        pointer-events: none;
+      }
+
+      .manual-help {
+        position: absolute;
+        top: 90px;
+        left: 0;
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 16px;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
       }
 
       .recent-moods {
         position: absolute;
-        top: 404px;
-        left: 0;
+        top: 457px;
+        left: 1px;
         width: 100%;
         height: 70px;
       }
@@ -271,12 +294,7 @@
         letter-spacing: 0.01em;
       }
 
-      .recent-buttons {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-      }
-
+      .recent-buttons { display: flex; gap: 8px; margin-top: 12px; }
       .recent-button {
         height: 38px;
         padding: 0 15px;
@@ -289,29 +307,17 @@
         line-height: 20px;
         letter-spacing: 0.01em;
         cursor: pointer;
-        transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
       }
 
-      .recent-button:hover {
-        border-color: #94a3b8;
-      }
-
-      .recent-button.is-selected {
-        border-color: var(--ink);
-        background: var(--ink);
-        color: var(--white);
-      }
+      .recent-button.is-selected { border-color: var(--accent); background: var(--accent); color: var(--white); }
 
       .bottom-actions {
         position: absolute;
         z-index: 3;
-        top: 688px;
-        left: 0;
-        width: 100%;
-        height: 93px;
-        padding: 20px;
-        border-top: 1px solid var(--line-soft);
-        background: var(--white);
+        top: 840px;
+        left: 30px;
+        right: 30px;
+        height: 52px;
       }
 
       .next-button {
@@ -324,74 +330,61 @@
         padding: 0;
         border: 0;
         border-radius: 12px;
-        background: var(--ink);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        background: var(--accent);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
         color: var(--white);
         font-size: 14px;
         font-weight: 700;
         line-height: 20px;
         letter-spacing: 0.01em;
         cursor: pointer;
-        transition: background 160ms ease, transform 160ms ease;
       }
 
-      .next-button:hover {
-        background: #1e293b;
-        transform: translateY(-1px);
-      }
+      .next-button:hover { background: #f25437; }
+      .next-button img { width: 11px; height: 10px; }
 
       .bottom-tabs {
         position: absolute;
         z-index: 4;
-        inset: auto 0 0;
-        height: 64px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        height: 63px;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        padding: 13px 24px;
-        border-top: 1px solid var(--line-soft);
+        padding: 8px;
+        border-radius: 154px;
         background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
       }
 
       .tab-button {
-        height: 37px;
+        height: 47px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start;
-        gap: 4px;
+        justify-content: center;
+        gap: 2px;
         padding: 0;
         border: 0;
+        border-radius: 56px;
         background: transparent;
-        color: var(--faint);
+        color: var(--tab-muted);
         cursor: pointer;
       }
 
-      .tab-button svg {
-        width: 20px;
-        height: 19px;
-        flex: 0 0 19px;
-      }
-
-      .tab-button span {
-        font-size: 10px;
-        font-weight: 500;
-        line-height: 14px;
-      }
-
-      .tab-button.is-active {
-        color: var(--ink);
-      }
-
-      .tab-button.is-active span {
-        font-weight: 700;
-      }
+      .tab-button img { display: block; flex: 0 0 auto; }
+      .tab-button[data-tab="홈"] img { width: 19px; height: 18px; }
+      .tab-button[data-tab="히스토리"] img { width: 18px; height: 18px; }
+      .tab-button span { font-size: 10px; font-weight: 500; line-height: 15px; }
+      .tab-button.is-active { background: var(--accent); color: var(--white); }
+      .tab-button.is-active span { font-weight: 700; }
 
       .toast {
         position: absolute;
         z-index: 6;
         left: 50%;
-        bottom: 76px;
+        bottom: 82px;
         max-width: calc(100% - 40px);
         padding: 10px 14px;
         border-radius: 10px;
@@ -406,60 +399,32 @@
         transition: opacity 180ms ease, transform 180ms ease;
       }
 
-      .toast.is-visible {
-        opacity: 1;
-        transform: translate(-50%, 0);
-      }
+      .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
-      .back-button:focus-visible,
-      .mood-card:focus-visible,
-      .recent-button:focus-visible,
-      .next-button:focus-visible,
-      .tab-button:focus-visible {
-        outline: 3px solid rgba(15, 23, 42, 0.16);
+      .back-button:focus-visible, .mood-card:focus-visible, .manual-field input:focus-visible,
+      .recent-button:focus-visible, .next-button:focus-visible, .tab-button:focus-visible {
+        outline: 3px solid rgba(255, 96, 65, 0.24);
         outline-offset: 2px;
       }
 
-      @media (max-width: 360px) {
-        .intro-description {
-          font-size: 13px;
-        }
-
-        .mood-card {
-          padding-inline: 16px;
-        }
-
-        .mood-copy {
-          margin-left: 12px;
-        }
-
-        .mood-description {
-          font-size: 13px;
-        }
-      }
-
-      @media (min-height: 845px) {
-        .app {
-          height: 845px;
-        }
-      }
-
+      @media (min-height: 1006px) { .app { height: 1006px; } }
       @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          transition-duration: 0.01ms !important;
-        }
+        *, *::before, *::after { transition-duration: 0.01ms !important; }
       }
     </style>
   </head>
   <body>
     <div class="app">
+      <div class="status-bar" aria-hidden="true">
+        <span class="status-time">9:41</span>
+        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
+        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
+        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
+      </div>
+
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
-          <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
-            <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
         </button>
         <h1>분위기 선택</h1>
       </header>
@@ -475,68 +440,40 @@
 
         <form class="mood-form" id="mood-form">
           <button class="mood-card" type="button" data-meeting-type="친구 모임" aria-pressed="false">
-            <span class="mood-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 22" fill="none">
-                <circle cx="9" cy="7" r="3.3" stroke="currentColor" stroke-width="1.7" />
-                <circle cx="17.2" cy="8" r="2.6" stroke="currentColor" stroke-width="1.6" />
-                <path d="M2.6 19c.6-4 2.8-6 6.4-6s5.8 2 6.4 6M15.2 13.5c3.2-.6 5.4 1 6 4.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-              </svg>
-            </span>
+            <span class="mood-icon" aria-hidden="true"><img src="./assets/mood-friends.svg" alt="" /></span>
             <span class="mood-copy">
               <span class="mood-title">친구 모임</span>
               <span class="mood-description">수다와 웃음이 있는 자리</span>
             </span>
-            <svg class="card-chevron" viewBox="0 0 10 16" fill="none" aria-hidden="true">
-              <path d="m2 1 6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <img class="card-chevron" src="./assets/icon-chevron-right.svg" alt="" aria-hidden="true" />
           </button>
 
           <button class="mood-card" type="button" data-meeting-type="데이트" aria-pressed="false">
-            <span class="mood-icon" aria-hidden="true">
-              <svg viewBox="0 0 22 22" fill="none">
-                <path d="M11 18.5C7.5 15.4 3 12.4 3 7.8 3 5.2 4.8 3.5 7.3 3.5c1.6 0 3 1 3.7 2.1.7-1.1 2.1-2.1 3.7-2.1 2.5 0 4.3 1.7 4.3 4.3 0 4.6-4.5 7.6-8 10.7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
+            <span class="mood-icon" aria-hidden="true"><img src="./assets/mood-date.svg" alt="" /></span>
             <span class="mood-copy">
               <span class="mood-title">데이트</span>
               <span class="mood-description">조용하고 분위기 좋은 곳</span>
             </span>
-            <svg class="card-chevron" viewBox="0 0 10 16" fill="none" aria-hidden="true">
-              <path d="m2 1 6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <img class="card-chevron" src="./assets/icon-chevron-right.svg" alt="" aria-hidden="true" />
           </button>
 
           <button class="mood-card" type="button" data-meeting-type="가족 식사" aria-pressed="false">
-            <span class="mood-icon" aria-hidden="true">
-              <svg viewBox="0 0 22 22" fill="none">
-                <path d="m2.5 10 8.5-6.5 8.5 6.5v8a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M8 19v-5.5h6V19M16.5 7V4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
+            <span class="mood-icon" aria-hidden="true"><img src="./assets/mood-family.svg" alt="" /></span>
             <span class="mood-copy">
               <span class="mood-title">가족 식사</span>
               <span class="mood-description">모두가 편하게 즐기는 식사</span>
             </span>
-            <svg class="card-chevron" viewBox="0 0 10 16" fill="none" aria-hidden="true">
-              <path d="m2 1 6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <img class="card-chevron" src="./assets/icon-chevron-right.svg" alt="" aria-hidden="true" />
           </button>
 
-          <button class="mood-card" type="button" data-meeting-type="직접 입력" aria-pressed="false">
-            <span class="mood-icon" aria-hidden="true">
-              <svg viewBox="0 0 22 22" fill="none">
-                <path d="m4 15.8-.8 3 3-.8L17.7 6.5a2.1 2.1 0 0 0-3-3L4 15.8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="m13.2 5 3.8 3.8M3.5 19h15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
-            </span>
-            <span class="mood-copy">
-              <span class="mood-title">직접 입력</span>
-              <span class="mood-description">다른 분위기를 원하시나요?</span>
-            </span>
-            <svg class="card-chevron" viewBox="0 0 10 16" fill="none" aria-hidden="true">
-              <path d="m2 1 6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
+          <div class="manual-input">
+            <label for="mood-input">직접 입력</label>
+            <div class="manual-field">
+              <input id="mood-input" type="text" maxlength="60" autocomplete="off" aria-describedby="manual-help" />
+              <img src="./assets/icon-edit.svg" alt="" aria-hidden="true" />
+            </div>
+            <p class="manual-help" id="manual-help">여러 가지인 경우 쉼표(,)로 구분해서 적어주세요.</p>
+          </div>
 
           <section class="recent-moods" aria-labelledby="recent-title">
             <h3 id="recent-title">최근 선택</h3>
@@ -552,23 +489,17 @@
       <div class="bottom-actions">
         <button class="next-button" id="next-button" type="button">
           <span>다음 단계로</span>
-          <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
-            <path d="m1.5 2 5 5-5 5M6 7h4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
         </button>
       </div>
 
       <nav class="bottom-tabs" aria-label="하단 탐색">
         <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
-          <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
-            <path d="M2 8.2 10 2l8 6.2V17a1 1 0 0 1-1 1h-4.5v-5.6h-5V18H3a1 1 0 0 1-1-1V8.2Z" fill="currentColor" />
-          </svg>
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
           <span>홈</span>
         </button>
         <button class="tab-button" type="button" data-tab="히스토리">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M10 10a3.7 3.7 0 1 0 0-7.4A3.7 3.7 0 0 0 10 10Zm-6.5 7.5c.6-3 3-4.7 6.5-4.7s5.9 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
           <span>히스토리</span>
         </button>
       </nav>
@@ -579,6 +510,7 @@
     <script>
       const moodCards = [...document.querySelectorAll(".mood-card")];
       const recentButtons = [...document.querySelectorAll(".recent-button")];
+      const moodInput = document.querySelector("#mood-input");
       const toast = document.querySelector("#toast");
       let meetingType = "";
       let toastTimer;
@@ -606,12 +538,26 @@
       }
 
       moodCards.forEach((card) => {
-        card.addEventListener("click", () => selectMeetingType(card.dataset.meetingType, card));
+        card.addEventListener("click", () => {
+          moodInput.value = "";
+          moodInput.setAttribute("aria-invalid", "false");
+          selectMeetingType(card.dataset.meetingType, card);
+        });
       });
 
       recentButtons.forEach((button) => {
         button.setAttribute("aria-pressed", "false");
-        button.addEventListener("click", () => selectMeetingType(button.dataset.meetingType, button));
+        button.addEventListener("click", () => {
+          moodInput.value = "";
+          moodInput.setAttribute("aria-invalid", "false");
+          selectMeetingType(button.dataset.meetingType, button);
+        });
+      });
+
+      moodInput.addEventListener("input", () => {
+        const directValue = moodInput.value.trim();
+        moodInput.setAttribute("aria-invalid", "false");
+        selectMeetingType(directValue, null);
       });
 
       document.querySelector(".back-button").addEventListener("click", () => {
@@ -619,22 +565,23 @@
       });
 
       document.querySelector("#next-button").addEventListener("click", () => {
+        const directValue = moodInput.value.trim();
+        if (directValue) meetingType = directValue;
+
         if (!meetingType) {
           showToast("분위기를 선택해 주세요.");
           moodCards.forEach((card) => card.setAttribute("aria-invalid", "true"));
+          moodInput.setAttribute("aria-invalid", "true");
           moodCards[0].focus();
           return;
         }
 
         sessionStorage.setItem("meetingType", meetingType);
-
         showToast(`${meetingType} 분위기를 선택했어요.`);
-        
         window.location.href = "STEP5_app.html";
 
         // POST /api/recommendation 요청 필드: meetingType
       });
-
     </script>
   </body>
 </html>

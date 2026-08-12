@@ -7,13 +7,15 @@
     <title>추천 조건 입력</title>
     <style>
       :root {
-        --ink: #0f172a;
+        --accent: #ff6041;
+        --accent-soft: #fff5ec;
+        --ink: #0f172b;
         --text: #314158;
-        --muted: #62748e;
-        --faint: #90a1b9;
-        --line: #e2e8f0;
-        --line-soft: #f1f5f9;
-        --field: #f8fafc;
+        --warm-gray: #7f7a76;
+        --middle-gray: #b2afac;
+        --line: #dedede;
+        --field: #f6f4f5;
+        --tab-gray: #afa8a8;
         --white: #ffffff;
       }
 
@@ -28,11 +30,11 @@
       }
 
       body {
-        display: grid;
         min-height: 100vh;
         min-height: 100dvh;
+        display: grid;
         place-items: start center;
-        background: #eef2f7;
+        background: var(--white);
         color: var(--ink);
         font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
           "Segoe UI", sans-serif;
@@ -50,64 +52,124 @@
 
       .app {
         position: relative;
-        width: min(100%, 390px);
-        min-height: 870px;
+        width: min(100%, 402px);
+        height: 1017px;
+        min-height: 1017px;
         overflow: hidden;
         background: var(--white);
+      }
+
+      .status-bar {
+        position: absolute;
+        z-index: 5;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 46px;
+        background: var(--white);
+        color: #000000;
+      }
+
+      .status-time {
+        position: absolute;
+        top: 13px;
+        left: 20px;
+        width: 58px;
+        margin: 0;
+        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+        letter-spacing: -0.24px;
+        text-align: center;
+      }
+
+      .status-icon {
+        position: absolute;
+        display: block;
+      }
+
+      .status-cellular {
+        top: 18.5px;
+        right: 68.6px;
+        width: 18.2px;
+        height: 11.2px;
+      }
+
+      .status-wifi {
+        top: 18.1px;
+        right: 46.8px;
+        width: 16.4px;
+        height: 11.5px;
+      }
+
+      .status-battery {
+        top: 18.1px;
+        right: 15.4px;
+        width: 26.1px;
+        height: 11.9px;
       }
 
       .header {
         position: absolute;
         z-index: 4;
-        inset: 0 0 auto;
+        top: 46px;
+        left: 0;
+        width: 100%;
         height: 56px;
         display: flex;
         align-items: center;
         padding: 0 16px;
-        border-bottom: 1px solid var(--line-soft);
+        border-bottom: 1px solid var(--line);
         background: var(--white);
       }
 
       .back-button {
+        position: relative;
         width: 32px;
         height: 32px;
         display: grid;
         flex: 0 0 auto;
-        place-items: center;
+        place-items: initial;
         padding: 0;
         border: 0;
         border-radius: 50%;
         background: transparent;
-        color: var(--ink);
         cursor: pointer;
       }
 
-      .back-button:hover,
-      .back-button:focus-visible {
-        background: var(--field);
+      .back-button img {
+        position: absolute;
+        top: 7.6px;
+        left: 14.5px;
+        width: 8.802px;
+        height: 15.405px;
+        display: block;
       }
 
       .header h1 {
         margin: 0 0 0 12px;
+        color: var(--ink);
         font-size: 18px;
         font-weight: 700;
         line-height: 28px;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.18px;
+        transform: translateY(-1px);
       }
 
       main {
         position: absolute;
-        top: 63px;
+        top: 102px;
         left: 0;
         width: 100%;
-        height: 681px;
+        height: 842px;
       }
 
       .step-indicator {
         position: absolute;
-        top: 9px;
-        left: 24px;
-        right: 24px;
+        top: 20px;
+        left: 30px;
+        width: 342px;
         height: 4px;
         display: grid;
         grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -117,60 +179,61 @@
       .step-indicator span {
         min-width: 0;
         border-radius: 999px;
-        background: var(--line-soft);
+        background: var(--field);
       }
 
       .step-indicator span:nth-child(-n + 5) {
-        background: var(--ink);
+        background: var(--accent);
       }
 
       .intro-title {
         position: absolute;
-        top: 31px;
-        left: 24px;
+        top: 39px;
+        left: 30px;
         margin: 0;
+        color: var(--ink);
         font-size: 24px;
         font-weight: 700;
         line-height: 30px;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.24px;
       }
 
       .intro-description {
         position: absolute;
-        top: 69px;
-        left: 24px;
-        right: 24px;
+        top: 77px;
+        left: 30px;
+        width: 342px;
         margin: 0;
-        color: var(--muted);
+        color: var(--warm-gray);
         font-size: 14px;
         font-weight: 400;
-        line-height: 23px;
-        letter-spacing: 0.01em;
+        line-height: 19px;
+        letter-spacing: 0.14px;
       }
 
       .food-selection {
         position: absolute;
-        top: 133px;
-        left: 24px;
-        width: calc(100% - 48px);
-        height: 272px;
+        top: 164px;
+        left: 30px;
+        width: 342px;
+        height: 280px;
       }
 
       .food-card {
         position: absolute;
         left: 0;
-        width: 100%;
+        width: 342px;
+        height: 82px;
         display: flex;
         align-items: center;
-        padding: 0 17px;
+        padding: 16px;
         border: 1px solid var(--line);
         border-radius: 12px;
         background: var(--white);
         color: var(--text);
         text-align: left;
         cursor: pointer;
-        transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease,
-          transform 160ms ease;
+        transition: border-color 140ms ease, background-color 140ms ease;
       }
 
       .food-card:nth-child(1) {
@@ -179,24 +242,16 @@
       }
 
       .food-card:nth-child(2) {
-        top: 96px;
-        height: 82px;
+        top: 100px;
       }
 
       .food-card:nth-child(3) {
-        top: 190px;
-        height: 82px;
-      }
-
-      .food-card:hover {
-        border-color: #94a3b8;
-        transform: translateY(-1px);
+        top: 198px;
       }
 
       .food-card.is-selected {
-        padding: 0 16px;
-        border: 2px solid var(--ink);
-        background: var(--field);
+        border: 2px solid var(--accent);
+        background: var(--accent-soft);
       }
 
       .food-icon {
@@ -207,35 +262,37 @@
         place-items: center;
         border-radius: 8px;
         background: var(--field);
-        color: var(--faint);
       }
 
       .food-card.is-selected .food-icon {
         background: var(--white);
-        color: var(--ink);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
       }
 
-      .food-icon svg {
-        width: 24px;
-        height: 24px;
+      .food-icon img {
+        display: block;
+        max-width: 24px;
+        max-height: 21px;
       }
 
       .food-copy {
         min-width: 0;
         margin-left: 16px;
+        transform: translateY(-2px);
       }
 
       .food-title,
       .food-description {
         display: block;
-        letter-spacing: 0.01em;
+        white-space: nowrap;
       }
 
       .food-title {
+        color: var(--text);
         font-size: 16px;
         font-weight: 600;
         line-height: 24px;
+        letter-spacing: 0.16px;
       }
 
       .food-card.is-selected .food-title {
@@ -245,77 +302,84 @@
 
       .food-description {
         margin-top: 6px;
-        color: var(--faint);
+        color: var(--middle-gray);
         font-size: 12px;
         font-weight: 400;
         line-height: 16px;
-        white-space: nowrap;
+        letter-spacing: 0.12px;
       }
 
       .food-card.is-selected .food-description {
-        color: var(--muted);
+        color: var(--warm-gray);
       }
 
       .checkmark {
+        position: absolute;
+        top: 28px;
+        right: 17px;
         width: 24px;
         height: 24px;
         display: grid;
-        flex: 0 0 auto;
         place-items: center;
-        margin-left: auto;
         border: 1px solid var(--line);
         border-radius: 50%;
         background: var(--white);
-        color: transparent;
       }
 
       .food-card.is-selected .checkmark {
-        border-color: var(--ink);
-        background: var(--ink);
-        color: var(--white);
+        border-color: var(--accent);
+        background: var(--accent);
       }
 
-      .checkmark svg {
-        width: 12px;
-        height: 12px;
+      .checkmark img {
+        display: none;
+        width: 11px;
+        height: 8px;
+      }
+
+      .food-card.is-selected .checkmark img {
+        display: block;
       }
 
       .manual-input {
         position: absolute;
-        top: 428px;
-        left: 24px;
-        width: calc(100% - 48px);
-        height: 110px;
+        top: 488px;
+        left: 30px;
+        width: 342px;
+        height: 106px;
       }
 
       .manual-input label {
         display: block;
+        color: var(--ink);
         font-size: 14px;
         font-weight: 700;
         line-height: 20px;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.14px;
+        transform: translateY(-1px);
       }
 
       .input-wrap {
         position: absolute;
         top: 32px;
         left: 0;
-        width: 100%;
+        width: 342px;
         height: 54px;
       }
 
       .food-input {
         width: 100%;
         height: 54px;
-        padding: 0 48px 0 16px;
-        border: 1px solid var(--line);
+        padding: 0 50px 0 19px;
+        border: 0;
         border-radius: 12px;
-        background: var(--field);
+        outline: 0;
+        background: var(--accent-soft);
         color: var(--ink);
         font-size: 14px;
         font-weight: 400;
         line-height: 16px;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.14px;
       }
 
       .food-input::placeholder {
@@ -326,10 +390,10 @@
       .input-icon {
         position: absolute;
         top: 19px;
-        right: 16px;
+        right: 19px;
         width: 16px;
         height: 16px;
-        color: var(--chevron, #cbd5e1);
+        display: block;
         pointer-events: none;
       }
 
@@ -338,108 +402,128 @@
         top: 94px;
         left: 0;
         margin: 0;
-        color: var(--faint);
+        color: var(--warm-gray);
         font-size: 12px;
         font-weight: 400;
         line-height: 16px;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.12px;
+        transform: translateY(-1px);
       }
 
       .privacy-note {
         position: absolute;
-        top: 578px;
-        left: 24px;
-        width: calc(100% - 48px);
+        top: 642.5px;
+        left: 30px;
+        width: 342px;
         height: 68px;
         display: flex;
         align-items: flex-start;
         padding: 16px;
         border-radius: 8px;
-        background: var(--field);
+        background: var(--accent-soft);
       }
 
-      .privacy-note svg {
+      .privacy-note img {
         width: 16px;
         height: 16px;
         flex: 0 0 auto;
         margin-top: 2px;
-        color: var(--faint);
       }
 
       .privacy-note p {
         margin: 0 0 0 12px;
-        color: var(--muted);
+        color: var(--warm-gray);
         font-size: 12px;
         font-weight: 400;
         line-height: 18px;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.12px;
+        transform: translateY(-1px);
       }
 
       .complete-button {
         position: absolute;
-        z-index: 3;
-        top: 730px;
-        left: 24px;
-        width: calc(100% - 48px);
+        top: 750px;
+        left: 30px;
+        width: 342px;
         height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         padding: 0;
         border: 0;
         border-radius: 12px;
-        background: var(--ink);
+        background: var(--accent);
         color: var(--white);
         font-size: 16px;
         font-weight: 700;
         line-height: 24px;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.16px;
         cursor: pointer;
-        transition: background 160ms ease, transform 160ms ease;
       }
 
-      .complete-button:hover {
-        background: #1e293b;
-        transform: translateY(-1px);
+      .complete-button img {
+        width: 12px;
+        height: 14px;
+        display: block;
       }
 
       .bottom-tabs {
         position: absolute;
         z-index: 4;
-        inset: auto 0 0;
-        height: 64px;
+        left: 10px;
+        bottom: 10px;
+        width: 382px;
+        height: 63px;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        padding: 13px 24px;
-        border-top: 1px solid var(--line-soft);
+        padding: 8px;
+        border-radius: 154px;
         background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
       }
 
       .tab-button {
-        height: 37px;
+        position: relative;
+        z-index: 1;
+        height: 47px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start;
-        gap: 4px;
+        justify-content: center;
+        gap: 2px;
         padding: 0;
         border: 0;
+        border-radius: 56px;
         background: transparent;
-        color: var(--faint);
+        color: var(--tab-gray);
         cursor: pointer;
       }
 
-      .tab-button svg {
-        width: 20px;
-        height: 19px;
-        flex: 0 0 19px;
+      .tab-button img {
+        object-fit: contain;
+      }
+
+      .tab-button[data-tab="홈"] img {
+        width: 19px;
+        height: 17.781px;
+      }
+
+      .tab-button[data-tab="히스토리"] img {
+        width: 18px;
+        height: 18px;
       }
 
       .tab-button span {
         font-size: 10px;
         font-weight: 500;
-        line-height: 14px;
+        line-height: 15px;
+        transform: translateY(-2px);
       }
 
       .tab-button.is-active {
-        color: var(--ink);
+        background: var(--accent);
+        color: var(--white);
       }
 
       .tab-button.is-active span {
@@ -448,13 +532,13 @@
 
       .toast {
         position: absolute;
-        z-index: 6;
+        z-index: 7;
         left: 50%;
-        bottom: 76px;
+        bottom: 86px;
         max-width: calc(100% - 40px);
         padding: 10px 14px;
         border-radius: 10px;
-        background: rgba(15, 23, 42, 0.92);
+        background: rgba(15, 23, 43, 0.92);
         color: var(--white);
         font-size: 13px;
         line-height: 18px;
@@ -475,27 +559,31 @@
       .food-input:focus-visible,
       .complete-button:focus-visible,
       .tab-button:focus-visible {
-        outline: 3px solid rgba(15, 23, 42, 0.16);
+        outline: 3px solid rgba(255, 96, 65, 0.24);
         outline-offset: 2px;
       }
 
-      @media (max-width: 360px) {
-        .intro-description {
-          font-size: 13px;
-        }
-
-        .food-card {
-          padding-inline: 14px;
-        }
-
-        .food-copy {
-          margin-left: 12px;
-        }
-      }
-
-      @media (min-height: 870px) {
+      @media (max-width: 401px) {
         .app {
-          height: 870px;
+          width: 100%;
+        }
+
+        .step-indicator,
+        .intro-description,
+        .food-selection,
+        .manual-input,
+        .privacy-note,
+        .complete-button {
+          width: calc(100% - 60px);
+        }
+
+        .food-card,
+        .input-wrap {
+          width: 100%;
+        }
+
+        .bottom-tabs {
+          width: calc(100% - 20px);
         }
       }
 
@@ -510,11 +598,16 @@
   </head>
   <body>
     <div class="app">
+      <div class="status-bar" aria-hidden="true">
+        <p class="status-time">9:41</p>
+        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
+        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
+        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
+      </div>
+
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
-          <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
-            <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
         </button>
         <h1>추천 조건 입력</h1>
       </header>
@@ -534,54 +627,40 @@
         <section class="food-selection" aria-label="제외할 음식 선택">
           <button class="food-card is-selected" type="button" data-excluded-food="해산물" aria-pressed="true">
             <span class="food-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 12c3.4-4.3 7-6 10.5-5.2 2.4.5 4.1 2.3 5.4 4.2L22 8.4v7.2L18.9 13c-1.3 1.9-3 3.7-5.4 4.2C10 18 6.4 16.3 3 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-                <circle cx="14.8" cy="10" r="1" fill="currentColor" />
-              </svg>
+              <img src="./assets/food-seafood.svg" alt="" />
             </span>
             <span class="food-copy">
               <span class="food-title">해산물</span>
               <span class="food-description">생선, 조개류, 갑각류 등</span>
             </span>
             <span class="checkmark" aria-hidden="true">
-              <svg viewBox="0 0 12 12" fill="none">
-                <path d="m1.5 6.1 2.8 2.7 6.2-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <img src="./assets/icon-check.svg" alt="" />
             </span>
           </button>
 
           <button class="food-card" type="button" data-excluded-food="견과류" aria-pressed="false">
             <span class="food-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 20V9M12 14c-4.8 0-7.2-2.4-7.2-7.2C9.6 6.8 12 9.2 12 14Zm0-4c0-4.1 2.1-6.2 6.2-6.2C18.2 7.9 16.1 10 12 10Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <img src="./assets/food-nuts.svg" alt="" />
             </span>
             <span class="food-copy">
               <span class="food-title">견과류</span>
               <span class="food-description">땅콩, 호두, 아몬드 등</span>
             </span>
             <span class="checkmark" aria-hidden="true">
-              <svg viewBox="0 0 12 12" fill="none">
-                <path d="m1.5 6.1 2.8 2.7 6.2-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <img src="./assets/icon-check.svg" alt="" />
             </span>
           </button>
 
           <button class="food-card" type="button" data-excluded-food="유제품" aria-pressed="false">
             <span class="food-icon" aria-hidden="true">
-              <svg viewBox="0 0 20 24" fill="none">
-                <path d="M4 2h12l-1.2 17.2A3 3 0 0 1 11.8 22H8.2a3 3 0 0 1-3-2.8L4 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-                <path d="M5 8h10M7 12.5c1.2-.8 2.2-.8 3.2 0 1 .8 2 .8 3.1 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-              </svg>
+              <img src="./assets/food-dairy.svg" alt="" />
             </span>
             <span class="food-copy">
               <span class="food-title">유제품</span>
               <span class="food-description">우유, 치즈, 버터 등</span>
             </span>
             <span class="checkmark" aria-hidden="true">
-              <svg viewBox="0 0 12 12" fill="none">
-                <path d="m1.5 6.1 2.8 2.7 6.2-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <img src="./assets/icon-check.svg" alt="" />
             </span>
           </button>
         </section>
@@ -597,36 +676,29 @@
               placeholder="예: 오이, 가지, 고수 등"
               autocomplete="off"
             />
-            <svg class="input-icon" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <path d="M3.5 12.5 2.8 16l3.5-.7L15 6.6a2 2 0 0 0-2.8-2.8l-8.7 8.7Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="m10.8 5.2 2.8 2.8M2.8 16h12.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-            </svg>
+            <img class="input-icon" src="./assets/food-input-edit.svg" alt="" aria-hidden="true" />
           </div>
           <p class="input-help">여러 가지인 경우 쉼표(,)로 구분해서 적어주세요.</p>
         </div>
 
         <aside class="privacy-note">
-          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <circle cx="9" cy="9" r="7.3" stroke="currentColor" stroke-width="1.5" />
-            <path d="M9 8v4M9 5.3v.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
-          <p>선택하신 정보는 식당 예약 및 메뉴 추천 시<br />필터링 용도로만 사용됩니다.</p>
+          <img src="./assets/icon-info.svg" alt="" aria-hidden="true" />
+          <p>선택하신 정보는 식당 예약 및 메뉴 추천 시 필터링 용도로만 사용됩니다.</p>
         </aside>
-      </main>
 
-      <button class="complete-button" id="complete-button" type="button">설정 완료하기</button>
+        <button class="complete-button" id="complete-button" type="button">
+          <span>다음 단계로</span>
+          <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
+        </button>
+      </main>
 
       <nav class="bottom-tabs" aria-label="하단 탐색">
         <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
-          <svg viewBox="0 0 20 19" fill="none" aria-hidden="true">
-            <path d="M2 8.2 10 2l8 6.2V17a1 1 0 0 1-1 1h-4.5v-5.6h-5V18H3a1 1 0 0 1-1-1V8.2Z" fill="currentColor" />
-          </svg>
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
           <span>홈</span>
         </button>
         <button class="tab-button" type="button" data-tab="히스토리">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M10 10a3.7 3.7 0 1 0 0-7.4A3.7 3.7 0 0 0 10 10Zm-6.5 7.5c.6-3 3-4.7 6.5-4.7s5.9 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
           <span>히스토리</span>
         </button>
       </nav>
@@ -677,21 +749,14 @@
           .filter(Boolean);
         const excludedFoods = [...new Set([...selectedExcludedFoods, ...customExcludedFoods])];
         const conditionCount = excludedFoods.length;
-        if (conditionCount === 0) {
-          showToast("제외할 음식을 선택하거나 직접 입력해 주세요.");
-          foodCards.forEach((card) => card.setAttribute("aria-invalid", "true"));
-          foodInput.setAttribute("aria-invalid", "true");
-          foodCards[0].focus();
-          return;
-        }
-
         sessionStorage.setItem("excludedFoods", JSON.stringify(excludedFoods));
-        showToast(`${conditionCount}개의 추천 조건을 저장했어요.`);
+        showToast(
+          conditionCount > 0
+            ? `${conditionCount}개의 추천 조건을 저장했어요.`
+            : "제외 음식 없이 진행할게요."
+        );
         window.location.href = "STEP6_point.html";
-
-        
       });
-
     </script>
   </body>
 </html>
