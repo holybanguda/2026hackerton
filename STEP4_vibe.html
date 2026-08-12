@@ -569,9 +569,10 @@
         if (directValue) meetingType = directValue;
 
         if (!meetingType) {
-          showToast("분위기를 선택하거나 직접 입력해 주세요.");
+          showToast("분위기를 선택해 주세요.");
+          moodCards.forEach((card) => card.setAttribute("aria-invalid", "true"));
           moodInput.setAttribute("aria-invalid", "true");
-          moodInput.focus();
+          moodCards[0].focus();
           return;
         }
 

@@ -827,8 +827,7 @@
 
       nextButton.addEventListener("click", () => {
         if (!Number.isInteger(peopleCount) || peopleCount < 1 || peopleCount > 99) {
-          showToast("인원수를 선택하거나 입력해 주세요.");
-          peopleCountInput.setAttribute("aria-invalid", "true");
+          showToast("인원수를 선택하거나 5명 이상 입력해 주세요.");
           peopleCountInput.focus();
           return;
         }
@@ -836,12 +835,12 @@
         sessionStorage.setItem("peopleCount", String(peopleCount));
         showToast(`${peopleCount}명으로 설정했어요.`);
         window.location.href = "STEP3_budget.html";
+
+        // POST /api/recommendation 요청 필드: peopleCount
       });
 
       backButton.addEventListener("click", () => {
-        if (window.history.length > 1) {
-          window.history.back();
-        }
+        showToast("현재 첫 단계입니다.");
       });
     </script>
   </body>

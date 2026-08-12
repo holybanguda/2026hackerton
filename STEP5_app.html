@@ -709,7 +709,6 @@
     <script>
       const foodCards = [...document.querySelectorAll(".food-card")];
       const foodInput = document.querySelector("#food-input");
-      const completeButton = document.querySelector("#complete-button");
       const toast = document.querySelector("#toast");
       let toastTimer;
 
@@ -720,80 +719,44 @@
         toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
       }
 
-      function setCardSelected(card, selected) {
-        card.classList.toggle("is-selected", selected);
-        card.setAttribute("aria-pressed", String(selected));
-      }
-
-      function parseDirectFoods(value) {
-        return value
-          .split(",")
-          .map((food) => food.trim())
-          .filter(Boolean);
-      }
-
-      function getExcludedFoods() {
-        const selectedFoods = foodCards
-          .filter((card) => card.classList.contains("is-selected"))
-          .map((card) => card.dataset.excludedFood);
-        return [...new Set([...selectedFoods, ...parseDirectFoods(foodInput.value)])];
-      }
-
-      function saveExcludedFoods() {
-        const excludedFoods = getExcludedFoods();
-        sessionStorage.setItem("excludedFoods", JSON.stringify(excludedFoods));
-        return excludedFoods;
-      }
-
-      function restoreExcludedFoods() {
-        let storedFoods;
-        try {
-          storedFoods = JSON.parse(sessionStorage.getItem("excludedFoods") || "null");
-        } catch (error) {
-          console.warn("Invalid excludedFoods session data", error);
-          return;
-        }
-
-        if (!Array.isArray(storedFoods)) return;
-
-        const presetFoods = new Set(foodCards.map((card) => card.dataset.excludedFood));
-        foodCards.forEach((card) => setCardSelected(card, storedFoods.includes(card.dataset.excludedFood)));
-        foodInput.value = storedFoods.filter((food) => !presetFoods.has(food)).join(", ");
+      function clearFoodValidation() {
+        foodCards.forEach((card) => card.setAttribute("aria-invalid", "false"));
+        foodInput.setAttribute("aria-invalid", "false");
       }
 
       foodCards.forEach((card) => {
         card.addEventListener("click", () => {
-          setCardSelected(card, !card.classList.contains("is-selected"));
-          saveExcludedFoods();
+          const selected = !card.classList.contains("is-selected");
+          card.classList.toggle("is-selected", selected);
+          card.setAttribute("aria-pressed", String(selected));
+          clearFoodValidation();
         });
       });
 
-      foodInput.addEventListener("change", saveExcludedFoods);
-      foodInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          completeButton.click();
-        }
-      });
+      foodInput.addEventListener("input", clearFoodValidation);
 
       document.querySelector(".back-button").addEventListener("click", () => {
-        saveExcludedFoods();
         window.location.href = "STEP4_vibe.html";
       });
 
-      completeButton.addEventListener("click", () => {
-        const excludedFoods = saveExcludedFoods();
-        showToast(excludedFoods.length ? "추천 조건을 저장했어요." : "제외 음식 없이 진행할게요.");
+      document.querySelector("#complete-button").addEventListener("click", () => {
+        const selectedExcludedFoods = foodCards
+          .filter((card) => card.classList.contains("is-selected"))
+          .map((card) => card.dataset.excludedFood);
+        const customExcludedFoods = foodInput.value
+          .split(",")
+          .map((food) => food.trim())
+          .filter(Boolean);
+        const excludedFoods = [...new Set([...selectedExcludedFoods, ...customExcludedFoods])];
+        const conditionCount = excludedFoods.length;
+        sessionStorage.setItem("excludedFoods", JSON.stringify(excludedFoods));
+        showToast(
+          conditionCount > 0
+            ? `${conditionCount}개의 추천 조건을 저장했어요.`
+            : "제외 음식 없이 진행할게요."
+        );
         window.location.href = "STEP6_point.html";
-
-        // POST /api/recommendation 요청 필드: excludedFoods
       });
-
-      document.querySelectorAll(".tab-button").forEach((button) => {
-        
-      });
-
-      restoreExcludedFoods();
     </script>
   </body>
 </html>

@@ -290,6 +290,15 @@
         opacity: 1;
       }
 
+      .counter-button[data-action="increase"]:disabled {
+        border-color: var(--control-line);
+        cursor: not-allowed;
+      }
+
+      .counter-button[data-action="increase"]:disabled img {
+        opacity: 0.35;
+      }
+
       .counter-button img {
         width: 11px;
       }
@@ -757,8 +766,8 @@
             </div>
           </section>
 
-          <label class="today-preference" for="today-preference-input">
-            <span class="section-title">오늘의 선호도</span>
+          <section class="today-preference">
+            <label class="section-title" for="today-preference-input">오늘의 선호도</label>
             <span class="section-description">특별히 드시고 싶은 메뉴나 못 드시는 재료가 있나요?</span>
             <textarea
               class="preference-input"
@@ -767,7 +776,7 @@
               placeholder="예: 해산물이 당겨요, 견과류 알러지가 있어요"
             ></textarea>
             <img class="preference-icon" src="./assets/feature-input-edit.svg" alt="" aria-hidden="true" />
-          </label>
+          </section>
         </form>
       </main>
 
@@ -794,6 +803,12 @@
 
     <script>
       const counterValues = { bigEaterCount: 0, dietCount: 0 };
+      const storedPeopleCount = Number(sessionStorage.getItem("peopleCount"));
+      const peopleCount = Number.isInteger(storedPeopleCount) && storedPeopleCount > 0
+        ? storedPeopleCount
+        : 0;
+      const counterLimit = peopleCount || 20;
+      const counterRows = [...document.querySelectorAll(".counter-row")];
       const spicyRange = document.querySelector("#spicy-range");
       const rangeProgress = document.querySelector("#range-progress");
       const todayPreferenceInput = document.querySelector("#today-preference-input");
@@ -807,21 +822,36 @@
         toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
       }
 
-      document.querySelectorAll(".counter-row").forEach((row) => {
+      function getFeaturePeopleCount() {
+        return counterValues.bigEaterCount + counterValues.dietCount;
+      }
+
+      function syncCounterControls() {
+        const reachedLimit = getFeaturePeopleCount() >= counterLimit;
+
+        counterRows.forEach((row) => {
+          const key = row.dataset.counter;
+          row.querySelector('[data-action="decrease"]').disabled = counterValues[key] === 0;
+          row.querySelector('[data-action="increase"]').disabled = reachedLimit;
+        });
+      }
+
+      counterRows.forEach((row) => {
         const key = row.dataset.counter;
         const output = row.querySelector(".counter-value");
-        const decreaseButton = row.querySelector('[data-action="decrease"]');
 
         row.querySelectorAll(".counter-button").forEach((button) => {
           button.addEventListener("click", () => {
             const delta = button.dataset.action === "increase" ? 1 : -1;
-            counterValues[key] = Math.max(0, Math.min(20, counterValues[key] + delta));
+            counterValues[key] = Math.max(0, Math.min(counterLimit, counterValues[key] + delta));
             output.value = counterValues[key];
             output.textContent = counterValues[key];
-            decreaseButton.disabled = counterValues[key] === 0;
+            syncCounterControls();
           });
         });
       });
+
+      syncCounterControls();
 
       function updateSpicySlider() {
         const value = Number(spicyRange.value);
@@ -848,6 +878,11 @@
       });
 
       document.querySelector("#analyze-button").addEventListener("click", () => {
+        if (peopleCount > 0 && getFeaturePeopleCount() > peopleCount) {
+          showToast(`대식가와 다이어트 인원의 합은 총 ${peopleCount}명을 넘을 수 없어요.`);
+          return;
+        }
+
         const spicyLevel = Number(spicyRange.value);
         const minSpicyLevel = Number(spicyRange.min);
         const maxSpicyLevel = Number(spicyRange.max);
@@ -870,7 +905,7 @@
         const recommendationRequest = {
           clientId: sessionStorage.getItem("clientId") || "",
           menuId: Number.isInteger(storedMenuId) && storedMenuId > 0 ? storedMenuId : null,
-          peopleCount: Number(sessionStorage.getItem("peopleCount")) || 0,
+          peopleCount,
           budget: Number(sessionStorage.getItem("budget")) || 0,
           meetingType: sessionStorage.getItem("meetingType") || "",
           excludedFoods,
