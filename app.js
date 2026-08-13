@@ -34,37 +34,46 @@ historyTabs.className = 'history-tabs';
 });
 const historyList = document.createElement('div');
 historyList.className = 'history-list';
-const historyItems = [
-  ['\uBC29\uBB38 \uC644\uB8CC', '\uCC44\uB05D \uB4F1\uC2EC \uC2A4\uD14C\uC774\uD06C \uC678 2\uAC74', '3\uBA85', '\uB370\uC774\uD2B8', '58,000\uC6D0', 'assets/history-utensils.png'],
-  ['\uBC29\uBB38 \uC644\uB8CC', '\uD504\uB9AC\uBBF8\uC5C4 \uBAA8\uB4EC \uC2A4\uC2DC B\uC138\uD2B8', '2\uBA85', '\uBE44\uC988\uB2C8\uC2A4', '120,000\uC6D0', 'assets/history-fish.png'],
-  ['\uCDE8\uC18C\uB428', '\uC815\uD1B5 \uAE4C\uB974\uBCF4\uB098\uB77C \uC678 1\uAC74', '4\uBA85', '\uAC00\uC871\uBAA8\uC784', '42,000\uC6D0', 'assets/history-pasta.png'],
-  ['\uBC29\uBB38 \uC644\uB8CC', '\uB9E4\uCF64 \uC81C\uC721 \uC30D\uBC25 \uC815\uC2DD', '1\uBA85', '\uD63C\uBC25', '12,000\uC6D0', 'assets/history-vegetable.png'],
-];
-historyItems.forEach((item, index) => {
-  const card = document.createElement('article');
-  card.className = `history-card ${index === 2 ? 'cancelled' : ''}`;
-  const status = document.createElement('b'); status.className = 'history-status'; status.textContent = item[0];
-  const icon = document.createElement('span'); icon.className = 'history-icon';
-  const image = document.createElement('img'); image.src = item[5]; image.alt = ''; icon.append(image);
-  const name = document.createElement('strong'); name.className = 'history-name'; name.textContent = item[1];
-  const meta = document.createElement('div'); meta.className = 'history-meta';
-  [item[2], item[3]].forEach((label) => { const badge = document.createElement('span'); badge.textContent = label; meta.append(badge); });
-  const price = document.createElement('em'); price.textContent = item[4];
-  card.append(status, icon, name, meta, price);
-  card.addEventListener('click', () => showScreen(index === 0 ? 'edit-screen' : 'result-screen', 'history-screen'));
-  historyList.append(card);
-});
+let currentRecommendation = null;
+const historyItems = [];
+
+function renderHistory() {
+  historyList.replaceChildren();
+  const completedOnly = historyTabs.querySelector('button:nth-child(2)').classList.contains('selected');
+  const visibleItems = historyItems.filter((item) => !completedOnly || item.status === 'completed');
+  if (!visibleItems.length) {
+    const empty = document.createElement('div');
+    empty.className = 'history-empty';
+    empty.innerHTML = '<strong>\uC544\uC9C1 \uCD94\uCC9C \uB0B4\uC5ED\uC774 \uC5C6\uC5B4\uC694</strong><span>\uC8FC\uBB38\uC744 \uD655\uC815\uD558\uBA74 \uC5EC\uAE30\uC5D0 \uC800\uC7A5\uB429\uB2C8\uB2E4.</span>';
+    historyList.append(empty);
+    return;
+  }
+  visibleItems.forEach((item) => {
+    const card = document.createElement('article');
+    card.className = 'history-card';
+    const status = document.createElement('b'); status.className = 'history-status'; status.textContent = '\uBC29\uBB38 \uC644\uB8CC';
+    const icon = document.createElement('span'); icon.className = 'history-icon';
+    const image = document.createElement('img'); image.src = 'assets/history-utensils.png'; image.alt = ''; icon.append(image);
+    const name = document.createElement('strong'); name.className = 'history-name'; name.textContent = '\uCC44\uB05D \uB4F1\uC2EC \uC2A4\uD14C\uC774\uD06C \uC678 2\uAC74';
+    const meta = document.createElement('div'); meta.className = 'history-meta';
+    ['3\uBA85', '\uB370\uC774\uD2B8'].forEach((label) => { const badge = document.createElement('span'); badge.textContent = label; meta.append(badge); });
+    const price = document.createElement('em'); price.textContent = '58,000\uC6D0';
+    card.append(status, icon, name, meta, price);
+    card.addEventListener('click', () => showScreen('result-screen', 'history-screen'));
+    historyList.append(card);
+  });
+}
 historyTabs.querySelectorAll('button').forEach((tab, index) => {
   tab.addEventListener('click', () => {
     historyTabs.querySelectorAll('button').forEach((item) => item.classList.toggle('selected', item === tab));
-    historyList.querySelectorAll('.history-card').forEach((card) => {
-      card.hidden = index === 1 && card.classList.contains('cancelled');
-    });
+    renderHistory();
   });
 });
 historyRoot.append(historyHeader, historyTabs, historyList);
+renderHistory();
 
 function showScreen(screen, activeTab = screen) {
+  if (screen !== 'scan-screen') stopQrCamera();
   document.querySelectorAll('.screen').forEach((item) => item.classList.remove('active'));
   document.querySelector(`#${screen}`).classList.add('active');
   document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('selected', item.dataset.screen === activeTab));
@@ -74,6 +83,64 @@ function notify(message) {
   toast.textContent = message;
   toast.classList.add('show');
   window.setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+function updateHomeRecommendationState() {
+  const continueCard = document.querySelector('[data-action="continue"]');
+  const copy = continueCard.querySelector('.card-copy');
+  const badge = continueCard.querySelector('.badge');
+  copy.querySelector('strong').textContent = '\uC9C4\uD589 \uC911\uC778 \uCD94\uCC9C';
+  copy.querySelector('small').innerHTML = currentRecommendation
+    ? '1\uAC1C\uC758 \uCD94\uCC9C\uC774<br />\uC9C4\uD589 \uC911\uC785\uB2C8\uB2E4'
+    : '\uC9C4\uD589 \uC911\uC778 \uCD94\uCC9C\uC774<br />\uC5C6\uC2B5\uB2C8\uB2E4';
+  badge.hidden = !currentRecommendation;
+  continueCard.classList.toggle('is-empty', !currentRecommendation);
+}
+
+function completeAnalysis() {
+  currentRecommendation = { status: 'in-progress' };
+  updateHomeRecommendationState();
+  showScreen('result-screen', 'home-screen');
+}
+
+function startAnalysis() {
+  showScreen('analysis-screen', 'home-screen');
+  window.setTimeout(completeAnalysis, 1800);
+}
+
+let qrStream = null;
+let qrDetector = null;
+let qrFrame = null;
+
+function stopQrCamera() {
+  if (qrFrame) cancelAnimationFrame(qrFrame);
+  qrFrame = null;
+  if (qrStream) qrStream.getTracks().forEach((track) => track.stop());
+  qrStream = null;
+  document.querySelector('#qr-camera')?.remove();
+  document.querySelector('.scanner')?.classList.remove('is-scanning');
+}
+
+async function startQrCamera() {
+  if (!navigator.mediaDevices?.getUserMedia) { notify('\uC774 \uAE30\uAE30\uC5D0\uC11C\uB294 \uCE74\uBA54\uB77C \uC2A4\uCEA0\uC744 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.'); return; }
+  stopQrCamera();
+  try {
+    qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    const scanner = document.querySelector('.scanner');
+    const video = document.createElement('video');
+    video.id = 'qr-camera'; video.autoplay = true; video.playsInline = true; video.srcObject = qrStream;
+    scanner.prepend(video); scanner.classList.add('is-scanning');
+    if (!('BarcodeDetector' in window)) { notify('QR \uC790\uB3D9 \uC778\uC2DD\uC744 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uB294 \uBE0C\uB77C\uC6B0\uC800\uC785\uB2C8\uB2E4.'); return; }
+    qrDetector = new BarcodeDetector({ formats: ['qr_code'] });
+    const detect = async () => {
+      if (!qrStream || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) { qrFrame = requestAnimationFrame(detect); return; }
+      try {
+        if ((await qrDetector.detect(video)).length) { stopQrCamera(); startAnalysis(); return; }
+      } catch (_) { /* camera frame not ready */ }
+      qrFrame = requestAnimationFrame(detect);
+    };
+    detect();
+  } catch (_) { notify('\uCE74\uBA54\uB77C \uAD8C\uD55C\uC744 \uD5C8\uC6A9\uD574 \uC8FC\uC138\uC694.'); }
 }
 
 document.querySelector('[data-action="start"]').addEventListener('click', () => showScreen('scan-screen', 'home-screen'));
@@ -147,6 +214,10 @@ document.querySelectorAll('[data-add]').forEach((button) => button.addEventListe
   const amount = Number(editBudgetInput.value.replace(/,/g, '')) || 0;
   editBudgetInput.value = (amount + Number(button.dataset.add)).toLocaleString('ko-KR');
 }));
+document.querySelector('#edit-screen .quick-edit button:last-child').addEventListener('click', () => {
+  editBudgetInput.focus();
+  editBudgetInput.select();
+});
 document.querySelectorAll('[data-edit-people]').forEach(b=>b.addEventListener('click',()=>{const e=document.querySelector('#edit-people-count');e.textContent=`${Math.max(1,Number(e.textContent.replace('명',''))+Number(b.dataset.editPeople))}명`}));
 document.querySelector('#edit-submit').addEventListener('click',()=>{showScreen('analysis-screen','home-screen');setTimeout(()=>showScreen('result-screen','home-screen'),1800)});
 
@@ -230,3 +301,124 @@ const menuTags = document.createElement('div');
 menuTags.className = 'menu-tags';
 menuTags.innerHTML = '<b>인기</b><b>추천</b>';
 firstMenuCopy.append(menuTags);
+
+const reportTitle = document.querySelector('#result-screen .report strong');
+reportTitle.textContent = reportTitle.textContent.replace(/^[^\p{L}]*/u, '');
+const reportWand = document.createElement('img');
+reportWand.src = 'assets/report-wand.png';
+reportWand.alt = '';
+reportTitle.prepend(reportWand);
+
+const recommendationTotal = 58000;
+const totalCard = document.querySelector('#result-screen .total-card');
+function updateBudgetGauge() {
+  const budget = Number(editBudgetInput.value.replace(/,/g, '')) || 0;
+  const remaining = Math.max(0, budget - recommendationTotal);
+  const usedRatio = budget ? Math.min(100, (recommendationTotal / budget) * 100) : 100;
+  totalCard.querySelector('strong').textContent = `${recommendationTotal.toLocaleString('ko-KR')}\uC6D0`;
+  totalCard.querySelector('span b').textContent = `${remaining.toLocaleString('ko-KR')}\uC6D0 \uB0A8\uC74C`;
+  totalCard.style.setProperty('--used-ratio', `${usedRatio}%`);
+}
+editBudgetInput.addEventListener('input', updateBudgetGauge);
+document.querySelectorAll('[data-add]').forEach((button) => button.addEventListener('click', updateBudgetGauge));
+updateBudgetGauge();
+
+function replaceControl(selector, handler) {
+  const original = document.querySelector(selector);
+  const control = original.cloneNode(true);
+  original.replaceWith(control);
+  control.addEventListener('click', handler);
+  return control;
+}
+
+replaceControl('[data-action="continue"]', () => {
+  if (currentRecommendation) showScreen('result-screen', 'home-screen');
+  else notify('\uC9C4\uD589 \uC911\uC778 \uCD94\uCC9C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.');
+});
+replaceControl('#permission', startQrCamera);
+replaceControl('.scan-button', startQrCamera);
+replaceControl('.code-row', () => {
+  const value = window.prompt('\uC2A4\uCEA0\uD560 QR \uCF54\uB4DC\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694.');
+  if (value?.trim()) startAnalysis();
+});
+
+const resultActions = document.querySelectorAll('#result-screen .result-actions button');
+replaceControl('#result-screen .result-actions button:first-child', startAnalysis);
+replaceControl('#result-screen .result-actions button:last-child', () => {
+  if (!currentRecommendation) return;
+  historyItems.unshift({ status: 'completed' });
+  currentRecommendation = null;
+  updateHomeRecommendationState();
+  renderHistory();
+  showScreen('history-screen', 'history-screen');
+});
+replaceControl('#edit-submit', startAnalysis);
+
+const foodTags = document.querySelector('#edit-screen .edit-tags');
+const addFoodButton = foodTags.querySelector('button:last-child');
+foodTags.querySelectorAll('button:not(:last-child)').forEach((tag) => tag.remove());
+function addFoodTag(name) {
+  const tag = document.createElement('button');
+  tag.type = 'button';
+  tag.className = 'food-tag';
+  const label = document.createElement('span'); label.textContent = name;
+  const remove = document.createElement('span'); remove.className = 'tag-remove'; remove.textContent = '\u00d7'; remove.setAttribute('role', 'button'); remove.setAttribute('aria-label', '\uC0AD\uC81C');
+  remove.addEventListener('click', (event) => { event.stopPropagation(); tag.remove(); });
+  tag.append(label, remove);
+  const addControl = foodTags.querySelector('.food-tag-input, button:last-child');
+  foodTags.insertBefore(tag, addControl);
+}
+addFoodTag('\uC624\uC774');
+addFoodTag('\uACAC\uACFC\uB958');
+const addFoodControl = addFoodButton.cloneNode(true);
+addFoodButton.replaceWith(addFoodControl);
+addFoodControl.addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.className = 'food-tag-input';
+  input.placeholder = '\uC74C\uC2DD \uC774\uB984';
+  addFoodControl.replaceWith(input);
+  input.focus();
+  const submit = () => {
+    const value = input.value.trim();
+    if (value) addFoodTag(value);
+    input.replaceWith(addFoodControl);
+  };
+  input.addEventListener('keydown', (event) => { if (event.key === 'Enter') submit(); if (event.key === 'Escape') input.replaceWith(addFoodControl); });
+  input.addEventListener('blur', submit, { once: true });
+});
+
+// Enter 입력은 blur 처리와 분리해, 모바일·데스크톱에서 모두 확실히 태그를 추가합니다.
+const repairedAddFoodButton = document.querySelector('#edit-screen .edit-tags button:last-child');
+const freshAddFoodButton = repairedAddFoodButton.cloneNode(true);
+repairedAddFoodButton.replaceWith(freshAddFoodButton);
+freshAddFoodButton.addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.className = 'food-tag-input';
+  input.placeholder = '\uC74C\uC2DD \uC774\uB984';
+  freshAddFoodButton.replaceWith(input);
+  input.focus();
+  let committed = false;
+  const commit = () => {
+    if (committed) return;
+    committed = true;
+    const value = input.value.trim();
+    if (value) addFoodTag(value);
+    input.replaceWith(freshAddFoodButton);
+  };
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') { event.preventDefault(); commit(); }
+    if (event.key === 'Escape') { event.preventDefault(); input.replaceWith(freshAddFoodButton); }
+  });
+  input.addEventListener('change', commit, { once: true });
+});
+
+updateHomeRecommendationState();
+
+const cameraOptionIcon = document.querySelector('#scan-screen .option-row .option-icon');
+cameraOptionIcon.replaceChildren(Object.assign(document.createElement('img'), { src: 'assets/camera-gray.png', alt: '' }));
+const scanButton = document.querySelector('#scan-screen .scan-button');
+const scanButtonText = scanButton.textContent;
+const scanButtonIcon = document.createElement('img');
+scanButtonIcon.src = 'assets/camera-white.png';
+scanButtonIcon.alt = '';
+scanButton.replaceChildren(document.createTextNode(scanButtonText), scanButtonIcon);
