@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script src="./api.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>분위기 선택</title>
+    <style>
+      :root {
+        --ink: #0f172b;
+        --accent: #ff6041;
+        --muted: #7f7a76;
+        --faint: #b2afac;
+        --tab-muted: #afa8a8;
+        --line: #dedede;
+        --field: #f6f4f5;
+        --input: #fff5ec;
+        --white: #ffffff;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body { margin: 0; min-height: 100%; }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: start center;
+        background: #eef2f7;
+        color: var(--ink);
+        font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button, input { font: inherit; }
+      button { -webkit-tap-highlight-color: transparent; }
+
+      .app {
+        position: relative;
+        width: min(100%, 402px);
+        min-height: 1006px;
+        overflow: hidden;
+        background: var(--white);
+      }
+
+      .header {
+        position: absolute;
+        z-index: 4;
+        inset: 0 0 auto;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--white);
+      }
+
+      .back-button {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .back-button:hover, .back-button:focus-visible { background: var(--field); }
+      .back-button img { width: 9px; height: 16px; transform: translateX(3px); }
+
+      .header h1 {
+        margin: 0 0 0 12px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.01em;
+      }
+
+      main {
+        position: absolute;
+        top: 56px;
+        left: 6px;
+        right: 6px;
+        height: 648px;
+      }
+
+      .step-indicator {
+        position: absolute;
+        top: 20px;
+        left: 24px;
+        right: 24px;
+        height: 4px;
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .step-indicator span {
+        min-width: 0;
+        border-radius: 99px;
+        background: var(--field);
+      }
+
+      .step-indicator span:nth-child(-n + 4) { background: var(--accent); }
+
+      .intro-title {
+        position: absolute;
+        top: 40px;
+        left: 25px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 25px;
+        letter-spacing: 0.01em;
+      }
+
+      .intro-description {
+        position: absolute;
+        top: 99px;
+        left: 24px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 19px;
+        letter-spacing: 0.01em;
+      }
+
+      .mood-form {
+        position: absolute;
+        top: 141px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 507px;
+      }
+
+      .mood-card {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 78px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--white);
+        color: var(--ink);
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+      }
+
+      .mood-card:nth-of-type(1) { top: 6px; }
+      .mood-card:nth-of-type(2) { top: 100px; }
+      .mood-card:nth-of-type(3) { top: 194px; }
+      .mood-card:hover { transform: translateY(-1px); }
+      .mood-card.is-selected { border-color: var(--accent); background: #fffaf7; }
+
+      .mood-icon {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--field);
+      }
+
+      .mood-card[data-meeting-type="친구 모임"] .mood-icon img { width: 23px; height: 19px; }
+      .mood-card[data-meeting-type="데이트"] .mood-icon img { width: 18px; height: 18px; }
+      .mood-card[data-meeting-type="가족 식사"] .mood-icon img { width: 20px; height: 18px; }
+
+      .mood-copy { min-width: 0; margin-left: 16px; }
+      .mood-title, .mood-description { display: block; letter-spacing: 0.01em; }
+      .mood-title { font-size: 16px; font-weight: 700; line-height: 24px; }
+      .mood-description {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+
+      .card-chevron { width: 8px; height: 14px; margin-left: auto; }
+
+      .manual-input {
+        position: absolute;
+        top: 294px;
+        left: 0;
+        width: 100%;
+        height: 106px;
+      }
+
+      .manual-input label {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .manual-field {
+        position: absolute;
+        top: 32px;
+        left: 0;
+        width: 100%;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        border-radius: 12px;
+        background: var(--input);
+      }
+
+      .manual-field input {
+        width: 100%;
+        height: 100%;
+        padding: 0 48px 0 16px;
+        border: 0;
+        outline: 0;
+        border-radius: inherit;
+        background: transparent;
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .manual-field input::placeholder { color: var(--faint); }
+      .manual-field img {
+        position: absolute;
+        right: 16px;
+        width: 16px;
+        height: 16px;
+        pointer-events: none;
+      }
+
+      .manual-help {
+        position: absolute;
+        top: 90px;
+        left: 0;
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 16px;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+      }
+
+      .recent-moods {
+        position: absolute;
+        top: 457px;
+        left: 1px;
+        width: 100%;
+        height: 70px;
+      }
+
+      .recent-moods h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+
+      .recent-buttons { display: flex; gap: 8px; margin-top: 12px; }
+      .recent-button {
+        height: 38px;
+        padding: 0 15px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--white);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+      }
+
+      .recent-button.is-selected { border-color: var(--accent); background: var(--accent); color: var(--white); }
+
+      .bottom-actions {
+        position: absolute;
+        z-index: 3;
+        top: 840px;
+        left: 30px;
+        right: 30px;
+        height: 52px;
+      }
+
+      .next-button {
+        width: 100%;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--accent);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
+        color: var(--white);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+      }
+
+      .next-button:hover { background: #f25437; }
+      .next-button img { width: 11px; height: 10px; }
+
+      .bottom-tabs {
+        position: absolute;
+        z-index: 4;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        height: 63px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 8px;
+        border-radius: 154px;
+        background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
+      }
+
+      .tab-button {
+        height: 47px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 0;
+        border: 0;
+        border-radius: 56px;
+        background: transparent;
+        color: var(--tab-muted);
+        cursor: pointer;
+      }
+
+      .tab-button img { display: block; flex: 0 0 auto; }
+      .tab-button[data-tab="홈"] img { width: 19px; height: 18px; }
+      .tab-button[data-tab="히스토리"] img { width: 18px; height: 18px; }
+      .tab-button span { font-size: 10px; font-weight: 500; line-height: 15px; }
+      .tab-button.is-active { background: var(--accent); color: var(--white); }
+      .tab-button.is-active span { font-weight: 700; }
+
+      .toast {
+        position: absolute;
+        z-index: 6;
+        left: 50%;
+        bottom: 82px;
+        max-width: calc(100% - 40px);
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--white);
+        font-size: 13px;
+        line-height: 18px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+      .back-button:focus-visible, .mood-card:focus-visible, .manual-field input:focus-visible,
+      .recent-button:focus-visible, .next-button:focus-visible, .tab-button:focus-visible {
+        outline: 3px solid rgba(255, 96, 65, 0.24);
+        outline-offset: 2px;
+      }
+
+      @media (min-height: 1006px) { .app { height: 1006px; } }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition-duration: 0.01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <button class="back-button" type="button" aria-label="이전 화면으로">
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
+        </button>
+        <h1>분위기 선택</h1>
+      </header>
+
+      <main>
+        <div class="step-indicator" aria-label="8단계 중 4단계">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+
+        <h2 class="intro-title">어떤 분위기로<br />식사할까요?</h2>
+        <p class="intro-description">선택한 분위기에 맞춰 장소를 추천해 드려요.</p>
+
+        <form class="mood-form" id="mood-form">
+          <button class="mood-card" type="button" data-meeting-type="친구 모임" aria-pressed="false">
+            <span class="mood-icon" aria-hidden="true"><img src="./assets/mood-friends.svg" alt="" /></span>
+            <span class="mood-copy">
+              <span class="mood-title">친구 모임</span>
+              <span class="mood-description">수다와 웃음이 있는 자리</span>
+            </span>
+            <img class="card-chevron" src="./assets/icon-chevron-right.svg" alt="" aria-hidden="true" />
+          </button>
+
+          <button class="mood-card" type="button" data-meeting-type="데이트" aria-pressed="false">
+            <span class="mood-icon" aria-hidden="true"><img src="./assets/mood-date.svg" alt="" /></span>
+            <span class="mood-copy">
+              <span class="mood-title">데이트</span>
+              <span class="mood-description">조용하고 분위기 좋은 곳</span>
+            </span>
+            <img class="card-chevron" src="./assets/icon-chevron-right.svg" alt="" aria-hidden="true" />
+          </button>
+
+          <button class="mood-card" type="button" data-meeting-type="가족 식사" aria-pressed="false">
+            <span class="mood-icon" aria-hidden="true"><img src="./assets/mood-family.svg" alt="" /></span>
+            <span class="mood-copy">
+              <span class="mood-title">가족 식사</span>
+              <span class="mood-description">모두가 편하게 즐기는 식사</span>
+            </span>
+            <img class="card-chevron" src="./assets/icon-chevron-right.svg" alt="" aria-hidden="true" />
+          </button>
+
+          <div class="manual-input">
+            <label for="mood-input">직접 입력</label>
+            <div class="manual-field">
+              <input id="mood-input" type="text" maxlength="60" autocomplete="off" aria-describedby="manual-help" />
+              <img src="./assets/icon-edit.svg" alt="" aria-hidden="true" />
+            </div>
+            <p class="manual-help" id="manual-help">여러 가지인 경우 쉼표(,)로 구분해서 적어주세요.</p>
+          </div>
+
+          <section class="recent-moods" aria-labelledby="recent-title">
+            <h3 id="recent-title">최근 선택</h3>
+            <div class="recent-buttons">
+              <button class="recent-button" type="button" data-meeting-type="소개팅">소개팅</button>
+              <button class="recent-button" type="button" data-meeting-type="회식">회식</button>
+              <button class="recent-button" type="button" data-meeting-type="가족 행사">가족 행사</button>
+            </div>
+          </section>
+        </form>
+      </main>
+
+      <div class="bottom-actions">
+        <button class="next-button" id="next-button" type="button">
+          <span>다음 단계로</span>
+          <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
+
+      <nav class="bottom-tabs" aria-label="하단 탐색">
+        <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
+          <span>홈</span>
+        </button>
+        <button class="tab-button" type="button" data-tab="히스토리">
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
+          <span>히스토리</span>
+        </button>
+      </nav>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const moodCards = [...document.querySelectorAll(".mood-card")];
+      const recentButtons = [...document.querySelectorAll(".recent-button")];
+      const moodInput = document.querySelector("#mood-input");
+      const toast = document.querySelector("#toast");
+      let meetingType = "";
+      let toastTimer;
+
+      function selectMeetingType(meetingTypeValue, source) {
+        meetingType = meetingTypeValue;
+        moodCards.forEach((card) => card.setAttribute("aria-invalid", "false"));
+        moodCards.forEach((card) => {
+          const selected = card === source;
+          card.classList.toggle("is-selected", selected);
+          card.setAttribute("aria-pressed", String(selected));
+        });
+        recentButtons.forEach((button) => {
+          const selected = button === source;
+          button.classList.toggle("is-selected", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+      }
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      }
+
+      moodCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          moodInput.value = "";
+          moodInput.setAttribute("aria-invalid", "false");
+          selectMeetingType(card.dataset.meetingType, card);
+        });
+      });
+
+      recentButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", "false");
+        button.addEventListener("click", () => {
+          moodInput.value = "";
+          moodInput.setAttribute("aria-invalid", "false");
+          selectMeetingType(button.dataset.meetingType, button);
+        });
+      });
+
+      moodInput.addEventListener("input", () => {
+        const directValue = moodInput.value.trim();
+        moodInput.setAttribute("aria-invalid", "false");
+        selectMeetingType(directValue, null);
+      });
+
+      document.querySelector(".back-button").addEventListener("click", () => {
+        window.location.href = "STEP3_budget.html";
+      });
+
+      document.querySelector("#next-button").addEventListener("click", () => {
+        const directValue = moodInput.value.trim();
+        if (directValue) meetingType = directValue;
+
+        if (!meetingType) {
+          showToast("분위기를 선택해 주세요.");
+          moodCards.forEach((card) => card.setAttribute("aria-invalid", "true"));
+          moodInput.setAttribute("aria-invalid", "true");
+          moodCards[0].focus();
+          return;
+        }
+
+        sessionStorage.setItem("meetingType", meetingType);
+        showToast(`${meetingType} 분위기를 선택했어요.`);
+        window.location.href = "STEP5_app.html";
+
+        // POST /api/recommendation 요청 필드: meetingType
+      });
+    </script>
+  </body>
+</html>

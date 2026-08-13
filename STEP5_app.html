@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script src="./api.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>추천 조건 입력</title>
+    <style>
+      :root {
+        --accent: #ff6041;
+        --accent-soft: #fff5ec;
+        --ink: #0f172b;
+        --text: #314158;
+        --warm-gray: #7f7a76;
+        --middle-gray: #b2afac;
+        --line: #dedede;
+        --field: #f6f4f5;
+        --tab-gray: #afa8a8;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        place-items: start center;
+        background: var(--white);
+        color: var(--ink);
+        font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .app {
+        position: relative;
+        width: min(100%, 402px);
+        height: 1017px;
+        min-height: 1017px;
+        overflow: hidden;
+        background: var(--white);
+      }
+
+      .header {
+        position: absolute;
+        z-index: 4;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--white);
+      }
+
+      .back-button {
+        position: relative;
+        width: 32px;
+        height: 32px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: initial;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .back-button img {
+        position: absolute;
+        top: 7.6px;
+        left: 14.5px;
+        width: 8.802px;
+        height: 15.405px;
+        display: block;
+      }
+
+      .header h1 {
+        margin: 0 0 0 12px;
+        color: var(--ink);
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.18px;
+        transform: translateY(-1px);
+      }
+
+      main {
+        position: absolute;
+        top: 56px;
+        left: 0;
+        width: 100%;
+        height: 842px;
+      }
+
+      .step-indicator {
+        position: absolute;
+        top: 20px;
+        left: 30px;
+        width: 342px;
+        height: 4px;
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .step-indicator span {
+        min-width: 0;
+        border-radius: 999px;
+        background: var(--field);
+      }
+
+      .step-indicator span:nth-child(-n + 5) {
+        background: var(--accent);
+      }
+
+      .intro-title {
+        position: absolute;
+        top: 39px;
+        left: 30px;
+        margin: 0;
+        color: var(--ink);
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 30px;
+        letter-spacing: 0.24px;
+      }
+
+      .intro-description {
+        position: absolute;
+        top: 77px;
+        left: 30px;
+        width: 342px;
+        margin: 0;
+        color: var(--warm-gray);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 19px;
+        letter-spacing: 0.14px;
+      }
+
+      .food-selection {
+        position: absolute;
+        top: 164px;
+        left: 30px;
+        width: 342px;
+        height: 280px;
+      }
+
+      .food-card {
+        position: absolute;
+        left: 0;
+        width: 342px;
+        height: 82px;
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--white);
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 140ms ease, background-color 140ms ease;
+      }
+
+      .food-card:nth-child(1) {
+        top: 0;
+        height: 84px;
+      }
+
+      .food-card:nth-child(2) {
+        top: 100px;
+      }
+
+      .food-card:nth-child(3) {
+        top: 198px;
+      }
+
+      .food-card.is-selected {
+        border: 2px solid var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .food-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--field);
+      }
+
+      .food-card.is-selected .food-icon {
+        background: var(--white);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
+      }
+
+      .food-icon img {
+        display: block;
+        max-width: 24px;
+        max-height: 21px;
+      }
+
+      .food-copy {
+        min-width: 0;
+        margin-left: 16px;
+        transform: translateY(-2px);
+      }
+
+      .food-title,
+      .food-description {
+        display: block;
+        white-space: nowrap;
+      }
+
+      .food-title {
+        color: var(--text);
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 24px;
+        letter-spacing: 0.16px;
+      }
+
+      .food-card.is-selected .food-title {
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .food-description {
+        margin-top: 6px;
+        color: var(--middle-gray);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.12px;
+      }
+
+      .food-card.is-selected .food-description {
+        color: var(--warm-gray);
+      }
+
+      .checkmark {
+        position: absolute;
+        top: 28px;
+        right: 17px;
+        width: 24px;
+        height: 24px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: var(--white);
+      }
+
+      .food-card.is-selected .checkmark {
+        border-color: var(--accent);
+        background: var(--accent);
+      }
+
+      .checkmark img {
+        display: none;
+        width: 11px;
+        height: 8px;
+      }
+
+      .food-card.is-selected .checkmark img {
+        display: block;
+      }
+
+      .manual-input {
+        position: absolute;
+        top: 488px;
+        left: 30px;
+        width: 342px;
+        height: 106px;
+      }
+
+      .manual-input label {
+        display: block;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.14px;
+        transform: translateY(-1px);
+      }
+
+      .input-wrap {
+        position: absolute;
+        top: 32px;
+        left: 0;
+        width: 342px;
+        height: 54px;
+      }
+
+      .food-input {
+        width: 100%;
+        height: 54px;
+        padding: 0 50px 0 19px;
+        border: 0;
+        border-radius: 12px;
+        outline: 0;
+        background: var(--accent-soft);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.14px;
+      }
+
+      .food-input::placeholder {
+        color: rgba(0, 0, 0, 0.5);
+        opacity: 1;
+      }
+
+      .input-icon {
+        position: absolute;
+        top: 19px;
+        right: 19px;
+        width: 16px;
+        height: 16px;
+        display: block;
+        pointer-events: none;
+      }
+
+      .input-help {
+        position: absolute;
+        top: 94px;
+        left: 0;
+        margin: 0;
+        color: var(--warm-gray);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.12px;
+        transform: translateY(-1px);
+      }
+
+      .privacy-note {
+        position: absolute;
+        top: 642.5px;
+        left: 30px;
+        width: 342px;
+        height: 68px;
+        display: flex;
+        align-items: flex-start;
+        padding: 16px;
+        border-radius: 8px;
+        background: var(--accent-soft);
+      }
+
+      .privacy-note img {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+        margin-top: 2px;
+      }
+
+      .privacy-note p {
+        margin: 0 0 0 12px;
+        color: var(--warm-gray);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 18px;
+        letter-spacing: 0.12px;
+        transform: translateY(-1px);
+      }
+
+      .complete-button {
+        position: absolute;
+        top: 796px;
+        left: 30px;
+        width: 342px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--accent);
+        color: var(--white);
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 24px;
+        letter-spacing: 0.16px;
+        cursor: pointer;
+      }
+
+      .complete-button img {
+        width: 12px;
+        height: 14px;
+        display: block;
+      }
+
+      .bottom-tabs {
+        position: absolute;
+        z-index: 4;
+        left: 10px;
+        bottom: 10px;
+        width: 382px;
+        height: 63px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 8px;
+        border-radius: 154px;
+        background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
+      }
+
+      .tab-button {
+        position: relative;
+        z-index: 1;
+        height: 47px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 0;
+        border: 0;
+        border-radius: 56px;
+        background: transparent;
+        color: var(--tab-gray);
+        cursor: pointer;
+      }
+
+      .tab-button img {
+        object-fit: contain;
+      }
+
+      .tab-button[data-tab="홈"] img {
+        width: 19px;
+        height: 17.781px;
+      }
+
+      .tab-button[data-tab="히스토리"] img {
+        width: 18px;
+        height: 18px;
+      }
+
+      .tab-button span {
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 15px;
+        transform: translateY(-2px);
+      }
+
+      .tab-button.is-active {
+        background: var(--accent);
+        color: var(--white);
+      }
+
+      .tab-button.is-active span {
+        font-weight: 700;
+      }
+
+      .toast {
+        position: absolute;
+        z-index: 7;
+        left: 50%;
+        bottom: 86px;
+        max-width: calc(100% - 40px);
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 43, 0.92);
+        color: var(--white);
+        font-size: 13px;
+        line-height: 18px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .back-button:focus-visible,
+      .food-card:focus-visible,
+      .food-input:focus-visible,
+      .complete-button:focus-visible,
+      .tab-button:focus-visible {
+        outline: 3px solid rgba(255, 96, 65, 0.24);
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 401px) {
+        .app {
+          width: 100%;
+        }
+
+        .step-indicator,
+        .intro-description,
+        .food-selection,
+        .manual-input,
+        .privacy-note,
+        .complete-button {
+          width: calc(100% - 60px);
+        }
+
+        .food-card,
+        .input-wrap {
+          width: 100%;
+        }
+
+        .bottom-tabs {
+          width: calc(100% - 20px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <button class="back-button" type="button" aria-label="이전 화면으로">
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
+        </button>
+        <h1>추천 조건 입력</h1>
+      </header>
+
+      <main>
+        <div class="step-indicator" aria-label="8단계 중 5단계">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+
+        <h2 class="intro-title">못 먹는 음식이 있나요?</h2>
+        <p class="intro-description">
+          알러지가 있거나 선호하지 않는 식재료를 알려주세요.<br />
+          회원님께 안전한 메뉴만 추천해 드릴게요.
+        </p>
+
+        <section class="food-selection" aria-label="제외할 음식 선택">
+          <button class="food-card is-selected" type="button" data-excluded-food="해산물" aria-pressed="true">
+            <span class="food-icon" aria-hidden="true">
+              <img src="./assets/food-seafood.svg" alt="" />
+            </span>
+            <span class="food-copy">
+              <span class="food-title">해산물</span>
+              <span class="food-description">생선, 조개류, 갑각류 등</span>
+            </span>
+            <span class="checkmark" aria-hidden="true">
+              <img src="./assets/icon-check.svg" alt="" />
+            </span>
+          </button>
+
+          <button class="food-card" type="button" data-excluded-food="견과류" aria-pressed="false">
+            <span class="food-icon" aria-hidden="true">
+              <img src="./assets/food-nuts.svg" alt="" />
+            </span>
+            <span class="food-copy">
+              <span class="food-title">견과류</span>
+              <span class="food-description">땅콩, 호두, 아몬드 등</span>
+            </span>
+            <span class="checkmark" aria-hidden="true">
+              <img src="./assets/icon-check.svg" alt="" />
+            </span>
+          </button>
+
+          <button class="food-card" type="button" data-excluded-food="유제품" aria-pressed="false">
+            <span class="food-icon" aria-hidden="true">
+              <img src="./assets/food-dairy.svg" alt="" />
+            </span>
+            <span class="food-copy">
+              <span class="food-title">유제품</span>
+              <span class="food-description">우유, 치즈, 버터 등</span>
+            </span>
+            <span class="checkmark" aria-hidden="true">
+              <img src="./assets/icon-check.svg" alt="" />
+            </span>
+          </button>
+        </section>
+
+        <div class="manual-input">
+          <label for="food-input">직접 입력</label>
+          <div class="input-wrap">
+            <input
+              class="food-input"
+              id="food-input"
+              name="excludedFoods"
+              type="text"
+              placeholder="예: 오이, 가지, 고수 등"
+              autocomplete="off"
+            />
+            <img class="input-icon" src="./assets/food-input-edit.svg" alt="" aria-hidden="true" />
+          </div>
+          <p class="input-help">여러 가지인 경우 쉼표(,)로 구분해서 적어주세요.</p>
+        </div>
+
+        <aside class="privacy-note">
+          <img src="./assets/icon-info.svg" alt="" aria-hidden="true" />
+          <p>선택하신 정보는 식당 예약 및 메뉴 추천 시 필터링 용도로만 사용됩니다.</p>
+        </aside>
+
+        <button class="complete-button" id="complete-button" type="button">
+          <span>다음 단계로</span>
+          <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
+        </button>
+      </main>
+
+      <nav class="bottom-tabs" aria-label="하단 탐색">
+        <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
+          <span>홈</span>
+        </button>
+        <button class="tab-button" type="button" data-tab="히스토리">
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
+          <span>히스토리</span>
+        </button>
+      </nav>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const foodCards = [...document.querySelectorAll(".food-card")];
+      const foodInput = document.querySelector("#food-input");
+      const toast = document.querySelector("#toast");
+      let toastTimer;
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      }
+
+      function clearFoodValidation() {
+        foodCards.forEach((card) => card.setAttribute("aria-invalid", "false"));
+        foodInput.setAttribute("aria-invalid", "false");
+      }
+
+      foodCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          const selected = !card.classList.contains("is-selected");
+          card.classList.toggle("is-selected", selected);
+          card.setAttribute("aria-pressed", String(selected));
+          clearFoodValidation();
+        });
+      });
+
+      foodInput.addEventListener("input", clearFoodValidation);
+
+      document.querySelector(".back-button").addEventListener("click", () => {
+        window.location.href = "STEP4_vibe.html";
+      });
+
+      document.querySelector("#complete-button").addEventListener("click", () => {
+        const selectedExcludedFoods = foodCards
+          .filter((card) => card.classList.contains("is-selected"))
+          .map((card) => card.dataset.excludedFood);
+        const customExcludedFoods = foodInput.value
+          .split(",")
+          .map((food) => food.trim())
+          .filter(Boolean);
+        const excludedFoods = [...new Set([...selectedExcludedFoods, ...customExcludedFoods])];
+        const conditionCount = excludedFoods.length;
+        sessionStorage.setItem("excludedFoods", JSON.stringify(excludedFoods));
+        showToast(
+          conditionCount > 0
+            ? `${conditionCount}개의 추천 조건을 저장했어요.`
+            : "제외 음식 없이 진행할게요."
+        );
+        window.location.href = "STEP6_point.html";
+      });
+    </script>
+  </body>
+</html>

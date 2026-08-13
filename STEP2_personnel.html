@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script src="./api.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>인원수 입력</title>
+    <style>
+      :root {
+        --ink: #0f172a;
+        --text: #314158;
+        --muted: #62748e;
+        --faint: #90a1b9;
+        --line: #e2e8f0;
+        --line-soft: #f1f5f9;
+        --field: #f8fafc;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: start center;
+        background: #eef2f7;
+        color: var(--ink);
+        font-family: Inter, Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .app {
+        position: relative;
+        width: min(100%, 402px);
+        min-height: 874px;
+        overflow: hidden;
+        background: var(--white);
+      }
+
+      .header {
+        position: absolute;
+        z-index: 3;
+        inset: 0 12px auto 0;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line-soft);
+        background: var(--white);
+      }
+
+      .back-button {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+      }
+
+      .back-button:hover,
+      .back-button:focus-visible {
+        background: var(--field);
+      }
+
+      .back-button:focus-visible,
+      .count-button:focus-visible,
+      .next-button:focus-visible,
+      .tab-button:focus-visible,
+      .member-input:focus-visible {
+        outline: 3px solid rgba(15, 23, 42, 0.16);
+        outline-offset: 2px;
+      }
+
+      .header h1 {
+        margin: 0 0 0 12px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.01em;
+      }
+
+      main {
+        position: absolute;
+        inset: 56px 12px auto 0;
+        height: 543px;
+      }
+
+      .content {
+        position: relative;
+        height: 467px;
+      }
+
+      .step-indicator {
+        position: absolute;
+        top: 16px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: 4px;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 4px;
+      }
+
+      .step-indicator span {
+        min-width: 0;
+        border-radius: 99px;
+        background: var(--line-soft);
+      }
+
+      .step-indicator span:nth-child(-n + 2) {
+        background: var(--ink);
+      }
+
+      .intro {
+        position: absolute;
+        top: 32px;
+        left: 24px;
+        right: 24px;
+      }
+
+      .intro h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 30px;
+        letter-spacing: 0.01em;
+      }
+
+      .member-form {
+        position: absolute;
+        top: 160px;
+        left: 24px;
+        right: 24px;
+        height: 275px;
+      }
+
+      .quick-members {
+        display: grid;
+        grid-template-columns: 69px 71px 71px 72px;
+        gap: 8px;
+        align-items: center;
+        height: 62px;
+        padding-top: 10px;
+      }
+
+      .count-button {
+        height: 42px;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--white);
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: border-color 160ms ease, background 160ms ease, color 160ms ease,
+          transform 160ms ease;
+      }
+
+      .count-button:hover {
+        border-color: #94a3b8;
+        transform: translateY(-1px);
+      }
+
+      .count-button.is-selected {
+        border-color: var(--ink);
+        background: var(--ink);
+        color: var(--white);
+        font-weight: 700;
+      }
+
+      .direct-entry {
+        position: absolute;
+        top: 108px;
+        left: 0;
+        width: 100%;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 21px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--white);
+      }
+
+      .direct-copy strong,
+      .direct-copy small {
+        display: block;
+        letter-spacing: 0.01em;
+      }
+
+      .direct-copy strong {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+      }
+
+      .direct-copy small {
+        margin-top: 0;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+      }
+
+      .input-wrap {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .member-input {
+        width: 66px;
+        height: 38px;
+        padding: 0 11px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--field);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 16px;
+        text-align: right;
+        letter-spacing: 0.01em;
+        appearance: textfield;
+      }
+
+      .member-input::-webkit-inner-spin-button,
+      .member-input::-webkit-outer-spin-button {
+        margin: 0;
+        appearance: none;
+      }
+
+      .member-input::placeholder {
+        color: var(--faint);
+        opacity: 1;
+      }
+
+      .input-unit {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+      }
+
+      .member-summary {
+        position: absolute;
+        top: 470px;
+        left: 24px;
+        right: 24px;
+        height: 53px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding-bottom: 0;
+        border-top: 1px solid var(--line-soft);
+      }
+
+      .summary-label {
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+      }
+      
+      .summary-count {
+        margin-right: -2px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.01em;
+      }
+
+      .next-button {
+        position: absolute;
+        z-index: 2;
+        left: 20px;
+        right: 20px;
+        top: 708px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: var(--ink);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        color: var(--white);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: background 160ms ease, transform 160ms ease;
+      }
+      
+      .next-button:hover {
+        background: #1e293b;
+        transform: translateY(-1px);
+      }
+      
+      .next-button:active {
+        transform: translateY(0);
+      }
+
+      .bottom-tabs {
+        position: absolute;
+        z-index: 3;
+        inset: auto 0 0;
+        height: 64px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 13px 24px;
+        border-top: 1px solid var(--line-soft);
+        background: var(--white);
+      }
+      
+      .tab-button {
+        height: 37px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--faint);
+        cursor: pointer;
+      }
+
+      .tab-button svg {
+        width: 20px;
+        height: 19px;
+        flex: 0 0 19px;
+      }
+      
+      .tab-button span {
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 14px;
+      }
+      
+      .tab-button.is-active {
+        color: var(--ink);
+      }
+      
+      .tab-button.is-active span {
+        font-weight: 700;
+      }
+      
+      .toast {
+        position: absolute;
+        z-index: 5;
+        left: 50%;
+        bottom: 82px;
+        max-width: calc(100% - 40px);
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--white);
+        font-size: 13px;
+        line-height: 18px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+      
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+      
+      @media (max-width: 365px) {
+        .quick-members {
+          grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .direct-entry {
+          padding-inline: 16px;
+        }
+      }
+
+      @media (min-height: 874px) {
+        .app {
+          height: 874px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+    <style id="figma-restored-design">
+      :root {
+        --ink: #0f172b;
+        --accent: #ff6041;
+        --muted: #7f7a76;
+        --faint: #b2afac;
+        --tab-muted: #afa8a8;
+        --line: #dedede;
+        --line-soft: #dedede;
+        --field: #f6f4f5;
+        --white: #ffffff;
+      }
+
+      .app {
+        width: min(100%, 402px);
+        min-height: 874px;
+      }
+
+      .header {
+        z-index: 4;
+        inset: 0 0 auto;
+        height: 56px;
+        border-bottom-color: var(--line);
+      }
+
+      .back-button img {
+        width: 9px;
+        height: 16px;
+        transform: translateX(3px);
+      }
+
+      .back-button:focus-visible,
+      .count-button:focus-visible,
+      .next-button:focus-visible,
+      .tab-button:focus-visible,
+      .member-input:focus-visible {
+        outline-color: rgba(255, 96, 65, 0.24);
+      }
+
+      main {
+        top: 56px;
+        left: 6px;
+        right: 6px;
+        height: 371px;
+      }
+
+      .content {
+        height: 299px;
+      }
+
+      .step-indicator {
+        top: 20px;
+        left: 24px;
+        right: 24px;
+        width: auto;
+      }
+
+      .step-indicator span {
+        background: var(--field);
+      }
+
+      .step-indicator span:nth-child(-n + 2) {
+        background: var(--accent);
+      }
+
+      .intro {
+        top: 40px;
+      }
+
+      .member-form {
+        top: 121px;
+        height: 275px;
+      }
+
+      .quick-members {
+        height: 78px;
+        align-items: start;
+        padding-top: 10px;
+      }
+
+      .count-button {
+        color: var(--muted);
+      }
+
+      .count-button:hover {
+        border-color: var(--accent);
+      }
+
+      .count-button.is-selected {
+        border-color: var(--accent);
+        background: var(--accent);
+      }
+
+      .direct-entry {
+        top: 79px;
+        display: block;
+        padding: 0;
+      }
+
+      .direct-copy {
+        position: absolute;
+        top: 21px;
+        left: 20px;
+      }
+
+      .input-wrap {
+        position: absolute;
+        top: 20px;
+        right: 21px;
+        width: 100px;
+        height: 38px;
+        display: block;
+      }
+
+      .member-input {
+        position: absolute;
+        top: 0;
+        left: 17px;
+        width: 66px;
+        border: 0;
+        text-align: left;
+      }
+
+      .input-unit {
+        position: absolute;
+        top: 9px;
+        left: 88px;
+      }
+
+      .member-summary {
+        top: 318px;
+        left: 24px;
+        right: 24px;
+        height: 53px;
+        padding-bottom: 4px;
+        border-top-color: var(--line);
+      }
+
+      .summary-label {
+        color: var(--muted);
+      }
+
+      .next-button {
+        left: 30px;
+        right: 30px;
+        top: 708px;
+        background: var(--accent);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1);
+      }
+
+      .next-button:hover {
+        background: #f25437;
+      }
+
+      .next-button img {
+        width: 11px;
+        height: 10px;
+      }
+
+      .bottom-tabs {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        height: 63px;
+        padding: 8px;
+        border: 0;
+        border-radius: 154px;
+        background: var(--white);
+        box-shadow: 0 4px 2px rgba(0, 0, 0, 0.18);
+      }
+
+      .tab-button {
+        height: 47px;
+        justify-content: center;
+        gap: 2px;
+        border-radius: 56px;
+        color: var(--tab-muted);
+      }
+
+      .tab-button img {
+        display: block;
+        flex: 0 0 auto;
+      }
+
+      .tab-button[data-tab="홈"] img { width: 19px; height: 18px; }
+      .tab-button[data-tab="히스토리"] img { width: 18px; height: 18px; }
+
+      .tab-button span {
+        line-height: 15px;
+      }
+
+      .tab-button.is-active {
+        background: var(--accent);
+        color: var(--white);
+      }
+
+      @media (max-width: 389px) {
+        .quick-members { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <button class="back-button" type="button" aria-label="이전 화면으로">
+          <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />
+        </button>
+        <h1>인원수 입력</h1>
+      </header>
+      
+      <main>
+        <section class="content" aria-labelledby="member-title">
+          <div class="step-indicator" aria-label="8단계 중 2단계">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+          
+          <div class="intro">
+            <h2 id="member-title">함께할 인원을<br />알려주세요</h2>
+          </div>
+          
+          <form class="member-form" id="member-form">
+            <div class="quick-members" aria-label="인원수 빠른 선택">
+              <button class="count-button" type="button" data-count="1" aria-pressed="false">1명</button>
+              <button class="count-button is-selected" type="button" data-count="2" aria-pressed="true">2명</button>
+              <button class="count-button" type="button" data-count="3" aria-pressed="false">3명</button>
+              <button class="count-button" type="button" data-count="4" aria-pressed="false">4명</button>
+            </div>
+
+            <label class="direct-entry" for="people-count">
+              <span class="direct-copy">
+                <strong>직접 입력</strong>
+                <small>5명 이상일 경우</small>
+              </span>
+              <span class="input-wrap">
+                <input
+                  class="member-input"
+                  id="people-count"
+                  name="peopleCount"
+                  type="number"
+                  inputmode="numeric"
+                  min="5"
+                  max="99"
+                  placeholder="0"
+                  aria-describedby="direct-input-help"
+                />
+                <span class="input-unit">명</span>
+              </span>
+            </label>
+            <span id="direct-input-help" hidden>5명부터 99명까지 입력할 수 있습니다.</span>
+          </form>
+        </section>
+        
+        <div class="member-summary" aria-live="polite">
+          <span class="summary-label">선택된 총 인원</span>
+          <strong class="summary-count" id="summary-count">2명</strong>
+        </div>
+      </main>
+      
+      <button class="next-button" id="next-button" type="button">
+        <span>다음 단계로</span>
+        <img src="./assets/icon-arrow-right.svg" alt="" aria-hidden="true" />
+      </button>
+      
+      <nav class="bottom-tabs" aria-label="하단 탐색">
+        <button class="tab-button is-active" type="button" aria-current="page" data-tab="홈">
+          <img src="./assets/icon-home.svg" alt="" aria-hidden="true" />
+          <span>홈</span>
+        </button>
+        
+        
+        <button class="tab-button" type="button" data-tab="히스토리">
+          <img src="./assets/icon-history.svg" alt="" aria-hidden="true" />
+          <span>히스토리</span>
+        </button>
+      </nav>
+      
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+    
+    <script>
+      const countButtons = [...document.querySelectorAll(".count-button")];
+      const peopleCountInput = document.querySelector("#people-count");
+      const summaryCount = document.querySelector("#summary-count");
+      const nextButton = document.querySelector("#next-button");
+      const backButton = document.querySelector(".back-button");
+      const toast = document.querySelector("#toast");
+      let peopleCount = 2;
+      let toastTimer;
+      
+      function updateSummary(count) {
+        peopleCount = count;
+        summaryCount.textContent = `${count}명`;
+        peopleCountInput.setAttribute("aria-invalid", "false");
+      }
+
+      function clearMemberSelection() {
+        peopleCount = null;
+        summaryCount.textContent = "선택 필요";
+      }
+
+      function selectQuickCount(selectedButton) {
+        countButtons.forEach((button) => {
+          const isSelected = button === selectedButton;
+          button.classList.toggle("is-selected", isSelected);
+          button.setAttribute("aria-pressed", String(isSelected));
+        });
+        peopleCountInput.value = "";
+        updateSummary(Number(selectedButton.dataset.count));
+      }
+      
+      function clearQuickSelection() {
+        countButtons.forEach((button) => {
+          button.classList.remove("is-selected");
+          button.setAttribute("aria-pressed", "false");
+        });
+      }
+      
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      }
+
+      countButtons.forEach((button) => {
+        button.addEventListener("click", () => selectQuickCount(button));
+      });
+
+      peopleCountInput.addEventListener("input", () => {
+        const value = Number(peopleCountInput.value);
+        clearQuickSelection();
+        const isValid = peopleCountInput.value !== ""
+          && Number.isInteger(value)
+          && value >= 5
+          && value <= 99;
+
+        if (isValid) {
+          updateSummary(value);
+          return;
+        }
+
+        peopleCountInput.setAttribute("aria-invalid", String(peopleCountInput.value !== ""));
+        clearMemberSelection();
+      });
+
+      peopleCountInput.addEventListener("blur", () => {
+        if (!peopleCountInput.value) return;
+
+        const value = Number(peopleCountInput.value);
+        if (!Number.isInteger(value) || value < 5 || value > 99) {
+          peopleCountInput.setAttribute("aria-invalid", "true");
+          return;
+        }
+
+        updateSummary(value);
+      });
+
+      nextButton.addEventListener("click", () => {
+        if (!Number.isInteger(peopleCount) || peopleCount < 1 || peopleCount > 99) {
+          showToast("인원수를 선택하거나 5명 이상 입력해 주세요.");
+          peopleCountInput.focus();
+          return;
+        }
+
+        sessionStorage.setItem("peopleCount", String(peopleCount));
+        showToast(`${peopleCount}명으로 설정했어요.`);
+        window.location.href = "STEP3_budget.html";
+
+        // POST /api/recommendation 요청 필드: peopleCount
+      });
+
+      backButton.addEventListener("click", () => {
+        showToast("현재 첫 단계입니다.");
+      });
+    </script>
+  </body>
+</html>
