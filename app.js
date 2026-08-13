@@ -1,5 +1,3 @@
-const home = document.querySelector('#home-screen');
-const scan = document.querySelector('#scan-screen');
 const toast = document.querySelector('#toast');
 
 const navIcons = ['assets/nav-home.png', 'assets/nav-history.png'];
@@ -10,67 +8,13 @@ document.querySelectorAll('.bottom-nav .nav-item span').forEach((slot, index) =>
   slot.replaceChildren(icon);
 });
 
-const historyRoot = document.querySelector('#history-root');
-const historyHeader = document.createElement('header');
-historyHeader.className = 'history-header';
-const historyTitle = document.createElement('strong');
-historyTitle.textContent = '\uD788\uC2A4\uD1A0\uB9AC';
-const historySearch = document.createElement('button');
-historySearch.type = 'button';
-historySearch.className = 'history-search';
-historySearch.setAttribute('aria-label', '\uAC80\uC0C9');
-const historyActions = document.createElement('div');
-historyActions.className = 'history-actions';
-historyActions.append(historySearch);
-historyHeader.append(historyTitle, historyActions);
-const historyTabs = document.createElement('div');
-historyTabs.className = 'history-tabs';
-['\uC804\uCCB4', '\uBC29\uBB38 \uC644\uB8CC'].forEach((label, index) => {
-  const tab = document.createElement('button');
-  tab.type = 'button';
-  tab.textContent = label;
-  tab.className = index === 0 ? 'selected' : '';
-  historyTabs.append(tab);
-});
-const historyList = document.createElement('div');
-historyList.className = 'history-list';
 let currentRecommendation = null;
-const historyItems = [];
-
-function renderHistory() {
-  historyList.replaceChildren();
-  const completedOnly = historyTabs.querySelector('button:nth-child(2)').classList.contains('selected');
-  const visibleItems = historyItems.filter((item) => !completedOnly || item.status === 'completed');
-  if (!visibleItems.length) {
-    const empty = document.createElement('div');
-    empty.className = 'history-empty';
-    empty.innerHTML = '<strong>\uC544\uC9C1 \uCD94\uCC9C \uB0B4\uC5ED\uC774 \uC5C6\uC5B4\uC694</strong><span>\uC8FC\uBB38\uC744 \uD655\uC815\uD558\uBA74 \uC5EC\uAE30\uC5D0 \uC800\uC7A5\uB429\uB2C8\uB2E4.</span>';
-    historyList.append(empty);
-    return;
-  }
-  visibleItems.forEach((item) => {
-    const card = document.createElement('article');
-    card.className = 'history-card';
-    const status = document.createElement('b'); status.className = 'history-status'; status.textContent = '\uBC29\uBB38 \uC644\uB8CC';
-    const icon = document.createElement('span'); icon.className = 'history-icon';
-    const image = document.createElement('img'); image.src = 'assets/history-utensils.png'; image.alt = ''; icon.append(image);
-    const name = document.createElement('strong'); name.className = 'history-name'; name.textContent = '\uCC44\uB05D \uB4F1\uC2EC \uC2A4\uD14C\uC774\uD06C \uC678 2\uAC74';
-    const meta = document.createElement('div'); meta.className = 'history-meta';
-    ['3\uBA85', '\uB370\uC774\uD2B8'].forEach((label) => { const badge = document.createElement('span'); badge.textContent = label; meta.append(badge); });
-    const price = document.createElement('em'); price.textContent = '58,000\uC6D0';
-    card.append(status, icon, name, meta, price);
-    card.addEventListener('click', () => showScreen('result-screen', 'history-screen'));
-    historyList.append(card);
-  });
-}
-historyTabs.querySelectorAll('button').forEach((tab, index) => {
-  tab.addEventListener('click', () => {
-    historyTabs.querySelectorAll('button').forEach((item) => item.classList.toggle('selected', item === tab));
-    renderHistory();
-  });
+let analysisTarget = null;
+const history = createHistory({
+  root: document.querySelector('#history-root'),
+  showScreen,
+  onOpen: (item) => { currentRecommendation = item; },
 });
-historyRoot.append(historyHeader, historyTabs, historyList);
-renderHistory();
 
 function showScreen(screen, activeTab = screen) {
   if (screen !== 'scan-screen') stopQrCamera();
@@ -85,25 +29,20 @@ function notify(message) {
   window.setTimeout(() => toast.classList.remove('show'), 1800);
 }
 
-function updateHomeRecommendationState() {
-  const continueCard = document.querySelector('[data-action="continue"]');
-  const copy = continueCard.querySelector('.card-copy');
-  const badge = continueCard.querySelector('.badge');
-  copy.querySelector('strong').textContent = '\uC9C4\uD589 \uC911\uC778 \uCD94\uCC9C';
-  copy.querySelector('small').innerHTML = currentRecommendation
-    ? '1\uAC1C\uC758 \uCD94\uCC9C\uC774<br />\uC9C4\uD589 \uC911\uC785\uB2C8\uB2E4'
-    : '\uC9C4\uD589 \uC911\uC778 \uCD94\uCC9C\uC774<br />\uC5C6\uC2B5\uB2C8\uB2E4';
-  badge.hidden = !currentRecommendation;
-  continueCard.classList.toggle('is-empty', !currentRecommendation);
-}
-
 function completeAnalysis() {
-  currentRecommendation = { status: 'in-progress' };
-  updateHomeRecommendationState();
+  currentRecommendation = analysisTarget ?? {
+    id: crypto.randomUUID?.() ?? String(Date.now()),
+    title: '채끝 등심 스테이크 외 2건',
+    people: '3명',
+    mood: '데이트',
+    total: '58,000원',
+  };
+  analysisTarget = null;
   showScreen('result-screen', 'home-screen');
 }
 
-function startAnalysis() {
+function startAnalysis({ reanalyseCurrent = false } = {}) {
+  analysisTarget = reanalyseCurrent ? currentRecommendation : null;
   showScreen('analysis-screen', 'home-screen');
   window.setTimeout(completeAnalysis, 1800);
 }
@@ -143,8 +82,10 @@ async function startQrCamera() {
   } catch (_) { notify('\uCE74\uBA54\uB77C \uAD8C\uD55C\uC744 \uD5C8\uC6A9\uD574 \uC8FC\uC138\uC694.'); }
 }
 
-document.querySelector('[data-action="start"]').addEventListener('click', () => showScreen('scan-screen', 'home-screen'));
-document.querySelector('[data-action="continue"]').addEventListener('click', () => notify('진행 중인 추천을 준비하고 있어요.'));
+bindHomeScreen({ showScreen, notify });
+document.querySelector('[data-action="menu"]').addEventListener('click', (event) => {
+  notify('메뉴판 기능을 준비하고 있어요.');
+});
 document.querySelector('#back-button').addEventListener('click', () => showScreen('home-screen'));
 document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => showScreen(item.dataset.screen)));
 document.querySelector('#permission').addEventListener('click', () => notify('카메라 권한 설정을 열어주세요.'));
@@ -325,34 +266,50 @@ updateBudgetGauge();
 
 function replaceControl(selector, handler) {
   const original = document.querySelector(selector);
+  if (!original) return null;
   const control = original.cloneNode(true);
   original.replaceWith(control);
   control.addEventListener('click', handler);
   return control;
 }
 
-replaceControl('[data-action="continue"]', () => {
-  if (currentRecommendation) showScreen('result-screen', 'home-screen');
-  else notify('\uC9C4\uD589 \uC911\uC778 \uCD94\uCC9C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.');
-});
 replaceControl('#permission', startQrCamera);
 replaceControl('.scan-button', startQrCamera);
+const codeModal = document.querySelector('#code-modal');
+const manualCodeInput = document.querySelector('#manual-code');
+function closeCodeModal() {
+  codeModal.hidden = true;
+  manualCodeInput.value = '';
+}
 replaceControl('.code-row', () => {
-  const value = window.prompt('\uC2A4\uCEA0\uD560 QR \uCF54\uB4DC\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694.');
-  if (value?.trim()) startAnalysis();
+  codeModal.hidden = false;
+  window.setTimeout(() => manualCodeInput.focus(), 0);
+});
+codeModal.querySelector('form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!manualCodeInput.value.trim()) {
+    manualCodeInput.focus();
+    return;
+  }
+  closeCodeModal();
+  startAnalysis();
+});
+codeModal.addEventListener('click', (event) => {
+  if (event.target === codeModal) closeCodeModal();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !codeModal.hidden) closeCodeModal();
 });
 
 const resultActions = document.querySelectorAll('#result-screen .result-actions button');
 replaceControl('#result-screen .result-actions button:first-child', startAnalysis);
 replaceControl('#result-screen .result-actions button:last-child', () => {
   if (!currentRecommendation) return;
-  historyItems.unshift({ status: 'completed' });
-  currentRecommendation = null;
-  updateHomeRecommendationState();
-  renderHistory();
+  history.save(currentRecommendation);
   showScreen('history-screen', 'history-screen');
 });
-replaceControl('#edit-submit', startAnalysis);
+replaceControl('#edit-submit', () => startAnalysis({ reanalyseCurrent: true }));
+replaceControl('#feature-finish', startAnalysis);
 
 const foodTags = document.querySelector('#edit-screen .edit-tags');
 const addFoodButton = foodTags.querySelector('button:last-child');
@@ -411,8 +368,6 @@ freshAddFoodButton.addEventListener('click', () => {
   });
   input.addEventListener('change', commit, { once: true });
 });
-
-updateHomeRecommendationState();
 
 const cameraOptionIcon = document.querySelector('#scan-screen .option-row .option-icon');
 cameraOptionIcon.replaceChildren(Object.assign(document.createElement('img'), { src: 'assets/camera-gray.png', alt: '' }));
