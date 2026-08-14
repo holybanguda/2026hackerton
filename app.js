@@ -23,7 +23,7 @@ function openEditScreen() {
   showScreen('edit-screen', 'home-screen');
 }
 
-function discardEdit() {
+function restoreEditSnapshot() {
   if (currentRecommendation && editSnapshot) {
     Object.keys(currentRecommendation).forEach((key) => delete currentRecommendation[key]);
     Object.assign(currentRecommendation, copyRecommendation(editSnapshot));
@@ -32,6 +32,15 @@ function discardEdit() {
     homeController.updateOngoing();
   }
   editSnapshot = null;
+}
+
+function discardEdit() {
+  restoreEditSnapshot();
+  showScreen('history-screen', 'history-screen');
+}
+
+function returnToRecommendationResult() {
+  restoreEditSnapshot();
   showScreen('result-screen', 'home-screen');
 }
 const history = createHistory({
@@ -251,6 +260,7 @@ function renderMenuResults() {
 }
 
 const currentOrderButton = document.querySelector('#edit-screen .current-order button');
+document.querySelector('#edit-screen .scan-header .skip')?.remove();
 const currentOrderIcon = document.createElement('img');
 currentOrderIcon.src = 'assets/utensils.png';
 currentOrderIcon.alt = '';
@@ -259,6 +269,7 @@ currentOrderLabel.textContent = '채끝 등심 스테이크 외 2건';
 const currentOrderChevron = document.createElement('i');
 currentOrderChevron.textContent = '›';
 currentOrderButton.replaceChildren(currentOrderIcon, currentOrderLabel, currentOrderChevron);
+currentOrderButton.addEventListener('click', returnToRecommendationResult);
 
 function renderCurrentOrder() {
   const items = currentRecommendation?.menuItems;
