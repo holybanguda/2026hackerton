@@ -242,15 +242,19 @@ button { font:inherit; color:inherit; cursor:pointer; }
 #history-screen { height:calc(100% - 64px); overflow:auto; }
 .history-header { height:56px; padding:11px 16px; display:flex; align-items:center; border-bottom:1px solid #dedede; background:rgba(255,255,255,.94902); backdrop-filter:blur(6px); }
 .history-header strong { font-size:18px; line-height:28px; }
+.history-search { position:relative; width:32px; height:32px; margin-left:auto; padding:0; border:0; border-radius:16px; background:transparent; color:#45556c; }
+.history-search:before { content:''; position:absolute; top:8px; left:8px; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; }
+.history-search:after { content:''; position:absolute; right:7px; bottom:8px; width:7px; height:2px; border-radius:3px; background:currentColor; transform:rotate(45deg); }
 .history-list { display:grid; gap:16px; padding:40px 30px 96px; }
-.history-card { position:relative; width:100%; height:110px; padding:17px; border:1px solid #f1f5f9; border-radius:16px; background:#fff; box-shadow:0 1px 2px -1px #0000001a,0 1px 3px #0000001a; cursor:pointer; text-align:left; }
-.history-name { display:block; margin-top:10px; padding-right:62px; color:#0f172b; font-size:16px; line-height:24px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.history-card { position:relative; width:100%; height:129px; padding:0; border:1px solid #f1f5f9; border-radius:16px; background:#fff; box-shadow:0 1px 2px -1px #0000001a,0 1px 3px #0000001a; cursor:pointer; text-align:left; }
+.history-status { position:absolute; z-index:1; top:17px; left:17px; display:inline-flex; height:19px; padding:2px 6px; align-items:center; border-radius:4px; background:#f6f4f5; color:#7f7a76; font-size:10px; font-weight:700; line-height:15px; }
+.history-name { position:absolute; z-index:1; top:40px; right:75px; left:17px; display:block; margin:0; color:#0f172b; font-size:16px; line-height:24px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .history-icon { position:absolute; top:17px; right:17px; width:40px; height:40px; display:grid; place-items:center; border-radius:10px; background:#f6f4f5; color:#b2afac; }
 .history-icon img { width:24px; height:24px; object-fit:contain; }
-.history-meta { position:absolute; bottom:17px; left:17px; display:flex; gap:8px; }
+.history-meta { position:absolute; z-index:1; top:89px; left:17px; display:flex; gap:8px; }
 .history-meta span { height:28px; padding:6px 10px; border-radius:16px; background:#f8fafc; color:#7f7a76; font-size:12px; line-height:16px; }
-.history-card em { position:absolute; right:17px; bottom:19px; color:#0f172b; font-size:18px; font-style:normal; font-weight:700; line-height:24px; }
-.history-card:after { content:''; position:absolute; right:17px; bottom:52px; left:17px; height:1px; background:#f6f7f8; }
+.history-card em { position:absolute; z-index:1; top:90px; right:17px; color:#0f172b; font-size:18px; font-style:normal; font-weight:700; line-height:24px; }
+.history-card:after { content:''; position:absolute; z-index:0; top:76px; right:17px; left:17px; height:1px; background:#f8fafc; }
 @media (max-width:401px) { .history-header { padding-right:18px; padding-left:18px; }.history-list { padding-right:18px; padding-left:18px; } }
 
 #result-screen .report { height:auto; min-height:139px; }

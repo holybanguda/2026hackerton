@@ -4,7 +4,11 @@ window.createHistory = function createHistory({ root, showScreen, onOpen }) {
   header.className = 'history-header';
   const title = document.createElement('strong');
   title.textContent = '히스토리';
-  header.append(title);
+  const search = document.createElement('button');
+  search.type = 'button';
+  search.className = 'history-search';
+  search.setAttribute('aria-label', '검색');
+  header.append(title, search);
 
   const list = document.createElement('div');
   list.className = 'history-list';
@@ -24,6 +28,9 @@ window.createHistory = function createHistory({ root, showScreen, onOpen }) {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'history-card';
+      const status = document.createElement('b');
+      status.className = 'history-status';
+      status.textContent = '방문 완료';
       const icon = document.createElement('span');
       icon.className = 'history-icon';
       const image = document.createElement('img');
@@ -42,7 +49,7 @@ window.createHistory = function createHistory({ root, showScreen, onOpen }) {
       });
       const price = document.createElement('em');
       price.textContent = item.total;
-      card.append(icon, name, meta, price);
+      card.append(status, icon, name, meta, price);
       card.addEventListener('click', () => {
         onOpen(item);
         showScreen('result-screen', 'history-screen');

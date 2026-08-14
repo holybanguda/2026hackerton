@@ -13,13 +13,20 @@ let analysisTarget = null;
 const history = createHistory({
   root: document.querySelector('#history-root'),
   showScreen,
-  onOpen: (item) => { currentRecommendation = item; },
+  onOpen: (item) => {
+    currentRecommendation = item;
+    renderAiReport();
+    renderMenuResults();
+    refreshResultSummary();
+  },
 });
 
 function showScreen(screen, activeTab = screen) {
   if (screen !== 'scan-screen') stopQrCamera();
   document.querySelectorAll('.screen').forEach((item) => item.classList.remove('active'));
-  document.querySelector(`#${screen}`).classList.add('active');
+  const target = document.querySelector(`#${screen}`);
+  target.classList.add('active');
+  target.scrollTop = 0;
   document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('selected', item.dataset.screen === activeTab));
 }
 
@@ -36,8 +43,28 @@ function completeAnalysis() {
     people: '3명',
     mood: '데이트',
     total: '58,000원',
+    budget: 60000,
+    excludedFoods: ['오이', '견과류'],
+    spice: 3,
+    menuCount: 4,
+    menuItems: [
+      { name: '채끝 등심 스테이크', description: '미디엄 웰던 추천, 가니쉬 포함', price: 28000, icon: 'assets/utensils.png', tags: ['인기', '추천'] },
+      { name: '트러플 크림 파스타', description: '진한 트러플 향의 크림 소스', price: 16000, icon: 'assets/utensils.png' },
+      { name: '하우스 레드 와인 (2잔)', description: '스테이크와 어울리는 바디감', price: 14000, icon: 'assets/wine-glass.png' },
+    ],
+    report: {
+      title: 'AI 분석 리포트',
+      before: '"데이트 분위기에 맞춰 대화하기 좋은 깔끔한 메뉴 위주로 구성했습니다. ',
+      emphasis: '예산 내에서 스테이크와 와인',
+      after: '을 모두 즐기실 수 있는 최적의 조합입니다."',
+    },
   };
   analysisTarget = null;
+  currentRecommendation.total = `${getRecommendationTotal().toLocaleString('ko-KR')}원`;
+  refreshResultSummary();
+  renderAiReport();
+  renderMenuResults();
+  history.render();
   showScreen('result-screen', 'home-screen');
 }
 
@@ -182,15 +209,53 @@ resultEditButton.id = 'result-edit';
 resultEditButton.type = 'button';
 resultEditButton.textContent = '수정';
 document.querySelector('#result-screen .result-chips').append(resultEditButton);
-resultEditButton.addEventListener('click', () => showScreen('edit-screen', 'home-screen'));
-
-const menuIconAssets = ['assets/utensils.png', 'assets/utensils.png', 'assets/wine-glass.png'];
-document.querySelectorAll('#result-screen .menu-list article > b').forEach((slot, index) => {
-  const icon = document.createElement('img');
-  icon.src = menuIconAssets[index];
-  icon.alt = '';
-  slot.replaceChildren(icon);
+resultEditButton.addEventListener('click', () => {
+  populateEditForm();
+  showScreen('edit-screen', 'home-screen');
 });
+
+function getRecommendationTotal() {
+  const items = currentRecommendation?.menuItems;
+  if (!items?.length) return 58000;
+  return items.reduce((sum, item) => sum + (Number(String(item.price).replace(/[^\d]/g, '')) || 0), 0);
+}
+
+// 추후 AI가 menuItems 배열(name, description, price, icon, tags)을 내려주면 자동으로 목록을 구성합니다.
+function renderMenuResults() {
+  const items = currentRecommendation?.menuItems;
+  if (!items?.length) return;
+  const list = document.querySelector('#result-screen .menu-list');
+  const heading = document.querySelector('#result-screen .menu-heading span');
+  heading.textContent = `총 ${currentRecommendation.menuCount ?? items.length}개 메뉴`;
+  list.replaceChildren();
+  items.forEach((item) => {
+    const article = document.createElement('article');
+    const visual = document.createElement('b');
+    const icon = Object.assign(document.createElement('img'), { src: item.icon || 'assets/utensils.png', alt: '' });
+    visual.append(icon);
+    const copy = document.createElement('span');
+    const name = document.createElement('strong');
+    name.textContent = item.name;
+    const description = document.createElement('small');
+    description.textContent = item.description || '';
+    copy.append(name, description);
+    if (item.tags?.length) {
+      const tags = document.createElement('div');
+      tags.className = 'menu-tags';
+      item.tags.forEach((tag) => {
+        const badge = document.createElement('b');
+        badge.textContent = tag;
+        tags.append(badge);
+      });
+      copy.append(tags);
+    }
+    const price = document.createElement('em');
+    const won = Number(String(item.price).replace(/[^\d]/g, '')) || 0;
+    price.textContent = `${won.toLocaleString('ko-KR')}원`;
+    article.append(visual, copy, price);
+    list.append(article);
+  });
+}
 
 const currentOrderButton = document.querySelector('#edit-screen .current-order button');
 const currentOrderIcon = document.createElement('img');
@@ -237,12 +302,6 @@ document.querySelectorAll('#edit-screen .edit-tags button:not(:last-child)').for
   });
 });
 
-const firstMenuCopy = document.querySelector('#result-screen .menu-list article span');
-const menuTags = document.createElement('div');
-menuTags.className = 'menu-tags';
-menuTags.innerHTML = '<b>인기</b><b>추천</b>';
-firstMenuCopy.append(menuTags);
-
 const reportTitle = document.querySelector('#result-screen .report strong');
 reportTitle.textContent = reportTitle.textContent.replace(/^[^\p{L}]*/u, '');
 const reportWand = document.createElement('img');
@@ -250,10 +309,23 @@ reportWand.src = 'assets/report-wand.png';
 reportWand.alt = '';
 reportTitle.prepend(reportWand);
 
-const recommendationTotal = 58000;
+// 추후 AI 응답은 recommendation.report의 title / before / emphasis / after 값만 채우면 됩니다.
+function renderAiReport() {
+  const report = currentRecommendation?.report;
+  if (!report) return;
+  reportTitle.replaceChildren(reportWand, document.createTextNode(report.title || 'AI 분석 리포트'));
+  const text = document.querySelector('#result-screen .report p');
+  text.replaceChildren(
+    document.createTextNode(report.before || ''),
+    Object.assign(document.createElement('b'), { textContent: report.emphasis || '' }),
+    document.createTextNode(report.after || ''),
+  );
+}
+
 const totalCard = document.querySelector('#result-screen .total-card');
 function updateBudgetGauge() {
   const budget = Number(editBudgetInput.value.replace(/,/g, '')) || 0;
+  const recommendationTotal = getRecommendationTotal();
   const remaining = Math.max(0, budget - recommendationTotal);
   const usedRatio = budget ? Math.min(100, (recommendationTotal / budget) * 100) : 100;
   totalCard.querySelector('strong').textContent = `${recommendationTotal.toLocaleString('ko-KR')}\uC6D0`;
@@ -263,6 +335,16 @@ function updateBudgetGauge() {
 editBudgetInput.addEventListener('input', updateBudgetGauge);
 document.querySelectorAll('[data-add]').forEach((button) => button.addEventListener('click', updateBudgetGauge));
 updateBudgetGauge();
+
+function refreshResultSummary() {
+  if (!currentRecommendation) return;
+  const chips = document.querySelectorAll('#result-screen .result-chips span');
+  const peopleIcon = Object.assign(document.createElement('img'), { src: resultChipAssets[0], alt: '' });
+  const budgetIcon = Object.assign(document.createElement('img'), { src: resultChipAssets[1], alt: '' });
+  chips[0].replaceChildren(peopleIcon, document.createTextNode(currentRecommendation.people));
+  chips[1].replaceChildren(budgetIcon, document.createTextNode(`${Number(currentRecommendation.budget || 60000).toLocaleString('ko-KR')}원`));
+  updateBudgetGauge();
+}
 
 function replaceControl(selector, handler) {
   const original = document.querySelector(selector);
@@ -308,7 +390,10 @@ replaceControl('#result-screen .result-actions button:last-child', () => {
   history.save(currentRecommendation);
   showScreen('history-screen', 'history-screen');
 });
-replaceControl('#edit-submit', () => startAnalysis({ reanalyseCurrent: true }));
+replaceControl('#edit-submit', () => {
+  syncRecommendationFromEdit();
+  startAnalysis({ reanalyseCurrent: true });
+});
 replaceControl('#feature-finish', startAnalysis);
 
 const foodTags = document.querySelector('#edit-screen .edit-tags');
@@ -367,6 +452,39 @@ freshAddFoodButton.addEventListener('click', () => {
     if (event.key === 'Escape') { event.preventDefault(); input.replaceWith(freshAddFoodButton); }
   });
   input.addEventListener('change', commit, { once: true });
+});
+
+function readFoodTags() {
+  return [...foodTags.querySelectorAll('.food-tag > span:first-child')]
+    .map((tag) => tag.textContent.trim())
+    .filter(Boolean);
+}
+
+function populateEditForm() {
+  if (!currentRecommendation) return;
+  editBudgetInput.value = Number(currentRecommendation.budget || 60000).toLocaleString('ko-KR');
+  document.querySelector('#edit-people-count').textContent = currentRecommendation.people || '3명';
+  spiceRange.value = String(currentRecommendation.spice || 3);
+  spiceRange.dispatchEvent(new Event('input'));
+  foodTags.querySelectorAll('.food-tag').forEach((tag) => tag.remove());
+  (currentRecommendation.excludedFoods || []).forEach(addFoodTag);
+  updateBudgetGauge();
+}
+
+function syncRecommendationFromEdit() {
+  if (!currentRecommendation) return;
+  currentRecommendation.people = document.querySelector('#edit-people-count').textContent;
+  currentRecommendation.budget = Number(editBudgetInput.value.replace(/,/g, '')) || 0;
+  currentRecommendation.excludedFoods = readFoodTags();
+  currentRecommendation.spice = Number(spiceRange.value);
+  refreshResultSummary();
+  history.render();
+}
+
+// 수정 화면의 수치를 바꾸는 즉시 결과 상단 요약과 히스토리 데이터도 같은 값으로 맞춥니다.
+editBudgetInput.addEventListener('input', syncRecommendationFromEdit);
+document.querySelectorAll('[data-add], [data-edit-people]').forEach((control) => {
+  control.addEventListener('click', () => window.setTimeout(syncRecommendationFromEdit, 0));
 });
 
 const cameraOptionIcon = document.querySelector('#scan-screen .option-row .option-icon');
