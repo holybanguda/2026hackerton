@@ -28,9 +28,6 @@ window.createHistory = function createHistory({ root, showScreen, onOpen }) {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'history-card';
-      const status = document.createElement('b');
-      status.className = 'history-status';
-      status.textContent = item.status || '방문 완료';
       const icon = document.createElement('span');
       icon.className = 'history-icon';
       const image = document.createElement('img');
@@ -49,7 +46,7 @@ window.createHistory = function createHistory({ root, showScreen, onOpen }) {
       });
       const price = document.createElement('em');
       price.textContent = item.total;
-      card.append(status, icon, name, meta, price);
+      card.append(icon, name, meta, price);
       card.addEventListener('click', () => {
         onOpen(item);
         showScreen('result-screen', 'history-screen');

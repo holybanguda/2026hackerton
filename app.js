@@ -11,6 +11,7 @@ document.querySelectorAll('.bottom-nav .nav-item span').forEach((slot, index) =>
 let currentRecommendation = null;
 let analysisTarget = null;
 let editSnapshot = null;
+let historyReturnScreen = 'recommendation-screen';
 
 function copyRecommendation(recommendation) {
   return recommendation ? JSON.parse(JSON.stringify(recommendation)) : null;
@@ -36,7 +37,7 @@ function restoreEditSnapshot() {
 
 function discardEdit() {
   restoreEditSnapshot();
-  showScreen('history-screen', 'history-screen');
+  showScreen('result-screen', 'home-screen');
 }
 
 function returnToRecommendationResult() {
@@ -51,8 +52,13 @@ const history = createHistory({
     renderRecommendationResult();
   },
 });
+history.render();
 
 function showScreen(screen, activeTab = screen) {
+  const previousScreen = document.querySelector('.screen.active')?.id;
+  if (screen === 'history-screen' && previousScreen && previousScreen !== 'history-screen') {
+    historyReturnScreen = previousScreen;
+  }
   if (screen !== 'scan-screen') stopQrCamera();
   document.querySelectorAll('.screen').forEach((item) => item.classList.remove('active'));
   const target = document.querySelector(`#${screen}`);
@@ -155,7 +161,14 @@ document.querySelector('[data-action="menu"]').addEventListener('click', (event)
   notify('메뉴판 기능을 준비하고 있어요.');
 });
 document.querySelector('#back-button').addEventListener('click', () => showScreen('recommendation-screen', 'home-screen'));
-document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => showScreen(item.dataset.screen)));
+document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => {
+  if (item.dataset.screen === 'home-screen') {
+    const isViewingHistory = document.querySelector('#history-screen').classList.contains('active');
+    showScreen(isViewingHistory ? historyReturnScreen : 'recommendation-screen', 'home-screen');
+    return;
+  }
+  showScreen('history-screen', 'history-screen');
+}));
 document.querySelector('#analysis-cancel').addEventListener('click',()=>showScreen('home-screen'));
 document.querySelector('#analysis-close').addEventListener('click',()=>showScreen('home-screen'));
 document.querySelector('#result-back').addEventListener('click',()=>showScreen('scan-screen','home-screen'));
@@ -436,6 +449,7 @@ replaceControl('#result-screen .result-actions button:last-child', () => {
   currentRecommendation = null;
   homeController.updateOngoing();
   showScreen('history-screen', 'history-screen');
+  historyReturnScreen = 'recommendation-screen';
 });
 replaceControl('#edit-submit', () => {
   syncRecommendationFromEdit();
