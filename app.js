@@ -115,56 +115,8 @@ document.querySelector('[data-action="menu"]').addEventListener('click', (event)
 });
 document.querySelector('#back-button').addEventListener('click', () => showScreen('home-screen'));
 document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => showScreen(item.dataset.screen)));
-document.querySelector('#permission').addEventListener('click', () => notify('카메라 권한 설정을 열어주세요.'));
-document.querySelector('.scan-button').addEventListener('click', () => showScreen('result-screen', 'home-screen'));
-document.querySelector('#member-back-button').addEventListener('click', () => showScreen('scan-screen', 'home-screen'));
-document.querySelectorAll('[data-people]').forEach((item) => item.addEventListener('click', () => {
-  const people = item.dataset.people;
-  document.querySelectorAll('[data-people]').forEach((button) => button.classList.toggle('selected', button === item));
-  document.querySelector('#people-input').value = '';
-  document.querySelector('#people-total').textContent = `${people}명`;
-}));
-document.querySelector('#people-input').addEventListener('input', (event) => {
-  const people = Number(event.target.value);
-  document.querySelectorAll('[data-people]').forEach((button) => button.classList.remove('selected'));
-  document.querySelector('#people-total').textContent = people > 0 ? `${people}명` : '0명';
-});
-document.querySelector('#next-step').addEventListener('click', () => {
-  const people = document.querySelector('#people-total').textContent;
-  document.querySelector('#budget-people').textContent = `${people} 기준`;
-  document.querySelector('#budget-people-count').textContent = people;
-  updateBudget();
-  showScreen('budget-screen', 'home-screen');
-});
-document.querySelector('#budget-back-button').addEventListener('click', () => showScreen('member-screen', 'home-screen'));
-document.querySelector('#change-people').addEventListener('click', () => showScreen('member-screen', 'home-screen'));
-function updateBudget(value) {
-  const perPerson = Number(value ?? document.querySelector('#budget-range').value);
-  const people = Number(document.querySelector('#people-total').textContent.replace('명', '')) || 0;
-  const won = new Intl.NumberFormat('ko-KR');
-  document.querySelector('#total-budget').textContent = `총 ${won.format(perPerson * people)}원`;
-  document.querySelector('#budget-formula').textContent = `= 1인 예산 ${won.format(perPerson)}원 × ${people}명`;
-}
-document.querySelector('#budget-range').addEventListener('input', (event) => { document.querySelector('#budget-input').value = ''; updateBudget(event.target.value); });
-document.querySelector('#budget-input').addEventListener('input', (event) => { if (event.target.value) updateBudget(event.target.value); });
-document.querySelectorAll('[data-budget]').forEach((item) => item.addEventListener('click', () => { document.querySelector('#budget-range').value = item.dataset.budget; document.querySelector('#budget-input').value = ''; updateBudget(item.dataset.budget); }));
-document.querySelector('#budget-next').addEventListener('click', () => notify('다음 추천 단계를 준비하고 있어요.'));
-document.querySelectorAll('[data-message]').forEach((item) => item.addEventListener('click', () => notify(item.dataset.message)));
-document.querySelector('#budget-next').addEventListener('click', () => showScreen('mood-screen', 'home-screen'));
-document.querySelector('#mood-back').addEventListener('click', () => showScreen('budget-screen', 'home-screen'));
-document.querySelectorAll('[data-mood]').forEach((item) => item.addEventListener('click', () => { document.querySelectorAll('[data-mood]').forEach((button) => button.classList.remove('selected')); item.classList.add('selected'); }));
-document.querySelector('.mood-next').addEventListener('click', () => showScreen('condition-screen', 'home-screen'));
-document.querySelector('#condition-back').addEventListener('click', () => showScreen('mood-screen', 'home-screen'));
-document.querySelectorAll('[data-allergy]').forEach((item) => item.addEventListener('click', () => item.classList.toggle('checked')));
-document.querySelector('#condition-finish').addEventListener('click', () => notify('추천 조건 설정을 완료했어요.'));
-document.querySelector('#condition-finish').addEventListener('click', () => showScreen('feature-screen', 'home-screen'));
-document.querySelector('#feature-back').addEventListener('click', () => showScreen('condition-screen', 'home-screen'));
-document.querySelectorAll('[data-count]').forEach((button) => button.addEventListener('click', () => { const target=document.querySelector(`#${button.dataset.count}-count`); target.textContent=Math.max(0,Number(target.textContent)+Number(button.dataset.change)); }));
-document.querySelector('#spice-range').addEventListener('input',e=>document.querySelector('#spice-value').textContent=e.target.value);
-document.querySelector('#feature-finish').addEventListener('click',()=>notify('AI 메뉴 분석을 시작합니다.'));
-document.querySelector('#feature-finish').addEventListener('click',()=>{showScreen('analysis-screen','home-screen');setTimeout(()=>showScreen('result-screen','home-screen'),2500)});
-document.querySelector('#analysis-cancel').addEventListener('click',()=>showScreen('feature-screen','home-screen'));
-document.querySelector('#analysis-close').addEventListener('click',()=>showScreen('feature-screen','home-screen'));
+document.querySelector('#analysis-cancel').addEventListener('click',()=>showScreen('home-screen'));
+document.querySelector('#analysis-close').addEventListener('click',()=>showScreen('home-screen'));
 document.querySelector('#result-back').addEventListener('click',()=>showScreen('scan-screen','home-screen'));
 document.querySelector('#result-home').addEventListener('click',()=>showScreen('home-screen'));
 document.querySelector('.result-actions button').addEventListener('click',()=>showScreen('edit-screen','home-screen'));
@@ -442,7 +394,6 @@ replaceControl('#edit-submit', () => {
   syncRecommendationFromEdit();
   startAnalysis({ reanalyseCurrent: true });
 });
-replaceControl('#feature-finish', startAnalysis);
 
 const foodTags = document.querySelector('#edit-screen .edit-tags');
 const addFoodButton = foodTags.querySelector('button:last-child');
