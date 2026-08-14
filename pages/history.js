@@ -30,11 +30,11 @@ window.createHistory = function createHistory({ root, showScreen, onOpen }) {
       card.className = 'history-card';
       const status = document.createElement('b');
       status.className = 'history-status';
-      status.textContent = '방문 완료';
+      status.textContent = item.status || '방문 완료';
       const icon = document.createElement('span');
       icon.className = 'history-icon';
       const image = document.createElement('img');
-      image.src = 'assets/history-utensils.png';
+      image.src = item.historyIcon || item.menuItems?.[0]?.historyIcon || 'assets/history-utensils.png';
       image.alt = '';
       icon.append(image);
       const name = document.createElement('strong');

@@ -37,13 +37,15 @@ function notify(message) {
 function completeAnalysis() {
   currentRecommendation = analysisTarget ?? {
     id: crypto.randomUUID?.() ?? String(Date.now()),
-    title: '채끝 등심 스테이크 외 2건',
+    title: '',
     people: '3명',
     mood: '데이트',
     total: '58,000원',
     budget: 60000,
     excludedFoods: ['오이', '견과류'],
     spice: 3,
+    status: '방문 완료',
+    historyIcon: 'assets/history-utensils.png',
     menuCount: 4,
     menuItems: [
       { name: '채끝 등심 스테이크', description: '미디엄 웰던 추천, 가니쉬 포함', price: 28000, icon: 'assets/utensils.png', tags: ['인기', '추천'] },
@@ -58,6 +60,7 @@ function completeAnalysis() {
     },
   };
   analysisTarget = null;
+  currentRecommendation.title = currentRecommendation.title || getRecommendationTitle();
   currentRecommendation.total = `${getRecommendationTotal().toLocaleString('ko-KR')}원`;
   editBudgetInput.value = Number(currentRecommendation.budget || 60000).toLocaleString('ko-KR');
   renderRecommendationResult();
@@ -217,6 +220,13 @@ function getRecommendationTotal() {
   return items.reduce((sum, item) => sum + (Number(String(item.price).replace(/[^\d]/g, '')) || 0), 0);
 }
 
+function getRecommendationTitle() {
+  const items = currentRecommendation?.menuItems || [];
+  const firstName = items[0]?.name || '추천 메뉴';
+  const restCount = Math.max(0, (currentRecommendation?.menuCount ?? items.length) - 1);
+  return restCount ? `${firstName} 외 ${restCount}건` : firstName;
+}
+
 // 추후 AI가 menuItems 배열(name, description, price, icon, tags)을 내려주면 자동으로 목록을 구성합니다.
 function renderMenuResults() {
   const items = currentRecommendation?.menuItems;
@@ -267,9 +277,7 @@ currentOrderButton.replaceChildren(currentOrderIcon, currentOrderLabel, currentO
 function renderCurrentOrder() {
   const items = currentRecommendation?.menuItems;
   if (!items?.length) return;
-  const firstName = items[0].name || '추천 메뉴';
-  const restCount = Math.max(0, (currentRecommendation.menuCount ?? items.length) - 1);
-  currentOrderLabel.textContent = restCount ? `${firstName} 외 ${restCount}건` : firstName;
+  currentOrderLabel.textContent = currentRecommendation.title || getRecommendationTitle();
   document.querySelector('#edit-screen .current-order > strong').textContent = `총 ${getRecommendationTotal().toLocaleString('ko-KR')}원`;
 }
 
@@ -375,8 +383,11 @@ window.applyAiRecommendationResult = function applyAiRecommendationResult(aiResu
     ...previous,
     ...aiResult,
     id: aiResult.id ?? previous.id ?? (crypto.randomUUID?.() ?? String(Date.now())),
+    title: aiResult.title ?? (Array.isArray(aiResult.menuItems) ? '' : previous.title ?? ''),
     people: typeof people === 'number' ? `${people}명` : people,
     budget: Number(aiResult.budget ?? previous.budget ?? 60000),
+    status: aiResult.status ?? previous.status ?? '방문 완료',
+    historyIcon: aiResult.historyIcon ?? (Array.isArray(aiResult.menuItems) ? aiResult.menuItems[0]?.historyIcon : previous.historyIcon) ?? 'assets/history-utensils.png',
     report: { ...(previous.report || {}), ...(aiResult.report || {}) },
     menuItems: Array.isArray(aiResult.menuItems) ? aiResult.menuItems : (previous.menuItems || []),
   };
