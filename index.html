@@ -26,6 +26,25 @@
         </div>
       </section>
 
+      <section id="recommendation-screen" class="screen" aria-label="추천 홈">
+        <header class="topbar">홈</header>
+        <div class="home-content">
+          <h1>무엇을 도와드릴까요?</h1>
+          <p class="intro">새로운 맞춤 추천을 받거나,<br />진행 중인 추천을 이어서 확인하세요.</p>
+          <button class="action-card" type="button" data-action="new-recommendation">
+            <span class="card-icon coral"><img src="assets/wand-magic.png" alt="" /></span>
+            <span class="card-copy"><strong>새 추천 시작</strong><small>취향을 알려주시면<br />최적의 메뉴 조합을 찾아드려요</small></span>
+            <span class="chevron" aria-hidden="true">›</span>
+          </button>
+          <button class="action-card" type="button" data-action="ongoing-recommendation">
+            <span class="card-icon pale"><img src="assets/clipboard-list.png" alt="" /></span>
+            <span class="card-copy"><strong>진행 중인 추천</strong><small>진행 중인 추천이 없어요</small></span>
+            <span id="ongoing-count" class="badge" hidden>1</span>
+            <span class="chevron" aria-hidden="true">›</span>
+          </button>
+        </div>
+      </section>
+
       <section id="scan-screen" class="screen" aria-label="QR 스캔">
         <header class="scan-header"><button id="back-button" aria-label="뒤로 가기">‹</button><strong>QR 스캔</strong></header>
         <div class="progress" aria-hidden="true"><i class="current"></i><i></i><i></i><i></i><i></i><i></i></div>

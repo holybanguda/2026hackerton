@@ -10,6 +10,30 @@ document.querySelectorAll('.bottom-nav .nav-item span').forEach((slot, index) =>
 
 let currentRecommendation = null;
 let analysisTarget = null;
+let editSnapshot = null;
+
+function copyRecommendation(recommendation) {
+  return recommendation ? JSON.parse(JSON.stringify(recommendation)) : null;
+}
+
+function openEditScreen() {
+  if (!currentRecommendation) return;
+  editSnapshot = copyRecommendation(currentRecommendation);
+  populateEditForm();
+  showScreen('edit-screen', 'home-screen');
+}
+
+function discardEdit() {
+  if (currentRecommendation && editSnapshot) {
+    Object.keys(currentRecommendation).forEach((key) => delete currentRecommendation[key]);
+    Object.assign(currentRecommendation, copyRecommendation(editSnapshot));
+    renderRecommendationResult();
+    history.render();
+    homeController.updateOngoing();
+  }
+  editSnapshot = null;
+  showScreen('result-screen', 'home-screen');
+}
 const history = createHistory({
   root: document.querySelector('#history-root'),
   showScreen,
@@ -65,6 +89,7 @@ function completeAnalysis() {
   editBudgetInput.value = Number(currentRecommendation.budget || 60000).toLocaleString('ko-KR');
   renderRecommendationResult();
   history.render();
+  homeController.updateOngoing();
   showScreen('result-screen', 'home-screen');
 }
 
@@ -109,19 +134,29 @@ async function startQrCamera() {
   } catch (_) { notify('\uCE74\uBA54\uB77C \uAD8C\uD55C\uC744 \uD5C8\uC6A9\uD574 \uC8FC\uC138\uC694.'); }
 }
 
-bindHomeScreen({ showScreen, notify });
+const homeController = bindHomeScreen({
+  showScreen,
+  notify,
+  hasOngoing: () => Boolean(currentRecommendation),
+  openOngoing: () => {
+    openEditScreen();
+  },
+});
 document.querySelector('[data-action="menu"]').addEventListener('click', (event) => {
   notify('메뉴판 기능을 준비하고 있어요.');
 });
-document.querySelector('#back-button').addEventListener('click', () => showScreen('home-screen'));
+document.querySelector('#back-button').addEventListener('click', () => showScreen('recommendation-screen', 'home-screen'));
 document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => showScreen(item.dataset.screen)));
 document.querySelector('#analysis-cancel').addEventListener('click',()=>showScreen('home-screen'));
 document.querySelector('#analysis-close').addEventListener('click',()=>showScreen('home-screen'));
 document.querySelector('#result-back').addEventListener('click',()=>showScreen('scan-screen','home-screen'));
-document.querySelector('#result-home').addEventListener('click',()=>showScreen('home-screen'));
-document.querySelector('.result-actions button').addEventListener('click',()=>showScreen('edit-screen','home-screen'));
-document.querySelector('#edit-close').addEventListener('click',()=>showScreen('result-screen','home-screen'));
-document.querySelector('#edit-cancel').addEventListener('click',()=>showScreen('result-screen','home-screen'));
+document.querySelector('#result-home').addEventListener('click', () => {
+  homeController.updateOngoing();
+  showScreen('recommendation-screen', 'home-screen');
+});
+document.querySelector('.result-actions button').addEventListener('click', openEditScreen);
+document.querySelector('#edit-close').addEventListener('click', discardEdit);
+document.querySelector('#edit-cancel').addEventListener('click', discardEdit);
 const editBudgetInput = document.querySelector('#edit-budget');
 editBudgetInput.type = 'text';
 editBudgetInput.inputMode = 'numeric';
@@ -162,8 +197,7 @@ resultEditButton.type = 'button';
 resultEditButton.textContent = '수정';
 document.querySelector('#result-screen .result-chips').append(resultEditButton);
 resultEditButton.addEventListener('click', () => {
-  populateEditForm();
-  showScreen('edit-screen', 'home-screen');
+  openEditScreen();
 });
 
 function getRecommendationTotal() {
@@ -388,10 +422,13 @@ replaceControl('#result-screen .result-actions button:first-child', startAnalysi
 replaceControl('#result-screen .result-actions button:last-child', () => {
   if (!currentRecommendation) return;
   history.save(currentRecommendation);
+  currentRecommendation = null;
+  homeController.updateOngoing();
   showScreen('history-screen', 'history-screen');
 });
 replaceControl('#edit-submit', () => {
   syncRecommendationFromEdit();
+  editSnapshot = null;
   startAnalysis({ reanalyseCurrent: true });
 });
 

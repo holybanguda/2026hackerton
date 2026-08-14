@@ -23,28 +23,30 @@ button { font:inherit; color:inherit; cursor:pointer; }
 #home-screen .start-choice-card:hover .wand-icon .choice-icon-selected { position:absolute; z-index:1; display:block; width:41px; height:36.44px; opacity:1; }
 #home-screen .start-choice-card:hover small { color:#fff; }
 .phone-shell:has(#home-screen.active) .bottom-nav { display:none; }
-#home-screen .home-content { padding:20px 30px; }
-#home-screen h1 { margin:0 0 10px; font-size:24px; line-height:30px; letter-spacing:.01em; }
-#home-screen .intro { margin:0 0 40px; font-size:14px; color:#7f7a76; line-height:19px; letter-spacing:.01em; }
-#home-screen .action-card { width:100%; min-height:191px; margin:0 0 16px; padding:24px; display:flex; align-items:flex-start; text-align:left; border:1px solid #d9dfe7; border-radius:24px; background:#fff; box-shadow:0 2px 3px #0f172b20; position:relative; }
+#recommendation-screen .topbar { height:56px; padding:11px 30px; display:flex; align-items:center; border-bottom:1px solid #dedede; font-size:18px; line-height:28px; font-weight:700; }
+#recommendation-screen .home-content { padding:20px 30px 96px; }
+#recommendation-screen h1 { margin:0 0 10px; font-size:24px; line-height:30px; letter-spacing:.01em; }
+#recommendation-screen .intro { margin:0 0 40px; font-size:14px; color:#7f7a76; line-height:19px; letter-spacing:.01em; }
+#recommendation-screen .action-card { width:100%; min-height:191px; margin:0 0 16px; padding:24px; display:flex; align-items:flex-start; text-align:left; border:1px solid #d9dfe7; border-radius:24px; background:#fff; box-shadow:0 2px 3px #0f172b20; position:relative; }
 .action-card:active { transform:scale(.99); }
 .card-icon,.option-icon { flex:0 0 auto; display:grid; place-items:center; width:48px; height:48px; border-radius:16px; margin-right:0; font-weight:700; }
 .card-icon.coral { background:var(--coral); color:#fff; }
 .card-icon.pale,.option-icon { background:#f0f3f8; color:var(--coral); }
 .card-icon img { width:23px; height:23px; object-fit:contain; }
-#home-screen .card-icon.coral { background:#171717; }
-#home-screen .card-icon.pale { background:#f6f4f5; }
+#recommendation-screen .card-icon.coral { background:#171717; }
+#recommendation-screen .card-icon.pale { background:#f6f4f5; }
 .card-icon.pale img { width:20px; height:20px; }
 .card-icon svg,.option-icon svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .card-icon.coral svg { width:20px; height:20px; }
 .card-copy { display:grid; gap:4px; position:absolute; left:24px; bottom:25px; }
-#home-screen .card-copy strong { color:#171717; font-size:18px; line-height:28px; font-weight:700; letter-spacing:.01em; }
-#home-screen .card-copy small { color:#7f7a76; font-size:14px; line-height:19px; letter-spacing:.01em; }
+#recommendation-screen .card-copy strong { color:#171717; font-size:18px; line-height:28px; font-weight:700; letter-spacing:.01em; }
+#recommendation-screen .card-copy small { color:#7f7a76; font-size:14px; line-height:19px; letter-spacing:.01em; }
 .card-copy strong,.option-row strong,.code-row strong { font-size:18px; line-height:28px; font-weight:700; letter-spacing:.01em; }
 .card-copy small,.option-row small,.code-row small { color:#62748e; font-size:14px; line-height:23px; letter-spacing:.01em; }
-#home-screen .chevron { display:grid; place-items:center; color:#b2afac; position:absolute; right:23px; top:86px; }
+#recommendation-screen .chevron { display:grid; place-items:center; color:#b2afac; position:absolute; right:23px; top:86px; font-size:30px; line-height:18px; }
 .chevron svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .badge { display:grid; place-items:center; width:24px; height:24px; border-radius:13px; color:#314158; background:#f6f4f5; font-size:12px; position:absolute; right:44px; top:84px; }
+.badge[hidden] { display:none; }
 .bottom-nav { position:absolute; bottom:0; left:0; right:0; height:64px; display:flex; justify-content:space-between; align-items:flex-end; padding:13px 57.5px; border-top:1px solid #f1f5f9; background:#fff; }
 .nav-item { width:85.5px; height:37px; border:0; background:transparent; display:grid; align-content:start; justify-items:center; gap:2px; color:#90a1b9; }
 .nav-item span { width:20px; height:20px; line-height:18px; }
