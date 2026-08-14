@@ -15,9 +15,7 @@ const history = createHistory({
   showScreen,
   onOpen: (item) => {
     currentRecommendation = item;
-    renderAiReport();
-    renderMenuResults();
-    refreshResultSummary();
+    renderRecommendationResult();
   },
 });
 
@@ -61,9 +59,8 @@ function completeAnalysis() {
   };
   analysisTarget = null;
   currentRecommendation.total = `${getRecommendationTotal().toLocaleString('ko-KR')}원`;
-  refreshResultSummary();
-  renderAiReport();
-  renderMenuResults();
+  editBudgetInput.value = Number(currentRecommendation.budget || 60000).toLocaleString('ko-KR');
+  renderRecommendationResult();
   history.render();
   showScreen('result-screen', 'home-screen');
 }
@@ -216,7 +213,7 @@ resultEditButton.addEventListener('click', () => {
 
 function getRecommendationTotal() {
   const items = currentRecommendation?.menuItems;
-  if (!items?.length) return 58000;
+  if (!items?.length) return 0;
   return items.reduce((sum, item) => sum + (Number(String(item.price).replace(/[^\d]/g, '')) || 0), 0);
 }
 
@@ -267,6 +264,15 @@ const currentOrderChevron = document.createElement('i');
 currentOrderChevron.textContent = '›';
 currentOrderButton.replaceChildren(currentOrderIcon, currentOrderLabel, currentOrderChevron);
 
+function renderCurrentOrder() {
+  const items = currentRecommendation?.menuItems;
+  if (!items?.length) return;
+  const firstName = items[0].name || '추천 메뉴';
+  const restCount = Math.max(0, (currentRecommendation.menuCount ?? items.length) - 1);
+  currentOrderLabel.textContent = restCount ? `${firstName} 외 ${restCount}건` : firstName;
+  document.querySelector('#edit-screen .current-order > strong').textContent = `총 ${getRecommendationTotal().toLocaleString('ko-KR')}원`;
+}
+
 document.querySelectorAll('#edit-screen .edit-content h2')[3].textContent = '\uB9E4\uC6B4 \uC74C\uC2DD \uC120\uD638\uB3C4';
 
 const spiceRange = document.querySelector('#edit-screen .edit-range');
@@ -315,6 +321,10 @@ function renderAiReport() {
   if (!report) return;
   reportTitle.replaceChildren(reportWand, document.createTextNode(report.title || 'AI 분석 리포트'));
   const text = document.querySelector('#result-screen .report p');
+  if (report.content) {
+    text.textContent = report.content;
+    return;
+  }
   text.replaceChildren(
     document.createTextNode(report.before || ''),
     Object.assign(document.createElement('b'), { textContent: report.emphasis || '' }),
@@ -323,8 +333,8 @@ function renderAiReport() {
 }
 
 const totalCard = document.querySelector('#result-screen .total-card');
-function updateBudgetGauge() {
-  const budget = Number(editBudgetInput.value.replace(/,/g, '')) || 0;
+function updateBudgetGauge(budgetValue) {
+  const budget = Number(budgetValue ?? editBudgetInput.value.replace(/,/g, '')) || 0;
   const recommendationTotal = getRecommendationTotal();
   const remaining = Math.max(0, budget - recommendationTotal);
   const usedRatio = budget ? Math.min(100, (recommendationTotal / budget) * 100) : 100;
@@ -339,12 +349,39 @@ updateBudgetGauge();
 function refreshResultSummary() {
   if (!currentRecommendation) return;
   const chips = document.querySelectorAll('#result-screen .result-chips span');
+  const budget = Number(currentRecommendation.budget || 60000);
   const peopleIcon = Object.assign(document.createElement('img'), { src: resultChipAssets[0], alt: '' });
   const budgetIcon = Object.assign(document.createElement('img'), { src: resultChipAssets[1], alt: '' });
+  const moodIcon = Object.assign(document.createElement('img'), { src: 'assets/heart.png', alt: '' });
   chips[0].replaceChildren(peopleIcon, document.createTextNode(currentRecommendation.people));
-  chips[1].replaceChildren(budgetIcon, document.createTextNode(`${Number(currentRecommendation.budget || 60000).toLocaleString('ko-KR')}원`));
-  updateBudgetGauge();
+  chips[1].replaceChildren(budgetIcon, document.createTextNode(`${budget.toLocaleString('ko-KR')}원`));
+  chips[2].replaceChildren(moodIcon, document.createTextNode(currentRecommendation.mood || '분위기 미정'));
+  updateBudgetGauge(budget);
 }
+
+function renderRecommendationResult() {
+  if (!currentRecommendation) return;
+  refreshResultSummary();
+  renderAiReport();
+  renderMenuResults();
+  renderCurrentOrder();
+}
+
+// AI 연결 시 이 함수를 호출하면 결과 화면 전체가 응답 데이터로 교체됩니다.
+window.applyAiRecommendationResult = function applyAiRecommendationResult(aiResult) {
+  const previous = currentRecommendation || {};
+  const people = aiResult.people ?? previous.people ?? '3명';
+  analysisTarget = {
+    ...previous,
+    ...aiResult,
+    id: aiResult.id ?? previous.id ?? (crypto.randomUUID?.() ?? String(Date.now())),
+    people: typeof people === 'number' ? `${people}명` : people,
+    budget: Number(aiResult.budget ?? previous.budget ?? 60000),
+    report: { ...(previous.report || {}), ...(aiResult.report || {}) },
+    menuItems: Array.isArray(aiResult.menuItems) ? aiResult.menuItems : (previous.menuItems || []),
+  };
+  completeAnalysis();
+};
 
 function replaceControl(selector, handler) {
   const original = document.querySelector(selector);
@@ -477,7 +514,7 @@ function syncRecommendationFromEdit() {
   currentRecommendation.budget = Number(editBudgetInput.value.replace(/,/g, '')) || 0;
   currentRecommendation.excludedFoods = readFoodTags();
   currentRecommendation.spice = Number(spiceRange.value);
-  refreshResultSummary();
+  renderRecommendationResult();
   history.render();
 }
 
