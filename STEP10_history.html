@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script src="./api.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>히스토리 - AI 메뉴 추천</title>
+    <style>
+      :root {
+        --ink: #0f172a;
+        --text: #314158;
+        --muted: #7f7a76;
+        --line: #dedede;
+        --line-soft: #f1f5f9;
+        --coral: #ff6041;
+        --white: #ffffff;
+        --field: #f6f4f5;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; background: #61795f; font-family: Inter, Pretendard, "Noto Sans KR", sans-serif; -webkit-font-smoothing: antialiased; }
+      body { display: grid; place-items: center; min-height: 100vh; min-height: 100dvh; color: var(--ink); }
+      button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+      .phone-shell {
+        position: relative;
+        width: min(100vw, 401px);
+        height: min(100vh, 874px);
+        min-height: 640px;
+        overflow: hidden;
+        background: var(--white);
+        box-shadow: 0 0 0 2px #68a6ff;
+      }
+
+      .header {
+        height: 56px;
+        padding: 11px 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(6px);
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .search-btn { margin-left: auto; width: 32px; height: 32px; border: 0; background: transparent; color: #45556c; font-size: 18px; }
+
+      .tabs {
+        height: 48px;
+        display: flex;
+        gap: 32px;
+        padding: 0 30px;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .tab-btn {
+        position: relative; height: 48px; padding: 0; border: 0; background: transparent;
+        color: var(--muted); font-size: 16px; font-weight: 600;
+      }
+      .tab-btn.selected { color: var(--ink); font-weight: 700; }
+      .tab-btn.selected::after {
+        content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 3px; background: var(--coral);
+      }
+
+      .content { padding: 24px 24px 100px; height: calc(100% - 168px); overflow-y: auto; }
+
+      .history-list { display: grid; gap: 16px; }
+      .history-card {
+        position: relative;
+        height: 129px;
+        padding: 16px;
+        border: 1px solid var(--line-soft);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+      }
+      .status-badge {
+        display: inline-flex; height: 20px; padding: 2px 8px; border-radius: 4px;
+        background: var(--field); color: var(--muted); font-size: 11px; font-weight: 600;
+      }
+      .history-title {
+        display: block; margin-top: 6px; padding-right: 50px; color: var(--ink);
+        font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .history-icon {
+        position: absolute; top: 16px; right: 16px; width: 40px; height: 40px;
+        display: grid; place-items: center; border-radius: 10px; background: var(--field);
+      }
+      .history-icon img { width: 22px; height: 22px; object-fit: contain; }
+
+      .history-meta { position: absolute; bottom: 16px; left: 16px; display: flex; gap: 6px; }
+      .meta-tag { height: 26px; padding: 4px 10px; border-radius: 14px; background: var(--line-soft); color: var(--muted); font-size: 12px; }
+
+      .history-price {
+        position: absolute; right: 16px; bottom: 16px; color: var(--ink);
+        font-size: 18px; font-weight: 700; font-style: normal;
+      }
+
+      .history-card.cancelled { opacity: 0.55; }
+      .history-card.cancelled .history-price { text-decoration: line-through; }
+
+      /* 하단 탭 */
+      .bottom-nav {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        height: 63px;
+        padding: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 154px;
+        background: #fff;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.18);
+      }
+      .nav-item {
+        position: relative;
+        width: 183px;
+        height: 47px;
+        border: 0;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        color: #afa8a8;
+        z-index: 1;
+      }
+      .nav-item.selected { color: #fff; }
+      .nav-item.selected::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: 56px;
+        background: var(--coral);
+      }
+      .nav-item img { width: 18px; height: 18px; object-fit: contain; }
+      .nav-item small { font-size: 10px; line-height: 15px; font-weight: 500; }
+
+      @media (max-width: 401px) {
+        body { place-items: stretch; background: #fff; }
+        .phone-shell { width: 100vw; height: 100vh; min-height: 600px; box-shadow: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="phone-shell">
+      <header class="header">
+        <span>히스토리</span>
+        <button class="search-btn" type="button" aria-label="검색">🔍</button>
+      </header>
+
+      <div class="tabs">
+        <button class="tab-btn selected" id="tab-all" type="button">전체</button>
+        <button class="tab-btn" id="tab-completed" type="button">방문 완료</button>
+      </div>
+
+      <div class="content">
+        <div class="history-list" id="history-container">
+          <!-- 동적 히스토리 카드 -->
+        </div>
+      </div>
+
+      <!-- 하단 탐색 바 -->
+      <nav class="bottom-nav" aria-label="주요 메뉴">
+        <button class="nav-item" id="nav-home" type="button">
+          <img src="assets/nav-home-inactive.png" alt="" />
+          <small>홈</small>
+        </button>
+        <button class="nav-item selected" id="nav-history" type="button">
+          <img src="assets/nav-history-active.png" alt="" />
+          <small>히스토리</small>
+        </button>
+      </nav>
+    </main>
+
+    <script>
+      let historyItems = [];
+      const container = document.querySelector('#history-container');
+      const tabAll = document.querySelector('#tab-all');
+      const tabCompleted = document.querySelector('#tab-completed');
+
+      function renderCards(filterCompletedOnly = false) {
+        container.innerHTML = '';
+        const filtered = filterCompletedOnly ? historyItems.filter(i => i.status === '방문 완료') : historyItems;
+
+        filtered.forEach(item => {
+          const card = document.createElement('article');
+          card.className = `history-card ${item.status === '취소됨' ? 'cancelled' : ''}`;
+
+          const status = document.createElement('span');
+          status.className = 'status-badge';
+          status.textContent = item.status || '방문 완료';
+
+          const iconSpan = document.createElement('span');
+          iconSpan.className = 'history-icon';
+          const img = document.createElement('img');
+          img.src = item.icon || 'assets/history-utensils.png';
+          img.alt = '';
+          iconSpan.append(img);
+
+          const title = document.createElement('strong');
+          title.className = 'history-title';
+          title.textContent = item.title || item.name;
+
+          const meta = document.createElement('div');
+          meta.className = 'history-meta';
+          [ `${item.peopleCount || 2}명`, item.meetingType || '식사' ].forEach(text => {
+            const tag = document.createElement('span');
+            tag.className = 'meta-tag';
+            tag.textContent = text;
+            meta.append(tag);
+          });
+
+          const price = document.createElement('em');
+          price.className = 'history-price';
+          price.textContent = `${new Intl.NumberFormat('ko-KR').format(item.price || 0)}원`;
+
+          card.append(status, iconSpan, title, meta, price);
+
+          card.addEventListener('click', () => {
+            const rec = generateMockRecommendation({
+              peopleCount: item.peopleCount || 2,
+              budget: item.price || 60000,
+              meetingType: item.meetingType || '식사'
+            });
+            sessionStorage.setItem('aiResult', JSON.stringify(rec));
+            window.location.href = 'STEP8_result.html';
+          });
+
+          container.append(card);
+        });
+      }
+
+      tabAll.addEventListener('click', () => {
+        tabAll.classList.add('selected');
+        tabCompleted.classList.remove('selected');
+        renderCards(false);
+      });
+
+      tabCompleted.addEventListener('click', () => {
+        tabCompleted.classList.add('selected');
+        tabAll.classList.remove('selected');
+        renderCards(true);
+      });
+
+      document.querySelector('#nav-home').addEventListener('click', () => window.location.href = 'STEP0_home.html');
+      document.querySelector('#nav-history').addEventListener('click', () => window.location.href = 'STEP10_history.html');
+
+      window.addEventListener('DOMContentLoaded', async () => {
+        historyItems = await getHistoryList();
+        renderCards(false);
+      });
+    </script>
+  </body>
+</html>

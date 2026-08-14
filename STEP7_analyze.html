@@ -49,58 +49,10 @@
         background: var(--white);
       }
 
-      .status-bar {
-        position: absolute;
-        z-index: 5;
-        inset: 0 0 auto;
-        height: 46px;
-        background: var(--white);
-        color: #000000;
-      }
-
-      .status-time {
-        position: absolute;
-        top: 7px;
-        left: 22px;
-        width: 58px;
-        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 20px;
-        text-align: center;
-        letter-spacing: -0.24px;
-      }
-
-      .status-icon {
-        position: absolute;
-        display: block;
-      }
-
-      .status-cellular {
-        top: 18px;
-        right: 68px;
-        width: 18px;
-        height: 12px;
-      }
-
-      .status-wifi {
-        top: 18px;
-        right: 47px;
-        width: 17px;
-        height: 12px;
-      }
-
-      .status-battery {
-        top: 18px;
-        right: 15px;
-        width: 26px;
-        height: 12px;
-      }
-
       .header {
         position: absolute;
         z-index: 4;
-        inset: 46px 0 auto;
+        inset: 0 0 auto;
         height: 56px;
         display: flex;
         align-items: center;
@@ -141,7 +93,7 @@
 
       main {
         position: absolute;
-        top: 115px;
+        top: 69px;
         left: 6px;
         width: 390px;
         height: 497px;
@@ -153,8 +105,33 @@
         left: 99px;
         width: 192px;
         height: 192px;
-        border: 4px solid var(--accent);
+        border: 4px solid rgba(255, 96, 65, 0.18);
         border-radius: 50%;
+        box-shadow: 0 0 0 8px rgba(255, 96, 65, 0.04);
+      }
+
+      .analysis-visual::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border: 4px solid transparent;
+        border-top-color: var(--accent);
+        border-right-color: var(--accent);
+        border-radius: 50%;
+        animation: analysis-ring-spin 1.15s linear infinite;
+      }
+
+      .analysis-visual::after {
+        content: "";
+        position: absolute;
+        top: 12px;
+        right: 24px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 5px rgba(255, 96, 65, 0.14);
+        animation: loading-dot-pulse 1.15s ease-in-out infinite;
       }
 
       .visual-halo {
@@ -167,12 +144,14 @@
         place-items: center;
         border-radius: 50%;
         background: var(--field);
+        animation: halo-pulse 1.8s ease-in-out infinite;
       }
 
       .visual-halo img {
         display: block;
         width: 41px;
         height: 37px;
+        animation: wand-float 1.8s ease-in-out infinite;
       }
 
       .status-copy {
@@ -235,7 +214,10 @@
       .progress-item:nth-child(3) { top: 72px; }
       .progress-item:nth-child(4) { top: 108px; }
 
-      .progress-item.is-active { font-weight: 700; }
+      .progress-item.is-active {
+        font-weight: 700;
+        animation: active-copy-pulse 1.4s ease-in-out infinite;
+      }
 
       .progress-item.is-pending {
         color: var(--middle-gray);
@@ -268,14 +250,57 @@
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: var(--middle-gray);
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 96, 65, 0.16);
+        animation: loading-dot-pulse 0.9s ease-in-out infinite;
       }
 
       .is-pending .progress-icon { border-color: #e2e8f0; }
 
+      @keyframes analysis-ring-spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes halo-pulse {
+        0%, 100% {
+          transform: scale(0.96);
+          box-shadow: 0 0 0 0 rgba(255, 96, 65, 0.16);
+        }
+        50% {
+          transform: scale(1.03);
+          box-shadow: 0 0 0 14px rgba(255, 96, 65, 0);
+        }
+      }
+
+      @keyframes wand-float {
+        0%, 100% { transform: translateY(2px) rotate(-3deg); }
+        50% { transform: translateY(-4px) rotate(3deg); }
+      }
+
+      @keyframes loading-dot-pulse {
+        0%, 100% { opacity: 0.45; transform: scale(0.75); }
+        50% { opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes active-copy-pulse {
+        0%, 100% { opacity: 0.62; }
+        50% { opacity: 1; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .analysis-visual::before,
+        .analysis-visual::after,
+        .visual-halo,
+        .visual-halo img,
+        .progress-item.is-active,
+        .progress-spinner {
+          animation: none;
+        }
+      }
+
       .info-card {
         position: absolute;
-        top: 685px;
+        top: 639px;
         left: 30px;
         width: 342px;
         height: 74px;
@@ -363,13 +388,6 @@
   </head>
   <body>
     <div class="app">
-      <div class="status-bar" aria-hidden="true">
-        <span class="status-time">9:41</span>
-        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
-        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
-        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
-      </div>
-
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
           <img src="./assets/icon-xmark.svg" alt="" aria-hidden="true" />
@@ -487,8 +505,7 @@
 
             sessionStorage.setItem("aiResult", JSON.stringify(aiResult));
 
-            // STEP 8 화면 완성 시, 주석 해제 및 화면 이동
-            // window.location.href = "STEP8_result.html";
+            window.location.href = "STEP8_result.html";
 
         } catch (error) {
             console.error("🚨 AI 추천 API 통신 실패:", error);

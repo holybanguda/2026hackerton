@@ -59,61 +59,10 @@
         background: var(--white);
       }
 
-      .status-bar {
-        position: absolute;
-        z-index: 5;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 46px;
-        background: var(--white);
-        color: #000000;
-      }
-
-      .status-time {
-        position: absolute;
-        top: 13px;
-        left: 20px;
-        width: 58px;
-        margin: 0;
-        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 20px;
-        letter-spacing: -0.24px;
-        text-align: center;
-      }
-
-      .status-icon {
-        position: absolute;
-        display: block;
-      }
-
-      .status-cellular {
-        top: 18.5px;
-        right: 68.6px;
-        width: 18.2px;
-        height: 11.2px;
-      }
-
-      .status-wifi {
-        top: 18.1px;
-        right: 46.8px;
-        width: 16.4px;
-        height: 11.5px;
-      }
-
-      .status-battery {
-        top: 18.1px;
-        right: 15.4px;
-        width: 26.1px;
-        height: 11.9px;
-      }
-
       .header {
         position: absolute;
         z-index: 4;
-        top: 46px;
+        top: 0;
         left: 0;
         width: 100%;
         height: 56px;
@@ -159,7 +108,7 @@
 
       main {
         position: absolute;
-        top: 102px;
+        top: 56px;
         left: 0;
         width: 100%;
         height: 842px;
@@ -442,7 +391,7 @@
 
       .complete-button {
         position: absolute;
-        top: 750px;
+        top: 796px;
         left: 30px;
         width: 342px;
         height: 56px;
@@ -598,13 +547,6 @@
   </head>
   <body>
     <div class="app">
-      <div class="status-bar" aria-hidden="true">
-        <p class="status-time">9:41</p>
-        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
-        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
-        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
-      </div>
-
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
           <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />

@@ -61,41 +61,10 @@
         background: var(--white);
       }
 
-      .status-bar {
-        position: absolute;
-        z-index: 5;
-        inset: 0 0 auto;
-        height: 46px;
-        background: var(--white);
-        color: #000000;
-      }
-
-      .status-time {
-        position: absolute;
-        top: 7px;
-        left: 22px;
-        width: 58px;
-        font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 20px;
-        text-align: center;
-        letter-spacing: -0.24px;
-      }
-
-      .status-icon {
-        position: absolute;
-        display: block;
-      }
-
-      .status-cellular { top: 18px; right: 68px; width: 18px; height: 12px; }
-      .status-wifi { top: 18px; right: 47px; width: 17px; height: 12px; }
-      .status-battery { top: 18px; right: 15px; width: 26px; height: 12px; }
-
       .header {
         position: absolute;
         z-index: 4;
-        inset: 46px 0 auto;
+        inset: 0 0 auto;
         height: 56px;
         display: flex;
         align-items: center;
@@ -152,7 +121,7 @@
 
       main {
         position: absolute;
-        inset: 102px 0 auto;
+        inset: 56px 0 auto;
         height: 653px;
       }
 
@@ -680,13 +649,6 @@
   </head>
   <body>
     <div class="app">
-      <div class="status-bar" aria-hidden="true">
-        <span class="status-time">9:41</span>
-        <img class="status-icon status-cellular" src="./assets/status-cellular.svg" alt="" />
-        <img class="status-icon status-wifi" src="./assets/status-wifi.svg" alt="" />
-        <img class="status-icon status-battery" src="./assets/status-battery.svg" alt="" />
-      </div>
-
       <header class="header">
         <button class="back-button" type="button" aria-label="이전 화면으로">
           <img src="./assets/icon-chevron-left.svg" alt="" aria-hidden="true" />

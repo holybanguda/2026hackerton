@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script src="./api.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>AI 추천 결과 - AI 메뉴 추천</title>
+    <style>
+      :root {
+        --ink: #0f172a;
+        --text: #314158;
+        --muted: #7f7a76;
+        --line: #dedede;
+        --line-soft: #f1f5f9;
+        --coral: #ff6041;
+        --white: #ffffff;
+        --field: #f6f4f5;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; background: #61795f; font-family: Inter, Pretendard, "Noto Sans KR", sans-serif; -webkit-font-smoothing: antialiased; }
+      body { display: grid; place-items: center; min-height: 100vh; min-height: 100dvh; color: var(--ink); }
+      button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+      .phone-shell {
+        position: relative;
+        width: min(100vw, 401px);
+        height: min(100vh, 874px);
+        min-height: 640px;
+        overflow: hidden;
+        background: var(--white);
+        box-shadow: 0 0 0 2px #68a6ff;
+      }
+
+      .header {
+        position: relative;
+        height: 56px;
+        padding: 11px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(6px);
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .back-button { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--ink); font-size: 28px; }
+      .header-action { margin-left: auto; border: 0; background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; }
+
+      .content { padding: 0 0 100px; height: calc(100% - 120px); overflow-y: auto; background: #fff; }
+
+      .chips-row {
+        position: relative;
+        padding: 16px 30px;
+        display: flex;
+        gap: 8px;
+        background: var(--field);
+      }
+      .chip {
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .edit-link {
+        margin-left: auto;
+        border: 0;
+        background: transparent;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: underline;
+      }
+
+      .report-card {
+        margin: 28px 30px 0;
+        padding: 18px;
+        border-radius: 16px;
+        background: var(--field);
+      }
+      .report-card strong { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); }
+      .report-card p { margin: 14px 0 0; color: var(--text); font-size: 14px; line-height: 22px; letter-spacing: 0.01em; }
+
+      .menu-heading {
+        margin: 36px 30px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .menu-heading h3 { margin: 0; font-size: 18px; font-weight: 700; }
+      .menu-heading span { color: var(--muted); font-size: 12px; }
+
+      .menu-list { display: grid; gap: 14px; margin: 16px 30px 0; }
+      .menu-card {
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border: 1px solid var(--line-soft);
+        border-radius: 14px;
+        background: #fff;
+      }
+      .menu-icon {
+        width: 76px; height: 76px; border-radius: 10px; background: var(--field);
+        display: grid; place-items: center; font-size: 26px; flex-shrink: 0;
+      }
+      .menu-icon img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
+      .menu-info { flex: 1; display: grid; gap: 4px; }
+      .menu-info strong { font-size: 15px; font-weight: 700; }
+      .menu-info small { color: var(--muted); font-size: 12px; }
+      .menu-tags { display: flex; gap: 4px; margin-top: 2px; }
+      .menu-tags b { padding: 2px 6px; border-radius: 4px; background: var(--field); color: var(--muted); font-size: 10px; font-weight: 500; }
+      .menu-price { font-size: 14px; font-weight: 700; white-space: nowrap; }
+
+      .total-card {
+        position: relative;
+        margin: 40px 30px 0;
+        padding: 20px;
+        border-radius: 16px;
+        background: var(--coral);
+        color: #fff;
+      }
+      .total-card small { color: #fff5ec; font-size: 12px; }
+      .total-card strong { display: block; margin-top: 4px; font-size: 24px; font-weight: 700; }
+      .total-card .remaining-info { position: absolute; right: 20px; top: 20px; text-align: right; color: #fff5ec; font-size: 12px; }
+      .total-card .remaining-info b { display: block; color: #fff; font-size: 14px; font-weight: 700; margin-top: 2px; }
+      .total-card::after {
+        content: ''; position: absolute; right: 20px; bottom: 18px; left: 20px; height: 6px;
+        border-radius: 20px; background: linear-gradient(to right, #fff 88%, #a0220b 88%);
+      }
+
+      .result-actions { display: flex; gap: 12px; margin: 40px 30px 0; }
+      .btn-action {
+        height: 54px; flex: 1; border: 1px solid var(--line); border-radius: 12px;
+        background: #fff; color: var(--muted); font-size: 14px; font-weight: 700;
+      }
+      .btn-action.primary { border: 0; background: var(--coral); color: #fff; box-shadow: 0 4px 6px rgba(255, 96, 65, 0.25); }
+
+      /* 하단 탭 */
+      .bottom-nav {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        height: 63px;
+        padding: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 154px;
+        background: #fff;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.18);
+      }
+      .nav-item {
+        position: relative;
+        width: 183px;
+        height: 47px;
+        border: 0;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        color: #afa8a8;
+        z-index: 1;
+      }
+      .nav-item.selected { color: #fff; }
+      .nav-item.selected::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: 32px;
+        background: var(--coral);
+      }
+      .nav-item img { width: 18px; height: 18px; object-fit: contain; }
+      .nav-item small { font-size: 10px; line-height: 15px; font-weight: 500; }
+
+      .toast {
+        position: fixed; left: 50%; bottom: 85px; transform: translate(-50%, 15px);
+        padding: 10px 16px; border-radius: 10px; background: #182235; color: #fff;
+        opacity: 0; pointer-events: none; font-size: 12px; transition: 0.2s; z-index: 300; white-space: nowrap;
+      }
+      .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+      @media (max-width: 401px) {
+        body { place-items: stretch; background: #fff; }
+        .phone-shell { width: 100vw; height: 100vh; min-height: 600px; box-shadow: none; }
+        .chips-row, .report-card, .menu-heading, .menu-list, .total-card, .result-actions { margin-right: 18px; margin-left: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="phone-shell">
+      <header class="header">
+        <button class="back-button" id="btn-back" type="button">‹</button>
+        <span>AI 추천 결과</span>
+        <button class="header-action" id="btn-home" type="button">처음으로</button>
+      </header>
+
+      <div class="content">
+        <div class="chips-row">
+          <span class="chip" id="chip-people">♟ 3명</span>
+          <span class="chip" id="chip-budget">▣ 60,000원</span>
+          <span class="chip" id="chip-mood">♥ 데이트</span>
+          <button class="edit-link" id="btn-edit-top" type="button">수정</button>
+        </div>
+
+        <article class="report-card">
+          <div class="report-title">
+            <img src="assets/arrow-right.svg" alt="이동" class="icon-arrow" />
+            <strong>AI 분석 리포트</strong>
+          </div>
+          <p id="report-text">"데이트 분위기에 맞춰 대화하기 좋은 깔끔한 메뉴 위주로 구성했습니다. 예산 내에서 스테이크와 와인을 모</p>
+        </article>
+
+        <div class="menu-heading">
+          <h3>추천 메뉴 조합</h3>
+          <span id="menu-count">총 3개 메뉴</span>
+        </div>
+
+        <div class="menu-list" id="menu-list-container">
+          <!-- 동적 메뉴 카드 -->
+        </div>
+
+        <div class="total-card">
+          <small>총 예상 금액</small>
+          <strong id="total-price">58,000원</strong>
+          <span class="remaining-info">
+            남은 예산
+            <b id="remaining-price">2,000원 남음</b>
+          </span>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn-action" id="btn-re-recommend" type="button">⟳ 다른 조합 추천</button>
+          <button class="btn-action primary" id="btn-confirm-order" type="button">이대로 주문 확정</button>
+        </div>
+      </div>
+
+      <!-- 하단 탐색 바 -->
+      <nav class="bottom-nav" aria-label="주요 메뉴">
+        <button class="nav-item selected" id="nav-home" type="button">
+          <img src="assets/nav-home.png" alt="" />
+          <small>홈</small>
+        </button>
+        <button class="nav-item" id="nav-history" type="button">
+          <img src="assets/nav-history.png" alt="" />
+          <small>히스토리</small>
+        </button>
+      </nav>
+    </main>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const toast = document.querySelector("#toast");
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1800);
+      }
+
+      function renderResult() {
+        const raw = sessionStorage.getItem('aiResult');
+        const data = raw ? JSON.parse(raw) : generateMockRecommendation();
+
+        const wonFormatter = new Intl.NumberFormat('ko-KR');
+
+        document.querySelector('#chip-people').textContent = `♟ ${data.peopleCount || 3}명`;
+        document.querySelector('#chip-budget').textContent = `▣ ${wonFormatter.format(data.budget || 60000)}원`;
+        document.querySelector('#chip-mood').textContent = `♥ ${data.meetingType || '데이트'}`;
+
+        document.querySelector('#report-text').textContent = data.reportSummary || '"선택하신 분위기와 예산에 맞춰 추천 구성을 작성했습니다."';
+
+        const listContainer = document.querySelector('#menu-list-container');
+        listContainer.innerHTML = '';
+        const menus = data.menuList || [];
+        document.querySelector('#menu-count').textContent = `총 ${menus.length}개 메뉴`;
+
+        menus.forEach(menu => {
+          const card = document.createElement('div');
+          card.className = 'menu-card';
+
+          const iconBox = document.createElement('div');
+          iconBox.className = 'menu-icon';
+          const img = document.createElement('img');
+          img.src = menu.icon || 'assets/utensils.png';
+          img.alt = '';
+          iconBox.append(img);
+
+          const infoBox = document.createElement('div');
+          infoBox.className = 'menu-info';
+          const strongName = document.createElement('strong');
+          strongName.textContent = menu.name;
+          const smallDesc = document.createElement('small');
+          smallDesc.textContent = menu.description;
+          infoBox.append(strongName, smallDesc);
+
+          if (menu.tags && menu.tags.length) {
+            const tagsBox = document.createElement('div');
+            tagsBox.className = 'menu-tags';
+            menu.tags.forEach(t => {
+              const b = document.createElement('b');
+              b.textContent = t;
+              tagsBox.append(b);
+            });
+            infoBox.append(tagsBox);
+          }
+
+          const priceBox = document.createElement('div');
+          priceBox.className = 'menu-price';
+          priceBox.textContent = `${wonFormatter.format(menu.price)}원`;
+
+          card.append(iconBox, infoBox, priceBox);
+          listContainer.append(card);
+        });
+
+        document.querySelector('#total-price').textContent = `${wonFormatter.format(data.totalPrice || 58000)}원`;
+        const rem = data.remainingBudget ?? ((data.budget || 60000) - (data.totalPrice || 58000));
+        document.querySelector('#remaining-price').textContent = `${wonFormatter.format(Math.max(0, rem))}원 남음`;
+      }
+
+      document.querySelector('#btn-back').addEventListener('click', () => window.location.href = 'STEP0_home.html');
+      document.querySelector('#btn-home').addEventListener('click', () => window.location.href = 'STEP0_home.html');
+      document.querySelector('#btn-edit-top').addEventListener('click', () => window.location.href = 'STEP9_edit.html');
+      document.querySelector('#btn-re-recommend').addEventListener('click', () => window.location.href = 'STEP9_edit.html');
+
+      document.querySelector('#btn-confirm-order').addEventListener('click', () => {
+        showToast('🎉 주문이 성공적으로 확정되었습니다!');
+        const raw = sessionStorage.getItem('aiResult');
+        const data = raw ? JSON.parse(raw) : generateMockRecommendation();
+        
+        MOCK_HISTORY_LIST.unshift({
+          id: Date.now(),
+          status: '방문 완료',
+          title: data.menuList[0]?.name + ` 외 ${data.menuList.length - 1}건`,
+          peopleCount: data.peopleCount || 3,
+          meetingType: data.meetingType || '데이트',
+          price: data.totalPrice || 58000,
+          icon: 'assets/history-utensils.png',
+          createdAt: new Date().toISOString().slice(0, 10)
+        });
+
+        setTimeout(() => {
+          window.location.href = 'STEP10_history.html';
+        }, 800);
+      });
+
+      document.querySelector('#nav-home').addEventListener('click', () => window.location.href = 'STEP0_home.html');
+      document.querySelector('#nav-history').addEventListener('click', () => window.location.href = 'STEP10_history.html');
+
+      window.addEventListener('DOMContentLoaded', renderResult);
+    </script>
+  </body>
+</html>

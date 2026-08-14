@@ -29,7 +29,7 @@ button { font:inherit; color:inherit; cursor:pointer; }
 #home-screen .chevron { display:grid; place-items:center; color:#b2afac; position:absolute; right:23px; top:86px; }
 .chevron svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .badge { display:grid; place-items:center; width:24px; height:24px; border-radius:13px; color:#314158; background:#f6f4f5; font-size:12px; position:absolute; right:44px; top:84px; }
-.bottom-nav { position:absolute; bottom:0; left:0; right:0; height:64px; display:flex; justify-content:space-between; align-items:flex-end; padding:13px 57.5px; border-top:1px solid #f1f5f9; background:#fff; }
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; height:64px; display:flex; align-items:flex-end; padding:13px 57.5px; border-top:1px solid #f1f5f9; background:#fff; }
 .nav-item { width:85.5px; height:37px; border:0; background:transparent; display:grid; align-content:start; justify-items:center; gap:2px; color:#90a1b9; }
 .nav-item span { width:20px; height:20px; line-height:18px; }
 .nav-item svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; }
@@ -51,33 +51,12 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .scan-content { padding:52px 30px 0; }
 .scanner { position:relative; height:320px; margin:0 11px; display:grid; justify-items:center; align-content:start; gap:16px; padding-top:69px; border:0; border-radius:24px; background:#f6f4f5; }
 .scanner strong { margin-top:19px; font-size:16px; line-height:24px; letter-spacing:-.5px; }.scanner small { color:#62748e; text-align:center; font-size:12px; line-height:19px; }
-.scanner.is-scanning { overflow:hidden; background:#0f172b; }
-.scanner #qr-camera { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.scanner.is-scanning .qr-icon,.scanner.is-scanning strong,.scanner.is-scanning small { visibility:hidden; }
-.scanner .corner { z-index:1; }
-#home-screen .action-card.is-empty .badge { display:none; }
-.history-empty { display:grid; justify-items:center; gap:8px; padding:76px 20px; color:#7f7a76; text-align:center; }
-.history-empty:before { content:'○'; width:48px; height:48px; display:grid; place-items:center; border-radius:50%; background:#f6f4f5; color:#b2afac; font-size:30px; }
-.history-empty strong { color:#0f172b; font-size:16px; line-height:24px; }
-.history-empty span { font-size:12px; line-height:18px; }
-#edit-screen .food-tag-input { width:104px; height:30px; padding:0 10px; border:1px solid #e2e8f0; border-radius:32px; background:#fff; color:#0f172b; font:500 12px/16px "Noto Sans KR",sans-serif; outline-color:var(--coral); }
-#scan-screen .option-icon img { width:24px; height:24px; object-fit:contain; }
-#scan-screen .scan-button { display:flex; align-items:center; justify-content:center; gap:8px; }
-#scan-screen .scan-button img { width:18px; height:18px; object-fit:contain; }
-#scan-screen .option-row { width:342px; min-height:74px; height:74px; margin:25px auto 0; padding:17px 21px; border-color:#dedede; border-radius:16px; }
-#scan-screen .option-row .option-icon { width:40px; height:40px; margin-left:-4px; margin-right:12px; border-radius:20px; background:#f6f4f5; }
-#scan-screen .option-row .option-icon img { width:16px; height:16px; }
-#scan-screen .option-row > span:nth-child(2) { gap:2px; }
-#scan-screen .option-row strong { color:#0f172b; font-size:14px; font-weight:600; line-height:20px; }
-#scan-screen .option-row small { color:#7f7a76; font-size:12px; line-height:16px; white-space:nowrap; }
-#scan-screen .option-row button { border-color:#dedede; }
-@media (max-width:401px) { #scan-screen .option-row { width:100%; } }
 .qr-icon { display:grid; place-items:center; width:80px; height:80px; border-radius:50%; background:#fff; box-shadow:0 2px 3px #00000024; }
 .qr-icon svg { width:36px; height:36px; fill:var(--ink); }
 .corner { position:absolute; width:70px; height:70px; border-color:#000; }.tl { top:18px; left:18px; border-top:2px solid; border-left:2px solid; border-radius:14px 0 0; }.tr { top:18px; right:18px; border-top:2px solid; border-right:2px solid; border-radius:0 14px 0 0; }.bl { bottom:18px; left:18px; border-bottom:2px solid; border-left:2px solid; border-radius:0 0 0 14px; }.br { right:18px; bottom:18px; border-bottom:2px solid; border-right:2px solid; border-radius:0 0 14px; }
 .option-row,.code-row { width:100%; min-height:74px; margin-top:25px; padding:14px 20px; display:flex; align-items:center; border:1px solid #dce4ef; border-radius:16px; background:#fff; text-align:left; }
 .option-row .option-icon { width:40px; height:40px; margin-left:-4px; margin-right:12px; color:#314158; background:#f6f4f5; }.option-row .option-icon svg { width:16px; height:16px; }.option-row > span:nth-child(2),.code-row span { display:grid; gap:0; flex:1; }.option-row strong,.code-row strong { font-size:14px; line-height:20px; font-weight:600; letter-spacing:.01em; }.option-row small,.code-row small { font-size:12px; line-height:16px; letter-spacing:.01em; }.option-row button { width:50px; height:30px; padding:0; border:1px solid #e2e8f0; border-radius:8px; background:#fff; font-size:12px; font-weight:700; }
-.code-row { min-height:70px; margin-top:12px; }.code-row b { font-size:12px; line-height:20px; white-space:nowrap; }.scan-button { width:100%; height:52px; margin-top:90px; border:0; border-radius:12px; box-shadow:0 1px 2px -1px #0000001a,0 1px 3px #0000001a; background:var(--coral); color:#fff; font-size:14px; font-weight:700; }
+.code-row { min-height:70px; margin-top:12px; display: inline-flex; align-items: center;}.code-row b { font-size:12px; line-height:20px; white-space:nowrap; }.scan-button { width:100%; height:52px; margin-top:90px; border:0; border-radius:12px; box-shadow:0 1px 2px -1px #0000001a,0 1px 3px #0000001a; background:var(--coral); color:#fff; font-size:14px; font-weight:700; }
 .member-content { position:relative; height:calc(100% - 76px); padding:14px 24px; }
 .member-content h1 { margin:0; font-size:28px; line-height:36px; letter-spacing:-1px; }
 .people-options { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:64px; }
@@ -245,3 +224,187 @@ button { font:inherit; color:inherit; cursor:pointer; }
 #result-screen .menu-list article em { align-self:flex-start; margin-top:6px; white-space:nowrap; font-weight:600; }
 #result-screen .menu-tags { display:flex; gap:4px; margin-top:auto; }
 #result-screen .menu-tags b { height:19px; padding:2px 6px; border-radius:4px; background:#f6f4f5; color:#7f7a76; font-size:10px; line-height:15px; letter-spacing:.01em; }
+
+/* 모달 (Camera Viewfinder Overlay & Code Entry) */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 카메라 뷰파인더 모달 */
+.camera-view-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  color: #fff;
+  overflow: hidden;
+  border-radius: 20px;
+}
+.camera-view-header {
+  height: 56px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 700;
+  font-size: 16px;
+}
+.camera-view-header button {
+  border: 0;
+  padding: 4px;
+  background: transparent;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+}
+.camera-viewfinder {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #000;
+}
+.camera-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.camera-scanner-frame {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  border-radius: 16px;
+  z-index: 2;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+}
+.camera-scan-line {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--coral);
+  box-shadow: 0 0 10px var(--coral);
+  animation: scanLaser 2s ease-in-out infinite alternate;
+}
+@keyframes scanLaser {
+  0% { top: 10px; }
+  100% { top: 190px; }
+}
+.viewfinder-tip {
+  position: absolute;
+  bottom: 24px;
+  z-index: 2;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  text-align: center;
+}
+.camera-view-footer {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #0f172a;
+}
+.camera-btn-trigger {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--coral);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* 직접 코드 입력 모달 */
+.code-modal-card {
+  width: min(100%, 340px);
+  padding: 24px;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+}
+.code-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.code-modal-header strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+.code-modal-header button {
+  border: 0;
+  background: transparent;
+  color: #62748e;
+  font-size: 24px;
+  line-height: 1;
+}
+.code-modal-card p {
+  margin: 0 0 16px;
+  color: #62748e;
+  font-size: 13px;
+  line-height: 19px;
+}
+.code-modal-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #dce4ef;
+  border-radius: 12px;
+  background: #f8fafc;
+  font: 600 15px "Noto Sans KR", sans-serif;
+  color: #0f172b;
+}
+.code-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+.code-modal-actions button {
+  flex: 1;
+  height: 44px;
+  border: 1px solid #dce4ef;
+  border-radius: 10px;
+  background: #fff;
+  color: #62748e;
+  font-size: 14px;
+  font-weight: 600;
+}
+.code-modal-actions button.primary {
+  border: 0;
+  background: var(--coral);
+  color: #fff;
+  font-weight: 700;
+}
