@@ -116,39 +116,101 @@ function startAnalysis({ reanalyseCurrent = false } = {}) {
   window.setTimeout(completeAnalysis, 1800);
 }
 
-let qrStream = null;
-let qrDetector = null;
-let qrFrame = null;
+let html5QrCode = null;
 
 function stopQrCamera() {
-  if (qrFrame) cancelAnimationFrame(qrFrame);
-  qrFrame = null;
-  if (qrStream) qrStream.getTracks().forEach((track) => track.stop());
-  qrStream = null;
-  document.querySelector('#qr-camera')?.remove();
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      html5QrCode.clear();
+      html5QrCode = null;
+    }).catch(err => console.error("Failed to stop QR camera", err));
+  }
   document.querySelector('.scanner')?.classList.remove('is-scanning');
+  document.getElementById("qr-reader").style.display = 'none';
+  const selectContainer = document.querySelector('.camera-select-container');
+  if (selectContainer) selectContainer.style.display = 'none';
 }
 
 async function startQrCamera() {
-  if (!navigator.mediaDevices?.getUserMedia) { notify('\uC774 \uAE30\uAE30\uC5D0\uC11C\uB294 \uCE74\uBA54\uB77C \uC2A4\uCEA0\uC744 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.'); return; }
   stopQrCamera();
+  const scanner = document.querySelector('.scanner');
+  scanner.classList.add('is-scanning');
+  
+  const qrReaderDiv = document.getElementById('qr-reader');
+  qrReaderDiv.style.display = 'block';
+
+  html5QrCode = new Html5Qrcode("qr-reader");
+
   try {
-    qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
-    const scanner = document.querySelector('.scanner');
-    const video = document.createElement('video');
-    video.id = 'qr-camera'; video.autoplay = true; video.playsInline = true; video.srcObject = qrStream;
-    scanner.prepend(video); scanner.classList.add('is-scanning');
-    if (!('BarcodeDetector' in window)) { notify('QR \uC790\uB3D9 \uC778\uC2DD\uC744 \uC9C0\uC6D0\uD558\uC9C0 \uC54A\uB294 \uBE0C\uB77C\uC6B0\uC800\uC785\uB2C8\uB2E4.'); return; }
-    qrDetector = new BarcodeDetector({ formats: ['qr_code'] });
-    const detect = async () => {
-      if (!qrStream || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) { qrFrame = requestAnimationFrame(detect); return; }
-      try {
-        if ((await qrDetector.detect(video)).length) { stopQrCamera(); startAnalysis(); return; }
-      } catch (_) { /* camera frame not ready */ }
-      qrFrame = requestAnimationFrame(detect);
+    const devices = await Html5Qrcode.getCameras();
+    if (!devices || devices.length === 0) {
+      throw new Error("No cameras found.");
+    }
+
+    const cameraSelect = document.getElementById('camera-select');
+    cameraSelect.innerHTML = '';
+    devices.forEach(device => {
+      const option = document.createElement('option');
+      option.value = device.id;
+      option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+      cameraSelect.appendChild(option);
+    });
+
+    document.querySelector('.camera-select-container').style.display = 'block';
+
+    const startCameraWithId = async (camId) => {
+      if (html5QrCode.isScanning) {
+        await html5QrCode.stop();
+      }
+      await html5QrCode.start(
+        camId,
+        { fps: 10 },
+        async (decodedText, decodedResult) => {
+          console.log("✅ 추출된 QR URL:", decodedText);
+          
+          stopQrCamera();
+          notify('QR 코드를 인식했습니다. 정보를 불러옵니다...');
+
+          try {
+            const response = await fetch("http://localhost:8080/api/menu/scan", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: decodedText })
+            });
+
+            if (response.ok) {
+              showScreen('member-screen');
+            } else {
+              notify('QR 코드 처리 중 오류가 발생했습니다.');
+              showScreen('member-screen');
+            }
+          } catch (error) {
+            console.error("Error connecting to backend:", error);
+            notify('서버에 연결할 수 없습니다. 계속 진행합니다.');
+            showScreen('member-screen');
+          }
+        },
+        (errorMessage) => {
+          // parse error, ignore
+        }
+      );
     };
-    detect();
-  } catch (_) { notify('\uCE74\uBA54\uB77C \uAD8C\uD55C\uC744 \uD5C8\uC6A9\uD574 \uC8FC\uC138\uC694.'); }
+
+    cameraSelect.onchange = (e) => {
+      startCameraWithId(e.target.value).catch(err => {
+        console.error("Failed to switch camera:", err);
+        notify('카메라 전환 오류: ' + (err.message || err));
+      });
+    };
+
+    const initialCameraId = devices.length > 1 ? devices[devices.length - 1].id : devices[0].id;
+    cameraSelect.value = initialCameraId;
+    await startCameraWithId(initialCameraId);
+  } catch (err) {
+    stopQrCamera();
+    notify('카메라 오류: ' + (err.message || err));
+    console.error(err);
+  }
 }
 
 const homeController = bindHomeScreen({
@@ -198,8 +260,406 @@ document.querySelector('#edit-screen .quick-edit button:last-child').addEventLis
   editBudgetInput.focus();
   editBudgetInput.select();
 });
+
+// --- Member Screen Logic ---
+const memberCountButtons = [...document.querySelectorAll("#member-screen .count-button")];
+const peopleCountInput = document.querySelector("#people-count");
+const summaryCount = document.querySelector("#summary-count");
+const memberNextButton = document.querySelector("#member-next");
+
+let peopleCount = 2;
+
+function updateSummary(count) {
+  peopleCount = count;
+  summaryCount.textContent = `${count}명`;
+  peopleCountInput.setAttribute("aria-invalid", "false");
+}
+
+function clearMemberSelection() {
+  peopleCount = null;
+  summaryCount.textContent = "선택 필요";
+}
+
+function selectQuickCount(selectedButton) {
+  memberCountButtons.forEach((button) => {
+    const isSelected = button === selectedButton;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+  peopleCountInput.value = "";
+  updateSummary(Number(selectedButton.dataset.count));
+}
+
+function clearQuickSelection() {
+  memberCountButtons.forEach((button) => {
+    button.classList.remove("is-selected");
+    button.setAttribute("aria-pressed", "false");
+  });
+}
+
+memberCountButtons.forEach((button) => {
+  button.addEventListener("click", () => selectQuickCount(button));
+});
+
+peopleCountInput.addEventListener("input", () => {
+  const value = Number(peopleCountInput.value);
+  clearQuickSelection();
+  const isValid = peopleCountInput.value !== "" && Number.isInteger(value) && value >= 5 && value <= 99;
+  if (isValid) {
+    updateSummary(value);
+    return;
+  }
+  peopleCountInput.setAttribute("aria-invalid", String(peopleCountInput.value !== ""));
+  clearMemberSelection();
+});
+
+peopleCountInput.addEventListener("blur", () => {
+  if (!peopleCountInput.value) return;
+  const value = Number(peopleCountInput.value);
+  if (!Number.isInteger(value) || value < 5 || value > 99) {
+    peopleCountInput.setAttribute("aria-invalid", "true");
+    return;
+  }
+  updateSummary(value);
+});
+
+memberNextButton.addEventListener("click", () => {
+  if (!Number.isInteger(peopleCount) || peopleCount < 1 || peopleCount > 99) {
+    notify("인원수를 선택하거나 5명 이상 입력해 주세요.");
+    peopleCountInput.focus();
+    return;
+  }
+  sessionStorage.setItem("peopleCount", String(peopleCount));
+  notify(`${peopleCount}명으로 설정했어요.`);
+  showScreen("budget-screen");
+  initBudgetScreen();
+});
+
+document.querySelector("#member-screen .back-button").addEventListener("click", () => {
+  showScreen("scan-screen");
+});
+
+// --- Budget Screen Logic ---
+const peopleCountBasis = document.querySelector("#people-count-basis");
+const peopleCountSummary = document.querySelector("#people-count-summary");
+const totalBudget = document.querySelector("#total-budget");
+const budgetCalculation = document.querySelector("#budget-calculation");
+const budgetRange = document.querySelector("#budget-range");
+const rangeProgress = document.querySelector("#range-progress");
+const budgetInput = document.querySelector("#budget-input");
+const quickBudgetButtons = [...document.querySelectorAll(".quick-button")];
+const budgetNextButton = document.querySelector("#budget-next");
+const budgetSteps = [10000, 20000, 30000, 40000, 50000, 60000, 70000];
+let perPersonBudget = 30000;
+let totalBudgetAmount = perPersonBudget * peopleCount;
+
+const formatWon = (value) => `${Math.round(value).toLocaleString("ko-KR")}원`;
+
+function syncSlider(stepIndex) {
+  const progress = (stepIndex / (budgetSteps.length - 1)) * 100;
+  budgetRange.value = stepIndex;
+  budgetRange.setAttribute("aria-valuetext", formatWon(budgetSteps[stepIndex]));
+  rangeProgress.style.width = `${progress}%`;
+}
+
+function updateBudget(perPersonAmount, options = {}) {
+  perPersonBudget = Math.max(1000, Math.round(perPersonAmount / 1000) * 1000);
+  totalBudgetAmount = perPersonBudget * peopleCount;
+  totalBudget.textContent = `총 ${formatWon(totalBudgetAmount)}`;
+  budgetCalculation.textContent = `= 1인 예산 ${formatWon(perPersonBudget)} × ${peopleCount}명`;
+  const stepIndex = budgetSteps.indexOf(perPersonBudget);
+  if (options.syncSlider !== false && stepIndex !== -1) {
+    syncSlider(stepIndex);
+  }
+  quickBudgetButtons.forEach((button) => {
+    const selected = Number(button.dataset.budget) === perPersonBudget;
+    button.classList.toggle("is-selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+budgetRange.addEventListener("input", () => {
+  const stepIndex = Number(budgetRange.value);
+  syncSlider(stepIndex);
+  budgetInput.value = "";
+  budgetInput.setAttribute("aria-invalid", "false");
+  updateBudget(budgetSteps[stepIndex], { syncSlider: false });
+});
+
+budgetInput.addEventListener("input", () => {
+  const digits = budgetInput.value.replace(/\D/g, "").slice(0, 9);
+  budgetInput.value = digits ? Number(digits).toLocaleString("ko-KR") : "";
+  const amount = Number(digits);
+  const isValid = digits !== "" && amount >= 1000;
+  budgetInput.setAttribute("aria-invalid", String(digits !== "" && !isValid));
+  if (isValid) updateBudget(amount, { syncSlider: true });
+});
+
+quickBudgetButtons.forEach((button) => {
+  button.setAttribute("aria-pressed", "false");
+  button.addEventListener("click", () => {
+    budgetInput.value = "";
+    budgetInput.setAttribute("aria-invalid", "false");
+    updateBudget(Number(button.dataset.budget));
+  });
+});
+
+function initBudgetScreen() {
+  peopleCount = Number(sessionStorage.getItem("peopleCount")) || 2;
+  // peopleCountBasis is hidden in HTML provided but safe to update
+  if(peopleCountBasis) peopleCountBasis.textContent = `${peopleCount}명 기준`;
+  if(peopleCountSummary) peopleCountSummary.textContent = `${peopleCount}명`;
+  updateBudget(perPersonBudget);
+}
+
+document.querySelector("#budget-screen .back-button").addEventListener("click", () => {
+  showScreen("member-screen");
+});
+
+budgetNextButton.addEventListener("click", () => {
+  const directAmount = Number(budgetInput.value.replace(/\D/g, ""));
+  if (budgetInput.value && directAmount < 1000) {
+    budgetInput.setAttribute("aria-invalid", "true");
+    notify("예산은 1,000원 이상 입력해 주세요.");
+    budgetInput.focus();
+    return;
+  }
+  if (!Number.isFinite(perPersonBudget) || perPersonBudget < 1000) {
+    notify("1인당 예산을 선택해 주세요.");
+    budgetRange.focus();
+    return;
+  }
+  sessionStorage.setItem("budget", String(totalBudgetAmount));
+  notify(`1인당 ${formatWon(perPersonBudget)}으로 설정했어요.`);
+  showScreen("vibe-screen");
+});
+
 document.querySelectorAll('[data-edit-people]').forEach(b=>b.addEventListener('click',()=>{const e=document.querySelector('#edit-people-count');e.textContent=`${Math.max(1,Number(e.textContent.replace('명',''))+Number(b.dataset.editPeople))}명`}));
 document.querySelector('#edit-submit').addEventListener('click',()=>{showScreen('analysis-screen','home-screen');setTimeout(()=>showScreen('result-screen','home-screen'),1800)});
+
+// --- Vibe Screen Logic ---
+const moodCards = [...document.querySelectorAll(".mood-card")];
+const recentButtons = [...document.querySelectorAll(".recent-button")];
+const moodInput = document.querySelector("#mood-input");
+let meetingType = "";
+
+function selectMeetingType(meetingTypeValue, source) {
+  meetingType = meetingTypeValue;
+  moodCards.forEach((card) => card.setAttribute("aria-invalid", "false"));
+  moodCards.forEach((card) => {
+    const selected = card === source;
+    card.classList.toggle("is-selected", selected);
+    card.setAttribute("aria-pressed", String(selected));
+  });
+  recentButtons.forEach((button) => {
+    const selected = button === source;
+    button.classList.toggle("is-selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+moodCards.forEach((card) => {
+  card.addEventListener("click", () => {
+    moodInput.value = "";
+    moodInput.setAttribute("aria-invalid", "false");
+    selectMeetingType(card.dataset.meetingType, card);
+  });
+});
+
+recentButtons.forEach((button) => {
+  button.setAttribute("aria-pressed", "false");
+  button.addEventListener("click", () => {
+    moodInput.value = "";
+    moodInput.setAttribute("aria-invalid", "false");
+    selectMeetingType(button.dataset.meetingType, button);
+  });
+});
+
+moodInput.addEventListener("input", () => {
+  const directValue = moodInput.value.trim();
+  moodInput.setAttribute("aria-invalid", "false");
+  selectMeetingType(directValue, null);
+});
+
+document.querySelector("#vibe-screen .back-button").addEventListener("click", () => {
+  showScreen("budget-screen");
+});
+
+document.querySelector("#vibe-next").addEventListener("click", () => {
+  const directValue = moodInput.value.trim();
+  if (directValue) meetingType = directValue;
+
+  if (!meetingType) {
+    notify("분위기를 선택해 주세요.");
+    moodCards.forEach((card) => card.setAttribute("aria-invalid", "true"));
+    moodInput.setAttribute("aria-invalid", "true");
+    moodCards[0].focus();
+    return;
+  }
+
+  sessionStorage.setItem("meetingType", meetingType);
+  notify(`${meetingType} 분위기를 선택했어요.`);
+  showScreen("conditions-screen");
+});
+
+// --- Conditions Screen Logic ---
+const foodCards = [...document.querySelectorAll(".food-card")];
+const foodInput = document.querySelector("#food-input");
+
+function clearFoodValidation() {
+  foodCards.forEach((card) => card.setAttribute("aria-invalid", "false"));
+  foodInput.setAttribute("aria-invalid", "false");
+}
+
+foodCards.forEach((card) => {
+  card.addEventListener("click", () => {
+    const selected = !card.classList.contains("is-selected");
+    card.classList.toggle("is-selected", selected);
+    card.setAttribute("aria-pressed", String(selected));
+    clearFoodValidation();
+  });
+});
+
+foodInput.addEventListener("input", clearFoodValidation);
+
+document.querySelector("#conditions-screen .back-button").addEventListener("click", () => {
+  showScreen("vibe-screen");
+});
+
+document.querySelector("#conditions-next").addEventListener("click", () => {
+  const selectedExcludedFoods = foodCards
+    .filter((card) => card.classList.contains("is-selected"))
+    .map((card) => card.dataset.excludedFood);
+  const customExcludedFoods = foodInput.value
+    .split(",")
+    .map((food) => food.trim())
+    .filter(Boolean);
+  const excludedFoods = [...new Set([...selectedExcludedFoods, ...customExcludedFoods])];
+  const conditionCount = excludedFoods.length;
+  sessionStorage.setItem("excludedFoods", JSON.stringify(excludedFoods));
+  notify(
+    conditionCount > 0
+      ? `${conditionCount}개의 추천 조건을 저장했어요.`
+      : "제외 음식 없이 진행할게요."
+  );
+  showScreen("traits-screen");
+  initTraitsScreen();
+});
+
+// --- Traits Screen Logic ---
+const counterValues = { bigEaterCount: 0, dietCount: 0 };
+let counterLimit = 20;
+const counterRows = [...document.querySelectorAll(".counter-row")];
+const spicyRange = document.querySelector("#spicy-range");
+const spicyRangeProgress = document.querySelector("#spicy-range-progress");
+const todayPreferenceInput = document.querySelector("#today-preference-input");
+
+function getFeaturePeopleCount() {
+  return counterValues.bigEaterCount + counterValues.dietCount;
+}
+
+function syncCounterControls() {
+  const reachedLimit = getFeaturePeopleCount() >= counterLimit;
+  counterRows.forEach((row) => {
+    const key = row.dataset.counter;
+    row.querySelector('[data-action="decrease"]').disabled = counterValues[key] === 0;
+    row.querySelector('[data-action="increase"]').disabled = reachedLimit;
+  });
+}
+
+counterRows.forEach((row) => {
+  const key = row.dataset.counter;
+  const output = row.querySelector(".counter-value");
+
+  row.querySelectorAll(".counter-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      const delta = button.dataset.action === "increase" ? 1 : -1;
+      counterValues[key] = Math.max(0, Math.min(counterLimit, counterValues[key] + delta));
+      output.value = counterValues[key];
+      output.textContent = counterValues[key];
+      syncCounterControls();
+    });
+  });
+});
+
+function updateSpicySlider() {
+  const value = Number(spicyRange.value);
+  const min = Number(spicyRange.min);
+  const max = Number(spicyRange.max);
+  const progress = ((value - min) / (max - min)) * 100;
+  spicyRangeProgress.style.width = `${progress}%`;
+  spicyRange.setAttribute("aria-invalid", "false");
+  spicyRange.setAttribute("aria-valuetext", `${value}단계`);
+  document.querySelectorAll(".spicy-preference .range-numbers span").forEach((number) => {
+    number.classList.toggle("is-current", Number(number.textContent) === value);
+  });
+}
+
+spicyRange.addEventListener("input", updateSpicySlider);
+updateSpicySlider();
+
+function initTraitsScreen() {
+  const storedPeopleCount = Number(sessionStorage.getItem("peopleCount"));
+  counterLimit = Number.isInteger(storedPeopleCount) && storedPeopleCount > 0 ? storedPeopleCount : 20;
+  syncCounterControls();
+}
+
+document.querySelector("#traits-screen .back-button").addEventListener("click", () => {
+  showScreen("conditions-screen");
+});
+
+document.querySelector("#traits-screen .skip-button").addEventListener("click", () => {
+  notify("특징 입력을 건너뜁니다.");
+  document.querySelector("#traits-next").click();
+});
+
+document.querySelector("#traits-next").addEventListener("click", () => {
+  const storedPeopleCount = Number(sessionStorage.getItem("peopleCount"));
+  const currentPeopleCount = Number.isInteger(storedPeopleCount) && storedPeopleCount > 0 ? storedPeopleCount : 0;
+  
+  if (currentPeopleCount > 0 && getFeaturePeopleCount() > currentPeopleCount) {
+    notify(`대식가와 다이어트 인원의 합은 총 ${currentPeopleCount}명을 넘을 수 없어요.`);
+    return;
+  }
+
+  const spicyLevel = Number(spicyRange.value);
+  const minSpicyLevel = Number(spicyRange.min);
+  const maxSpicyLevel = Number(spicyRange.max);
+  if (!Number.isInteger(spicyLevel) || spicyLevel < minSpicyLevel || spicyLevel > maxSpicyLevel) {
+    spicyRange.setAttribute("aria-invalid", "true");
+    notify("매운 음식 선호도를 선택해 주세요.");
+    spicyRange.focus();
+    return;
+  }
+
+  let excludedFoods = [];
+  try {
+    const storedExcludedFoods = JSON.parse(sessionStorage.getItem("excludedFoods") || "[]");
+    if (Array.isArray(storedExcludedFoods)) excludedFoods = storedExcludedFoods;
+  } catch (error) {
+    console.warn("Invalid excludedFoods session data", error);
+  }
+
+  const storedMenuId = Number(sessionStorage.getItem("menuId"));
+  const recommendationRequest = {
+    clientId: sessionStorage.getItem("clientId") || "",
+    menuId: Number.isInteger(storedMenuId) && storedMenuId > 0 ? storedMenuId : null,
+    peopleCount: currentPeopleCount,
+    budget: Number(sessionStorage.getItem("budget")) || 0,
+    meetingType: sessionStorage.getItem("meetingType") || "",
+    excludedFoods,
+    bigEaterCount: counterValues.bigEaterCount,
+    spicyLevel,
+    dietCount: counterValues.dietCount,
+    todayPreference: todayPreferenceInput.value.trim(),
+  };
+  sessionStorage.setItem("recommendationRequest", JSON.stringify(recommendationRequest));
+  console.log("POST /api/recommendation request", recommendationRequest);
+  notify("입력 정보를 바탕으로 메뉴를 분석합니다.");
+  
+  showScreen("analysis-screen", "home-screen");
+  window.setTimeout(completeAnalysis, 1800);
+});
 
 const resultChipAssets = ['assets/people-group.png', 'assets/wallet.png'];
 const resultChipLabels = ['3명', '60,000원'];
