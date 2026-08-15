@@ -1,4 +1,4 @@
-window.bindHomeScreen = function bindHomeScreen({ showScreen, notify, hasOngoing, openOngoing }) {
+window.bindHomeScreen = function bindHomeScreen({ showScreen, notify, getOngoingCount, openOngoing }) {
   document.querySelector('[data-action="start"]')?.addEventListener('click', () => {
     showScreen('recommendation-screen', 'home-screen');
   });
@@ -11,24 +11,19 @@ window.bindHomeScreen = function bindHomeScreen({ showScreen, notify, hasOngoing
   const ongoingCopy = ongoing?.querySelector('.card-copy small');
   const ongoingCount = document.querySelector('#ongoing-count');
   const updateOngoing = () => {
-    const active = hasOngoing();
-    if (ongoingCopy) ongoingCopy.textContent = active ? '1개의 추천이 진행 중입니다' : '진행 중인 추천이 없습니다';
+    const count = getOngoingCount();
+    const active = count > 0;
+    if (ongoingCopy) ongoingCopy.textContent = active ? `${count}개의 추천이 진행 중입니다` : '진행 중인 추천이 없습니다';
     if (ongoingCount) {
       ongoingCount.hidden = !active;
-      ongoingCount.textContent = active ? '1' : '';
+      ongoingCount.textContent = active ? String(count) : '';
     }
   };
 
   document.querySelector('[data-action="new-recommendation"]')?.addEventListener('click', () => {
     showScreen('scan-screen', 'home-screen');
   });
-  ongoing?.addEventListener('click', () => {
-    if (!hasOngoing()) {
-      notify('진행 중인 추천이 없어요.');
-      return;
-    }
-    openOngoing();
-  });
+  ongoing?.addEventListener('click', openOngoing);
 
   updateOngoing();
   return { updateOngoing };

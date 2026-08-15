@@ -152,9 +152,10 @@ async function startQrCamera() {
 const homeController = bindHomeScreen({
   showScreen,
   notify,
-  hasOngoing: () => Boolean(currentRecommendation),
+  getOngoingCount: () => history.items.length,
   openOngoing: () => {
-    openEditScreen();
+    history.render();
+    showScreen('history-screen', 'history-screen');
   },
 });
 document.querySelector('[data-action="menu"]').addEventListener('click', (event) => {
