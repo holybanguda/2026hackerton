@@ -26,6 +26,13 @@ public class RecommendationController {
         return ResponseEntity.ok(response);
     }
 
+    //'분석 확정' 버튼 클릭 시 히스토리 DB에 저장 API
+    // POST /api/recommendation/confirm
+    @PostMapping("/confirm")
+    public ResponseEntity<RecommendationDto.Response> confirmRecommendation(@RequestBody RecommendationDto.Response responseDto) {
+        RecommendationDto.Response response = recommendationService.confirmRecommendation(responseDto);
+        return ResponseEntity.ok(response);
+    }
 
      //조건 수정 및 시간 경과 반영 AI 메뉴 재추천 API
      // PUT /api/recommendation/{id}

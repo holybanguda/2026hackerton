@@ -23,37 +23,56 @@ public class RecommendationService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * 최초 메뉴 추천 요청 및 DB 저장
+     * 최초 메뉴 추천 요청 결과 조회
      */
     public RecommendationDto.Response createRecommendation(RecommendationDto.Request request) {
         log.info("최초 메뉴 추천 서비스 실행: 식당={}", request.getRestaurantUrl());
 
         RecommendationDto.Response aiResponse = aiService.getAiRecommendation(request);
 
-        String excludedFoodsJson = toJsonString(request.getExcludedFoods());
-        String recommendedMenusJson = toJsonString(aiResponse.getRecommendedMenus());
+        aiResponse.setRestaurantUrl(request.getRestaurantUrl());
+        aiResponse.setBudget(request.getBudget());
+        aiResponse.setMeetingType(request.getMeetingType());
+        aiResponse.setExcludedFoods(request.getExcludedFoods());
+        aiResponse.setBigEaterCount(request.getBigEaterCount());
+        aiResponse.setSpicyLevel(request.getSpicyLevel());
+        aiResponse.setDietCount(request.getDietCount());
+        aiResponse.setTodayPreference(request.getTodayPreference());
+
+        return aiResponse;
+    }
+
+    /**
+     * 최초 메뉴 추천 요청 히스토리 DB 저장
+     */
+    public RecommendationDto.Response confirmRecommendation(RecommendationDto.Response responseDto) {
+        log.info("추천 결과 확정 저장 실행: 식당={}", responseDto.getRestaurantUrl());
+
+        String excludedFoodsJson = toJsonString(responseDto.getExcludedFoods());
+        String recommendedMenusJson = toJsonString(responseDto.getRecommendedMenus());
 
         RecommendationEntity entity = RecommendationEntity.builder()
-                .restaurantUrl(request.getRestaurantUrl())
-                .peopleCount(request.getPeopleCount())
-                .budget(request.getBudget())
-                .meetingType(request.getMeetingType())
+                .restaurantUrl(responseDto.getRestaurantUrl())
+                .peopleCount(responseDto.getPeopleCount())
+                .budget(responseDto.getBudget())
+                .meetingType(responseDto.getMeetingType())
                 .excludedFoods(excludedFoodsJson)
-                .bigEaterCount(request.getBigEaterCount())
-                .spicyLevel(request.getSpicyLevel())
-                .dietCount(request.getDietCount())
-                .todayPreference(request.getTodayPreference())
+                .bigEaterCount(responseDto.getBigEaterCount())
+                .spicyLevel(responseDto.getSpicyLevel())
+                .dietCount(responseDto.getDietCount())
+                .todayPreference(responseDto.getTodayPreference())
                 .recommendedMenus(recommendedMenusJson)
-                .totalPrice(aiResponse.getTotalPrice())
-                .reason(aiResponse.getReason())
-                .engineType(aiResponse.getEngineType())
+                .totalPrice(responseDto.getTotalPrice())
+                .reason(responseDto.getReason())
+                .engineType(responseDto.getEngineType())
                 .createdAt(LocalDateTime.now())
                 .build();
 
         RecommendationEntity savedEntity = recommendationRepository.save(entity);
 
-        aiResponse.setRecommendationId(savedEntity.getId());
-        return aiResponse;
+        responseDto.setRecommendationId(savedEntity.getId());
+
+        return responseDto;
     }
 
     /**
