@@ -49,7 +49,8 @@ const history = createHistory({
   showScreen,
   onOpen: (item) => {
     currentRecommendation = item;
-    renderRecommendationResult();
+    editSnapshot = copyRecommendation(currentRecommendation);
+    populateEditForm();
   },
 });
 history.render();
