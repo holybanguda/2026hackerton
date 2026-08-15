@@ -49,7 +49,6 @@ window.createHistory = function createHistory({ root, showScreen, onOpen }) {
       card.append(icon, name, meta, price);
       card.addEventListener('click', () => {
         onOpen(item);
-        showScreen('edit-screen', 'history-screen');
       });
       list.append(card);
     });

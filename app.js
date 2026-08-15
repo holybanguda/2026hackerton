@@ -11,17 +11,19 @@ document.querySelectorAll('.bottom-nav .nav-item span').forEach((slot, index) =>
 let currentRecommendation = null;
 let analysisTarget = null;
 let editSnapshot = null;
+let editReturnScreen = 'result-screen';
 let historyReturnScreen = 'recommendation-screen';
 
 function copyRecommendation(recommendation) {
   return recommendation ? JSON.parse(JSON.stringify(recommendation)) : null;
 }
 
-function openEditScreen() {
+function openEditScreen(returnScreen = 'result-screen') {
   if (!currentRecommendation) return;
+  editReturnScreen = returnScreen;
   editSnapshot = copyRecommendation(currentRecommendation);
   populateEditForm();
-  showScreen('edit-screen', 'home-screen');
+  showScreen('edit-screen', returnScreen === 'history-screen' ? 'history-screen' : 'home-screen');
 }
 
 function restoreEditSnapshot() {
@@ -37,7 +39,7 @@ function restoreEditSnapshot() {
 
 function discardEdit() {
   restoreEditSnapshot();
-  showScreen('result-screen', 'home-screen');
+  showScreen(editReturnScreen, editReturnScreen === 'history-screen' ? 'history-screen' : 'home-screen');
 }
 
 function returnToRecommendationResult() {
@@ -49,8 +51,7 @@ const history = createHistory({
   showScreen,
   onOpen: (item) => {
     currentRecommendation = item;
-    editSnapshot = copyRecommendation(currentRecommendation);
-    populateEditForm();
+    openEditScreen('history-screen');
   },
 });
 history.render();
