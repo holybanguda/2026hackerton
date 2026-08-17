@@ -151,7 +151,7 @@ button { font:inherit; color:inherit; cursor:pointer; }
 #edit-screen .scan-header{position:relative;height:56px;padding:11.5px 16px;gap:12px;background:rgba(255,255,255,.94902);border-bottom:1px solid #f1f5f9;backdrop-filter:blur(6px)}#edit-screen .scan-header>button:first-child{width:32px;height:32px;font-size:31px;line-height:18px}#edit-screen .scan-header strong{font-size:18px;line-height:28px}#edit-screen .scan-header .skip{position:absolute;right:16px;top:17.5px;padding:0;color:#62748e;font-size:14px;line-height:20px;font-weight:500}
 #result-screen .scan-header{position:relative;height:56px;padding:11.5px 16px;gap:12px;background:rgba(255,255,255,.94902);border-bottom:1px solid #dedede;backdrop-filter:blur(6px)}#result-screen .scan-header>button:first-child{width:32px;height:32px;font-size:31px;line-height:18px}#result-screen .scan-header strong{font-size:18px;line-height:28px}#result-screen .scan-header .skip{position:absolute;top:17.5px;left:320px;width:52px;padding:0;color:#7f7a76;font-size:14px;line-height:20px;font-weight:500;letter-spacing:.01em}
 #result-screen .result-content{padding:0 0 90px;background:#fff}#result-screen .result-chips{height:58px;padding:16px 30px;display:flex;gap:8px;background:#f6f4f5}#result-screen .result-chips span{height:26px;padding:4px 10px;border:1px solid #dedede;border-radius:6px;background:#fff;color:#7f7a76;font-size:12px;line-height:16px}#result-screen .report{height:139px;margin:28px 30px 0;padding:17px;border:0;border-radius:16px;background:#f6f4f5;box-shadow:none}#result-screen .report strong{font-size:14px;line-height:20px}#result-screen .report p{margin:16px 0 0;color:#314158;font-size:15px;line-height:21px;letter-spacing:.01em}#result-screen .menu-heading{margin:42px 30px 0}#result-screen .menu-heading h1{font-size:18px;line-height:28px}#result-screen .menu-heading span{color:#7f7a76;font-size:12px;line-height:16px}#result-screen .menu-list{gap:16px;margin:16px 30px 0}#result-screen .menu-list article{height:106px;padding:13px;gap:16px;border:1px solid #f1f5f9;border-radius:12px}#result-screen .menu-list article>b{width:80px;height:80px;border-radius:8px;background:#f6f4f5;color:#b2afac;font-size:18px}#result-screen .menu-list span{gap:4px}#result-screen .menu-list strong{font-size:15px;line-height:22px}#result-screen .menu-list small{color:#7f7a76;font-size:12px;line-height:21px}#result-screen .menu-list em{font-size:14px;line-height:20px}#result-screen .total-card{height:112px;margin:90px 30px 0;padding:20px;border-radius:16px;background:var(--coral)}#result-screen .total-card small{color:#fff5ec;font-size:12px;line-height:16px}#result-screen .total-card strong{font-size:24px;line-height:32px}#result-screen .total-card span{color:#fff5ec;font-size:12px;line-height:16px}#result-screen .total-card:after{content:'';position:absolute;right:20px;bottom:20px;left:20px;height:8px;border-radius:20px;background:linear-gradient(to right,#fff 87.6%,#a0220b 87.6%)}#result-screen .result-actions{gap:12px;margin:64px 30px 0}#result-screen .result-actions button{height:54px;font-size:14px}#result-screen .result-actions button:first-child{flex:0 0 136px;border-color:#dedede;color:#7f7a76}#result-screen .result-actions button:last-child{flex:1;background:var(--coral);box-shadow:none}
-#toast { position:fixed; left:50%; bottom:75px; transform:translate(-50%,15px); padding:9px 13px; border-radius:9px; background:#182235; color:#fff; opacity:0; pointer-events:none; font-size:11px; transition:.2s; }#toast.show { opacity:1; transform:translate(-50%,0); }
+#toast { position:fixed; z-index:100; left:50%; bottom:148px; transform:translate(-50%,15px); padding:9px 13px; border-radius:9px; background:#182235; color:#fff; opacity:0; pointer-events:none; font-size:11px; white-space:nowrap; transition:.2s; }#toast.show { opacity:1; transform:translate(-50%,0); }
 .code-modal { position:absolute; z-index:20; inset:0; display:grid; justify-items:center; align-content:start; padding-top:189px; background:rgba(59,59,59,.53); backdrop-filter:blur(5px); }
 .code-modal[hidden] { display:none; }
 .code-modal-card { position:relative; width:307px; height:185px; padding:30px; border:0; border-radius:40px; background:#fff; }
@@ -298,7 +298,7 @@ button { font:inherit; color:inherit; cursor:pointer; }
 #result-screen .menu-tags b { height:19px; padding:2px 6px; border-radius:4px; background:#f6f4f5; color:#7f7a76; font-size:10px; line-height:15px; letter-spacing:.01em; }
 
 /* --- MEMBER & BUDGET SCREEN --- */
-#member-screen .header, #budget-screen .header { position: absolute; z-index: 4; inset: 0 0 auto; height: 56px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--line); background: #fff; width: 100%; }
+#member-screen .header, #budget-screen .header, #vibe-screen .header, #conditions-screen .header, #traits-screen .header { position: absolute; z-index: 4; inset: 0 0 auto; height: 56px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--line); background: #fff; width: 100%; }
 .back-button { width: 32px; height: 32px; display: grid; flex: 0 0 auto; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
 .back-button:hover, .back-button:focus-visible { background: #f6f4f5; }
 .back-button img { width: 9px; height: 16px; transform: translateX(3px); }
@@ -314,9 +314,9 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .intro h2, .intro-title { margin: 0; font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: 0.01em; }
 #budget-screen .intro-title { position: absolute; top: 36px; left: 24px; font-size: 20px; line-height: 25px; }
 #budget-screen .intro-description { position: absolute; top: 95px; left: 24px; margin: 0; color: #7f7a76; font-size: 14px; line-height: 20px; letter-spacing: 0.01em; }
-#vibe-screen .intro-title, #condition-screen .intro-title, #trait-screen .intro-title { position: absolute; top: 36px; left: 24px; margin: 0; font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: 0.01em; }
-#vibe-screen .intro-description, #trait-screen .intro-description { position: absolute; top: 104px; left: 24px; right: 24px; margin: 0; color: #7f7a76; font-size: 14px; line-height: 20px; letter-spacing: 0.01em; }
-#condition-screen .intro-description { position: absolute; top: 74px; left: 24px; right: 24px; margin: 0; color: #7f7a76; font-size: 14px; line-height: 20px; letter-spacing: 0.01em; }
+#vibe-screen .intro-title, #conditions-screen .intro-title, #traits-screen .intro-title { position: absolute; top: 36px; left: 24px; margin: 0; font-size: 24px; font-weight: 700; line-height: 30px; letter-spacing: 0.01em; }
+#vibe-screen .intro-description, #traits-screen .intro-description { position: absolute; top: 104px; left: 24px; right: 24px; margin: 0; color: #7f7a76; font-size: 14px; line-height: 20px; letter-spacing: 0.01em; }
+#conditions-screen .intro-description { position: absolute; top: 74px; left: 24px; right: 24px; margin: 0; color: #7f7a76; font-size: 14px; line-height: 20px; letter-spacing: 0.01em; }
 .member-form { position: absolute; top: 121px; left: 24px; right: 24px; height: 275px; }
 .quick-members { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: start; height: 78px; padding-top: 10px; }
 .count-button { height: 42px; padding: 0; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: #7f7a76; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 160ms ease; }
@@ -326,7 +326,7 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .direct-copy { position: absolute; top: 21px; left: 20px; }
 .direct-copy strong { display: block; font-size: 14px; font-weight: 600; line-height: 20px; letter-spacing: 0.01em; }
 .direct-copy small { display: block; color: #7f7a76; font-size: 12px; line-height: 16px; letter-spacing: 0.01em; }
-.input-wrap { position: absolute; top: 20px; right: 21px; width: 100px; height: 38px; display: block; }
+.member-form .input-wrap { position: absolute; top: 20px; right: 21px; width: 100px; height: 38px; display: block; }
 .member-input { position: absolute; top: 0; left: 17px; width: 66px; height: 38px; padding: 0 11px; border: 0; background: #f6f4f5; border-radius: 8px; font-size: 14px; text-align: left; }
 .input-unit { position: absolute; top: 9px; left: 88px; color: #62748e; font-size: 14px; }
 .member-summary { position: absolute; top: 318px; left: 24px; right: 24px; height: 53px; display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 4px; border-top: 1px solid var(--line); }
@@ -385,11 +385,14 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .manual-field input::placeholder { color: #b2afac; }
 .manual-field img { position: absolute; right: 16px; width: 16px; height: 16px; pointer-events: none; }
 .manual-help { position: absolute; top: 90px; left: 0; margin: 0; color: #7f7a76; font-size: 12px; line-height: 16px; letter-spacing: 0.01em; white-space: nowrap; }
-.recent-moods { position: absolute; top: 457px; left: 1px; width: 100%; height: 70px; }
+.recent-moods { position: absolute; top: 427px; left: 1px; width: 100%; height: 70px; }
 .recent-moods h3 { margin: 0; font-size: 14px; font-weight: 700; line-height: 20px; letter-spacing: 0.01em; }
 .recent-buttons { display: flex; gap: 8px; margin-top: 12px; }
 .recent-button { height: 38px; padding: 0 15px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0.01em; cursor: pointer; }
 .recent-button.is-selected { border-color: var(--coral); background: var(--coral); color: #fff; }
+#vibe-screen .step-main { height: 648px; }
+/* 최근 선택과 다음 단계 사이의 여백을 확보하고, 하단 탭 위에 버튼을 둔다. */
+#vibe-screen .bottom-actions { top: 744px; }
 
 /* --- Conditions Screen (Food) --- */
 .food-selection { position: absolute; top: 164px; left: 24px; width: calc(100% - 48px); height: 280px; }
@@ -418,6 +421,10 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .privacy-note { position: absolute; top: 642.5px; left: 24px; width: calc(100% - 48px); height: 68px; display: flex; align-items: flex-start; padding: 16px; border-radius: 8px; background: #fff5ec; }
 .privacy-note img { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 2px; }
 .privacy-note p { margin: 0 0 0 12px; color: #7f7a76; font-size: 12px; font-weight: 400; line-height: 18px; letter-spacing: 0.12px; transform: translateY(-1px); }
+#conditions-screen .step-main { height: 648px; }
+#conditions-screen .manual-input-food .input-wrap { position: relative; top: auto; right: auto; width: 100%; height: 54px; margin-top: 12px; }
+#conditions-screen .privacy-note { top: 617px; }
+#conditions-screen .bottom-actions { top: 748px; }
 
 /* --- Traits Screen (Features) --- */
 .skip-button { height: 32px; margin-left: auto; padding: 0; border: 0; background: transparent; color: #7f7a76; font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0.01em; cursor: pointer; }
@@ -450,6 +457,15 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .range-numbers span.is-current { color: var(--ink); }
 .range-labels { position: absolute; top: 63px; left: 0; right: 0; display: flex; justify-content: space-between; color: #b2afac; font-size: 12px; font-weight: 400; line-height: 15px; letter-spacing: 0.01em; }
 .range-labels span { display: flex; width: auto; justify-content: center; white-space: nowrap; }
+
+/* 인원 특징 화면의 매운맛 게이지: 피그마 기준 트랙 위치와 길이 */
+#traits-screen .spicy-slider .range-track {
+  top: 24px;
+  left: 8px;
+  right: 0;
+  width: auto;
+}
+#traits-screen .spicy-slider .spicy-range { top: 10px; }
 .today-preference { position: absolute; top: 326px; left: 0; width: 100%; height: 153px; }
 .preference-input { position: absolute; top: 63px; left: 0; width: 100%; height: 54px; resize: none; overflow: hidden; padding: 17px 48px 17px 16px; border: 0; border-radius: 12px; background: #fff5ec; color: var(--ink); font-size: 14px; font-weight: 400; line-height: 20px; letter-spacing: 0.01em; }
 .preference-input::placeholder { color: #7f7a76; opacity: 1; }
@@ -457,3 +473,64 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .analyze-button { width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0; border: 0; border-radius: 12px; background: var(--coral); box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1); color: #fff; font-size: 14px; font-weight: 700; line-height: 20px; letter-spacing: 0.01em; cursor: pointer; transition: background 160ms ease, transform 160ms ease; }
 .analyze-button:hover { background: #f25437; transform: translateY(-1px); }
 .analyze-button img { width: 16px; height: 15px; }
+#traits-screen .step-main { height: 648px; }
+#traits-screen .bottom-actions { top: 744px; }
+
+/* 조건·특징 화면은 다른 단계 화면의 공통 규칙과 섞이지 않도록 좌표를 명시한다. */
+#conditions-screen > .header,
+#traits-screen > .header {
+  position: absolute !important;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex !important;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+#conditions-screen > .header > .back-button,
+#traits-screen > .header > .back-button {
+  position: static !important;
+  flex: 0 0 32px;
+}
+#conditions-screen > .header > h1,
+#traits-screen > .header > h1 {
+  position: static !important;
+  margin: 0 0 0 12px !important;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+}
+#conditions-screen > .step-main,
+#traits-screen > .step-main {
+  position: absolute !important;
+  top: 56px !important;
+  right: 6px;
+  left: 6px;
+}
+#conditions-screen > .step-main > .step-indicator,
+#traits-screen > .step-main > .step-indicator {
+  position: absolute !important;
+  top: 20px !important;
+  right: 24px;
+  left: 24px;
+}
+#conditions-screen > .step-main > .intro-title,
+#traits-screen > .step-main > .intro-title {
+  position: absolute !important;
+  top: 36px !important;
+  left: 24px !important;
+}
+#conditions-screen > .step-main > .intro-description {
+  position: absolute !important;
+  top: 74px !important;
+  left: 24px !important;
+}
+#traits-screen > .step-main > .intro-description {
+  position: absolute !important;
+  top: 104px !important;
+  left: 24px !important;
+}

@@ -533,6 +533,11 @@ function selectMeetingType(meetingTypeValue, source) {
   });
 }
 
+// 화면의 기본 선택 상태와 다음 단계에 저장되는 값을 항상 일치시킨다.
+if (moodCards[0]) {
+  selectMeetingType(moodCards[0].dataset.meetingType, moodCards[0]);
+}
+
 moodCards.forEach((card) => {
   card.addEventListener("click", () => {
     moodInput.value = "";
