@@ -105,6 +105,26 @@ function showScreen(screen, activeTab = screen) {
   const target = document.querySelector(`#${screen}`);
   target.classList.add('active');
   target.scrollTop = 0;
+  
+  if (screen === 'analysis-screen') {
+    const conditionSummary = document.querySelector("#condition-summary");
+    const meetingTypeSummary = document.querySelector("#meeting-type-summary");
+    try {
+      const recommendationRequest = JSON.parse(sessionStorage.getItem("recommendationRequest") || "null");
+      if (recommendationRequest && conditionSummary && meetingTypeSummary) {
+        const { peopleCount, budget, meetingType } = recommendationRequest;
+        conditionSummary.textContent = `인원 및 예산 조건 확인 (${peopleCount}명, ${Number(budget).toLocaleString("ko-KR")}원)`;
+        meetingTypeSummary.textContent = `'${meetingType}' 컨셉 분석 중...`;
+      }
+    } catch (error) {
+      console.warn("Invalid recommendationRequest session data", error);
+    }
+  }
+
+  const navTabs = Array.from(document.querySelectorAll('.nav-item')).map(item => item.dataset.screen);
+  if (!navTabs.includes(activeTab)) {
+    activeTab = 'home-screen';
+  }
   document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('selected', item.dataset.screen === activeTab));
 }
 
