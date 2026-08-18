@@ -18,11 +18,9 @@ button { font:inherit; color:inherit; cursor:pointer; }
 #home-screen .start-choice-card strong { font-size:28px; line-height:36px; font-weight:700; letter-spacing:.01em; }
 #home-screen .start-choice-card small { margin-top:6px; color:#7f7a76; font-size:16px; line-height:24px; letter-spacing:.01em; }
 #home-screen .start-choice-card:hover { border-color:#ff6041; background:#ff6041; color:#fff; }
-#home-screen .start-choice-card:hover .start-choice-icon { background:transparent; }
-#home-screen .start-choice-card:hover .start-choice-icon:not(.wand-icon) img { filter:brightness(0) invert(1); opacity:.95; }
-#home-screen .start-choice-card:hover .wand-icon { position:relative; background:rgba(255,255,255,.101961); }
-#home-screen .start-choice-card:hover .wand-icon .choice-icon-default { display:none; }
-#home-screen .start-choice-card:hover .wand-icon .choice-icon-selected { position:absolute; z-index:1; display:block; width:41px; height:36.44px; opacity:1; }
+#home-screen .start-choice-card:hover .choice-icon-default { display: none; }
+#home-screen .start-choice-card:hover .start-choice-icon {  position: relative;  background: rgba(255, 255, 255, 0.101961); }
+#home-screen .start-choice-card:hover .choice-icon-selected {  position: absolute;  z-index: 1;  display: block;  width: 41px;  height: 36.44px;  opacity: 1; }
 #home-screen .start-choice-card:hover small { color:#fff; }
 .phone-shell:has(#home-screen.active) .bottom-nav { display:none; }
 #recommendation-screen .topbar { height:56px; padding:11px 30px; display:flex; align-items:center; border-bottom:1px solid #dedede; font-size:18px; line-height:28px; font-weight:700; }
@@ -401,7 +399,8 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .food-card.is-selected { border: 2px solid var(--coral); background: #fff5ec; }
 .food-icon { width: 48px; height: 48px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 8px; background: #f6f4f5; }
 .food-card.is-selected .food-icon { background: #fff; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1); }
-.food-icon img { display: block; max-width: 24px; max-height: 21px; }
+.food-card.is-selected .food-icon img { opacity: 1; filter: brightness(0); }
+.food-icon img { display: block; max-width: 24px; max-height: 21px; opacity: 0.35; filter: grayscale(100%); }
 .food-copy { min-width: 0; margin-left: 16px; transform: translateY(-2px); }
 .food-title, .food-description { display: block; white-space: nowrap; }
 .food-title { color: #314158; font-size: 16px; font-weight: 600; line-height: 24px; letter-spacing: 0.16px; }
@@ -467,8 +466,8 @@ button { font:inherit; color:inherit; cursor:pointer; }
 }
 #traits-screen .spicy-slider .spicy-range { top: 10px; }
 .today-preference { position: absolute; top: 326px; left: 0; width: 100%; height: 153px; }
-.preference-input { position: absolute; top: 63px; left: 0; width: 100%; height: 54px; resize: none; overflow: hidden; padding: 17px 48px 17px 16px; border: 0; border-radius: 12px; background: #fff5ec; color: var(--ink); font-size: 14px; font-weight: 400; line-height: 20px; letter-spacing: 0.01em; }
-.preference-input::placeholder { color: #7f7a76; opacity: 1; }
+.preference-input { position: absolute; top: 63px; left: 0; width: 100%; height: 54px; resize: none; overflow: hidden; padding: 17px 40px 17px 16px; border: 0; border-radius: 12px; background: #fff5ec; color: var(--ink); font-size: 13px; font-weight: 400; line-height: 20px; letter-spacing: -0.5px; letter-spacing: 0.01em; }
+.preference-input::placeholder {  color: #7f7a76; opacity: 1; white-space: nowrap; }
 .preference-icon { position: absolute; z-index: 2; top: 82px; right: 16px; width: 16px; height: 16px; pointer-events: none; }
 .analyze-button { width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0; border: 0; border-radius: 12px; background: var(--coral); box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 1px 1.5px rgba(0, 0, 0, 0.1); color: #fff; font-size: 14px; font-weight: 700; line-height: 20px; letter-spacing: 0.01em; cursor: pointer; transition: background 160ms ease, transform 160ms ease; }
 .analyze-button:hover { background: #f25437; transform: translateY(-1px); }
