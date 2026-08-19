@@ -1,4 +1,4 @@
-# 🍽️ QR-Based AI Smart Menu Recommendation System (v3.0.0)
+# 🍽️ QR-Based AI Smart Menu Recommendation System (v3.0.1)
 
 > **하이브리드 AI 메뉴 추천 시스템: 자체 ML 앙상블 + Confidence 라우팅 + LLM Fallback**  
 > GPT 개입이 적어도 동작하는 자체 ML 파이프라인을 핵심으로, LLM은 불확실할 때만 보조하는 하이브리드 아키텍처.
@@ -6,6 +6,37 @@
 ---
 
 ## 🆕 Release Notes
+
+### 🐳 v3.0.1 (2026-08-18) - Railway Docker 배포 지원 & 안정성 패치
+> **Docker 컨테이너 배포 환경 구축, Playwright/EasyOCR 선택적 로드, 프론트엔드 UX 버그 수정! 🐳🔧**
+
+1. **🐳 Railway Docker 배포 지원:**
+   - `ai/Dockerfile` 추가: PyTorch CPU 경량 버전 + Playwright Chromium + EasyOCR 사전 다운로드.
+   - `ai/.dockerignore` 추가: 불필요 파일(캐시, .env, venv) 이미지 제외.
+   - `ai/requirements.txt` 정비: 최소 버전 핀으로 호환성 확보.
+   - Railway Root Directory를 `ai`로 설정 시 자동 Docker 빌드 감지.
+
+2. **🛡️ Playwright/EasyOCR 선택적 로드 (Graceful Degradation):**
+   - Playwright 미설치 시 `ImportError` 대신 httpx 정적 fallback으로 서버 정상 시작.
+   - EasyOCR 미설치 시에도 URL 입력/상호명 검색 + ML 추천 100% 동작.
+   - 배포 환경 메모리 부족 시에도 핵심 기능 유지.
+
+3. **🔧 프론트엔드 UX 버그 수정:**
+   - "이대로 주문 완료" 클릭 시 진행 중인 추천이 사라지지 않던 문제 수정 (`recommendationResult = null`).
+   - 동일 추천 중복 확정 방지.
+   - 메뉴 desc 표시: "대표 메뉴" → 카테고리명(메인/음료/사이드)으로 변경.
+   - storeName URL 노출 방지: URL/숫자/플랫폼명 감지 시 "스캔 매장"으로 치환.
+
+4. **🧹 노이즈 필터 강화:**
+   - "고객 센터 1644", "600원 할인", "8 할인 ^^" 등 비메뉴 항목 필터링.
+   - 전화번호 패턴(1644, 1588, 1577, 080) 자동 제거.
+   - 용량 표기(500ml, 350ml) 가격 오인식 수정.
+   - 주소/교통(버스, 지하철, 역, 대로) 패턴 노이즈 차단.
+
+5. **📐 .gitignore 보안 업데이트:**
+   - `.kiro/`, `.kirorules`, `.dev/` 제외 추가 (개인 개발환경 보호).
+
+---
 
 ### 🚀 v3.0.0 (2026-08-18) - Self-Hosted ML Engine & LLM Independence
 > **자체 ML 엔진으로 GPT 없이 메뉴 인식/추천 전 과정 동작, 앙상블 Voting 분류기 95.23%, Confidence 기반 LLM 라우팅, 5관점 앙상블 냅색 추천 엔진 완성! 🧠⚡**

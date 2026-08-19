@@ -20,7 +20,15 @@ from dotenv import load_dotenv
 import cv2
 import numpy as np
 import asyncio
-from playwright.async_api import async_playwright
+
+# Playwright (없으면 크롤링 비활성화, 나머지 기능 정상 동작)
+try:
+    from playwright.async_api import async_playwright
+    from playwright.sync_api import sync_playwright
+    has_playwright = True
+except ImportError:
+    has_playwright = False
+    print("[Notice] Playwright not installed - web crawling disabled, URL/search parsing will use httpx fallback")
 
 # ai 디렉토리를 파이썬 모듈 검색 경로에 안전하게 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -45,8 +53,6 @@ except Exception as e:
     print(f"[Pyzbar Init Notice] {e}")
     has_pyzbar = False
 
-from playwright.sync_api import sync_playwright
-
 # Windows asyncio Proactor 정책 설정
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -58,7 +64,21 @@ def _sync_scrape_worker(target_url: str) -> tuple[str, str]:
     print(f"[Playwright Sync Worker] Navigating to: {target_url}")
     final_url = target_url
     rendered_text = ""
-    
+
+    # Playwright 미설치 시 httpx fallback
+    if not has_playwright:
+        print("[Playwright] Not available - using httpx fallback")
+        try:
+            req = urllib.request.Request(target_url, headers={'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X)'})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                final_url = resp.geturl()
+                html = resp.read().decode('utf-8', errors='ignore')
+                soup = BeautifulSoup(html, 'html.parser')
+                rendered_text = soup.get_text(separator='\n', strip=True)[:8000]
+        except Exception as e2:
+            rendered_text = f"URL: {target_url}"
+        return final_url, rendered_text
+
     # ─── 토스/캐치테이블 URL 감지 (SPA 모바일 전용 렌더링) ───
     _TOSS_PATTERNS = ["toss.im/order", "to.toss.im", "tossplace.com", "front.toss.im"]
     _CATCH_PATTERNS = ["catchtable.co.kr", "app.catchtable"]

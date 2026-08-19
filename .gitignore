@@ -38,3 +38,8 @@ dataset/
 .dataset/
 
 figma_files/
+
+# Kiro IDE & Dev Tools (개인 환경)
+.kiro/
+.kirorules
+.dev/
