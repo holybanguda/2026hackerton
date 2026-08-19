@@ -37,13 +37,24 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 load_dotenv(env_path, override=True)
 
-# 1. EasyOCR 딥러닝 라이브러리
-try:
-    import easyocr
-    reader_instance = easyocr.Reader(['ko', 'en'], gpu=False, verbose=False)
-except Exception as e:
-    print(f"[EasyOCR Init Notice] {e}")
-    reader_instance = None
+# 1. EasyOCR 딥러닝 라이브러리 (Lazy Load - 첫 요청 시 로드)
+reader_instance = None
+_easyocr_loaded = False
+
+def _get_ocr_reader():
+    """EasyOCR을 첫 사용 시에만 로드 (메모리 절약)"""
+    global reader_instance, _easyocr_loaded
+    if _easyocr_loaded:
+        return reader_instance
+    _easyocr_loaded = True
+    try:
+        import easyocr
+        reader_instance = easyocr.Reader(['ko', 'en'], gpu=False, verbose=False)
+        print("[EasyOCR] Model loaded (lazy)")
+    except Exception as e:
+        print(f"[EasyOCR] Not available: {e}")
+        reader_instance = None
+    return reader_instance
 
 # 2. Pyzbar 범용 QR/바코드 라이브러리
 try:
@@ -445,7 +456,8 @@ def universal_decode_qr(img_bytes: bytes) -> Optional[str]:
 # 3. [메뉴 인식 서포트] EasyOCR + 전처리 비전 스캐너
 # -------------------------------------------------------------------
 def scan_raw_text_with_easyocr(img_bytes: bytes) -> tuple[List[str], List[dict]]:
-    if not reader_instance:
+    reader = _get_ocr_reader()
+    if not reader:
         return [], []
 
     try:
@@ -480,8 +492,8 @@ def scan_raw_text_with_easyocr(img_bytes: bytes) -> tuple[List[str], List[dict]]
         sharpened = cv2.filter2D(denoised, -1, kernel)
         
         # 원본 + 전처리 양쪽 모두 OCR 시도, 더 나은 결과 채택
-        results_orig = reader_instance.readtext(img)
-        results_enhanced = reader_instance.readtext(sharpened)
+        results_orig = reader.readtext(img)
+        results_enhanced = reader.readtext(sharpened)
         
         # 더 많은 결과를 가져온 쪽 선택 (동일하면 confidence 높은 쪽)
         if len(results_enhanced) > len(results_orig):

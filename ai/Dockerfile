@@ -49,9 +49,6 @@ RUN playwright install chromium && playwright install-deps chromium
 # 소스 코드 복사
 COPY . .
 
-# EasyOCR 모델 사전 다운로드 (첫 요청 지연 방지)
-RUN python -c "import easyocr; easyocr.Reader(['ko', 'en'], gpu=False, verbose=False)" || true
-
 # 포트 설정 (Railway는 $PORT 환경변수 사용)
 ENV PORT=8000
 EXPOSE 8000
