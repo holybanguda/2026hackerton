@@ -282,7 +282,88 @@ def _sync_scrape_worker(target_url: str) -> tuple[str, str]:
     return final_url, rendered_text
 
 async def scrape_dynamic_web_content(target_url: str) -> tuple[str, str]:
-    return await asyncio.to_thread(_sync_scrape_worker, target_url)
+    """경량 크롤러: httpx 우선 (메모리 절약) → 필요 시만 Playwright"""
+    import httpx
+    
+    print(f"[Scraper] Processing: {target_url}")
+    
+    # ─── PID 추출 ───
+    pid_match = re.search(r'(?:place|restaurant)/(\d{5,12})', target_url)
+    
+    # ─── 토스/캐치테이블은 SPA라 Playwright 필수 ───
+    _SPA_PATTERNS = ["toss.im/order", "to.toss.im", "tossplace.com/order", "catchtable.co.kr/ct/shop"]
+    if any(pat in target_url for pat in _SPA_PATTERNS):
+        if has_playwright:
+            print(f"[Scraper] SPA detected → Playwright mode")
+            return await asyncio.to_thread(_sync_scrape_worker, target_url)
+        else:
+            return target_url, ""
+
+    # ─── PID URL → 네이버 검색으로 변환 ───
+    search_url = target_url
+    store_hint = ""
+    
+    if pid_match:
+        pid = pid_match.group(1)
+        # map.naver.com 타이틀에서 매장명 추출 (httpx로 빠르게)
+        try:
+            async with httpx.AsyncClient(timeout=8.0, follow_redirects=True) as client:
+                resp = await client.get(target_url, headers={"User-Agent": "Mozilla/5.0"})
+                title_m = re.search(r'<title[^>]*>(.*?)</title>', resp.text)
+                if title_m:
+                    t = title_m.group(1)
+                    for suf in [" : 네이버 지도", "- 네이버지도", " : 네이버", "네이버 플레이스"]:
+                        t = t.replace(suf, "").strip()
+                    if len(t) >= 2 and "네이버" not in t:
+                        store_hint = t
+        except Exception:
+            pass
+        
+        if store_hint:
+            search_url = f"https://search.naver.com/search.naver?query={urllib.parse.quote(store_hint + ' 메뉴')}"
+        else:
+            search_url = f"https://search.naver.com/search.naver?query=네이버플레이스+{pid}+메뉴"
+        print(f"[Scraper] PID {pid} → search: '{store_hint or pid}'")
+
+    # ─── 상호명 직접 입력 (URL 아닌 경우) ───
+    # parse_url_endpoint에서 이미 search URL로 변환되어 들어옴
+
+    # ─── httpx로 정적 HTML 수집 (Playwright 없이, 메모리 ~5MB) ───
+    try:
+        async with httpx.AsyncClient(timeout=12.0, follow_redirects=True) as client:
+            resp = await client.get(search_url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+                "Accept-Language": "ko-KR,ko;q=0.9",
+            })
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                # 스크립트/스타일 제거
+                for tag in soup.find_all(['script', 'style', 'noscript']):
+                    tag.decompose()
+                text = soup.get_text(separator='\n', strip=True)
+                
+                # 타이틀에서 상호명 추출
+                title_tag = soup.find('title')
+                if title_tag:
+                    hint = title_tag.get_text().strip()
+                    for suf in [" : 네이버 검색", " 메뉴  검색", " 메뉴 검색", " 검색"]:
+                        hint = hint.replace(suf, "").strip()
+                    if store_hint:
+                        hint = store_hint  # PID에서 추출한 게 더 정확
+                else:
+                    hint = store_hint or search_url
+
+                print(f"[Scraper httpx] {len(text)} chars, hint=[{hint[:30]}]")
+                return hint, text[:8000]
+    except Exception as e:
+        print(f"[Scraper httpx error] {e}")
+
+    # ─── httpx 실패 시 Playwright fallback (메모리 여유 있으면) ───
+    if has_playwright:
+        print(f"[Scraper] httpx failed → Playwright fallback")
+        return await asyncio.to_thread(_sync_scrape_worker, target_url)
+    
+    return target_url, ""
 
 app = FastAPI(
     title="AI Smart Menu Master Orchestrator Pro",

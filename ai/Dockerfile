@@ -43,8 +43,9 @@ RUN pip install --no-cache-dir \
 # 나머지 패키지 설치
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Playwright Chromium 설치
-RUN playwright install chromium && playwright install-deps chromium
+# Playwright Chromium 설치 (선택적 - 실패해도 서버 동작)
+RUN pip install --no-cache-dir playwright>=1.40.0 || true
+RUN playwright install chromium 2>/dev/null || true
 
 # 소스 코드 복사
 COPY . .

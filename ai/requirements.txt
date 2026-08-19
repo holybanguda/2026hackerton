@@ -31,8 +31,8 @@ pyzbar>=0.1.9
 # OCR (torch는 Dockerfile에서 CPU 버전으로 별도 설치)
 easyocr>=1.7.0
 
-# Browser Automation
-playwright>=1.40.0
+# Browser Automation (선택적 - 없어도 httpx fallback으로 동작)
+# playwright>=1.40.0
 
 # YAML
 pyyaml>=6.0
