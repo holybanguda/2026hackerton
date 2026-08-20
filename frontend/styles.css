@@ -261,7 +261,18 @@ button { font:inherit; color:inherit; cursor:pointer; }
 .code-modal-input { position:absolute; right:24px; bottom:30px; left:24px; display:flex; align-items:center; width:auto; height:49px; padding:0 15px; border-radius:12px; background:#fff5ec; }
 .code-modal-input input { width:100%; min-width:0; height:100%; border:0; outline:0; background:transparent; color:#0f172b; font:500 16px/24px "Noto Sans KR",sans-serif; }
 .code-modal-input img { width:22px; height:22px; flex:0 0 auto; object-fit:contain; }
-@media (max-width:401px) { body { place-items:stretch; background:#fff; }.phone-shell { width:100vw; height:100vh; min-height:600px; box-shadow:none; } }
+@media (max-width:401px), (max-height:874px) { 
+  body { place-items:start center; background:#fff; }
+  .phone-shell { 
+    width: 402px !important; 
+    height: 874px !important; 
+    min-height: 874px !important; 
+    box-shadow: none; 
+    transform: scale(min(calc(100vw / 402), calc(100dvh / 874))); 
+    transform-origin: top center;
+    margin: 0 auto;
+  } 
+}
 
 #result-screen .result-chips { position:relative; padding:16px 30px; }
 #result-screen .result-chips span { box-sizing:border-box; height:26px; padding:4px 10px; display:inline-flex; flex:none; align-items:center; gap:6px; font-size:12px; font-weight:500; line-height:16px; }
